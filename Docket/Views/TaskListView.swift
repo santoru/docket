@@ -95,7 +95,7 @@ struct TaskListView: View {
                 withAnimation(.spring(duration: 0.25)) { showSortBar.toggle() }
             }
             headerButton(icon: "magnifyingglass", color: accent) {
-                withAnimation(.spring(duration: 0.25)) { showSearch.toggle() }
+                withAnimation(.spring(duration: 0.25)) { showSearch.toggle(); if !showSearch { searchText = "" } }
             }
             headerButton(icon: "tray.full", color: accent) { path.append(.completed) }
             headerButton(icon: "gear", color: accent) { path.append(.settings) }
