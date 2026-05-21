@@ -53,31 +53,6 @@ struct SettingsView: View {
                     exportImportSection
                     clearSection
 
-                    card {
-                        HStack {
-                            Text("Notification sound")
-                            Spacer()
-                            Menu {
-                                Button("Default") { notifSound = "default" }
-                                Button("Ping") { notifSound = "Ping" }
-                                Button("Glass") { notifSound = "Glass" }
-                                Button("Pop") { notifSound = "Pop" }
-                                Button("Purr") { notifSound = "Purr" }
-                                Button("Submarine") { notifSound = "Submarine" }
-                                Button("Tink") { notifSound = "Tink" }
-                                Button("None") { notifSound = "none" }
-                            } label: {
-                                Text(notifSound == "default" ? "Default" : notifSound == "none" ? "None" : notifSound)
-                                    .font(.subheadline.weight(.semibold))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(RoundedRectangle(cornerRadius: 6).fill(accent.opacity(0.12)))
-                                    .foregroundStyle(accent)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-
                     VStack(spacing: 4) {
                         Text("Docket v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0")")
                             .font(.caption).foregroundStyle(.tertiary)
@@ -113,22 +88,58 @@ struct SettingsView: View {
 
     private var reminderSection: some View {
         card {
-            HStack {
-                Text("Default reminder").font(.body)
-                Spacer()
-                Menu {
-                    ForEach(ReminderOffset.allCases) { r in
-                        Button(r.displayName) { defaultOffset = r.rawValue }
+            VStack(spacing: 12) {
+                HStack {
+                    Text("Default reminder").font(.body)
+                    Spacer()
+                    Menu {
+                        ForEach(ReminderOffset.allCases) { r in
+                            Button(r.displayName) { defaultOffset = r.rawValue }
+                        }
+                    } label: {
+                        Text((ReminderOffset(rawValue: defaultOffset) ?? .tenMinutes).displayName)
+                            .font(.system(size: 12, weight: .semibold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(accent.opacity(0.12)))
+                            .foregroundStyle(accent)
                     }
-                } label: {
-                    Text((ReminderOffset(rawValue: defaultOffset) ?? .tenMinutes).displayName)
-                        .font(.system(size: 12, weight: .semibold))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(RoundedRectangle(cornerRadius: 6).fill(accent.opacity(0.12)))
-                        .foregroundStyle(accent)
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+                Divider()
+                HStack {
+                    Text("Sound").font(.body)
+                    Spacer()
+                    Menu {
+                        Button("Default") { setSound("default") }
+                        Button("Ping") { setSound("Ping") }
+                        Button("Glass") { setSound("Glass") }
+                        Button("Pop") { setSound("Pop") }
+                        Button("Purr") { setSound("Purr") }
+                        Button("Submarine") { setSound("Submarine") }
+                        Button("Tink") { setSound("Tink") }
+                        Button("None") { setSound("none") }
+                    } label: {
+                        Text(notifSound == "default" ? "Default" : notifSound == "none" ? "None" : notifSound)
+                            .font(.system(size: 12, weight: .semibold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(accent.opacity(0.12)))
+                            .foregroundStyle(accent)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private func setSound(_ sound: String) {
+        notifSound = sound
+        if sound != "none" {
+            if sound == "default" {
+                NSSound(named: "Tink")?.play()
+            } else {
+                NSSound(named: sound)?.play()
             }
         }
     }
