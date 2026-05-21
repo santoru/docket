@@ -90,6 +90,10 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
 PLIST
 
 echo "✅ Built: $APP_BUNDLE"
+
+# Sign the app so notifications and other system features work
+codesign --force --sign - --identifier com.docket.app "$APP_BUNDLE"
+
 echo ""
 echo "To run:     open $APP_BUNDLE"
 echo "To install: cp -r $APP_BUNDLE /Applications/"
