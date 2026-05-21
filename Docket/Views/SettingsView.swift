@@ -137,7 +137,7 @@ struct SettingsView: View {
         notifSound = sound
         if sound != "none" {
             if sound == "default" {
-                NSSound(named: "Tink")?.play()
+                NSSound.beep()
             } else {
                 NSSound(named: sound)?.play()
             }
