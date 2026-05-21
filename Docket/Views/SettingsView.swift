@@ -15,6 +15,7 @@ struct SettingsView: View {
     @AppStorage("defaultReminderOffset") private var defaultOffset: Int = ReminderOffset.tenMinutes.rawValue
     @AppStorage("launchAtLogin") private var launchAtLogin = false
     @AppStorage("useGlass") private var useGlass = true
+    @AppStorage("notifSound") private var notifSound = "default"
     @AppStorage("hotkeyEnabled") private var hotkeyEnabled = true
     @AppStorage("hotkeyKeyCode") private var hotkeyKeyCode = kVK_ANSI_D
     @AppStorage("hotkeyModifiers") private var hotkeyModifiers = Int(cmdKey | shiftKey)
@@ -51,6 +52,32 @@ struct SettingsView: View {
                     themeSection
                     exportImportSection
                     clearSection
+
+                    card {
+                        HStack {
+                            Text("Notification sound")
+                            Spacer()
+                            Menu {
+                                Button("Default") { notifSound = "default" }
+                                Button("Ping") { notifSound = "Ping" }
+                                Button("Glass") { notifSound = "Glass" }
+                                Button("Pop") { notifSound = "Pop" }
+                                Button("Purr") { notifSound = "Purr" }
+                                Button("Submarine") { notifSound = "Submarine" }
+                                Button("Tink") { notifSound = "Tink" }
+                                Button("None") { notifSound = "none" }
+                            } label: {
+                                Text(notifSound == "default" ? "Default" : notifSound == "none" ? "None" : notifSound)
+                                    .font(.subheadline.weight(.semibold))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(RoundedRectangle(cornerRadius: 6).fill(accent.opacity(0.12)))
+                                    .foregroundStyle(accent)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+
                     VStack(spacing: 4) {
                         Text("Docket v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0")")
                             .font(.caption).foregroundStyle(.tertiary)

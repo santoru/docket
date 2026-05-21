@@ -39,7 +39,13 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         content.body = item.reminderOffset == .atTime
             ? "\(item.title) — due now"
             : "\(item.title) — due in \(item.reminderOffset.displayName.replacingOccurrences(of: " before", with: ""))"
-        content.sound = .default
+
+        let soundPref = UserDefaults.standard.string(forKey: "notifSound") ?? "default"
+        switch soundPref {
+        case "none": content.sound = nil
+        case "default": content.sound = .default
+        default: content.sound = UNNotificationSound(named: UNNotificationSoundName(rawValue: "\(soundPref).aiff"))
+        }
 
         let components = Calendar.current.dateComponents(
             [.year, .month, .day, .hour, .minute, .second], from: fireDate
