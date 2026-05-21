@@ -9,6 +9,9 @@ struct TaskDetailView: View {
     @State var item: TodoItem
     @Binding var path: [NavDestination]
     @State private var hasDueDate = false
+    @State private var hasRecurrence = false
+    @State private var recurrenceFreq: Frequency = .weekly
+    @State private var recurrenceInterval: Int = 1
 
     @AppStorage("appTheme") private var themeRaw: Int = AppTheme.white.rawValue
     @AppStorage("customHue") private var customHue: Double = 0.55
@@ -55,6 +58,7 @@ struct TaskDetailView: View {
                                 set: { item.dueDate = $0 }
                             ))
                             ReminderPickerView(offset: $item.reminderOffset)
+                            RecurrencePickerView(hasRecurrence: $hasRecurrence, frequency: $recurrenceFreq, interval: $recurrenceInterval)
                         }
                     }
 
@@ -102,12 +106,20 @@ struct TaskDetailView: View {
                 .padding(20)
             }
         }
-        .onAppear { hasDueDate = item.dueDate != nil }
+        .onAppear {
+            hasDueDate = item.dueDate != nil
+            hasRecurrence = item.recurrence != nil
+            recurrenceFreq = item.recurrence?.frequency ?? .weekly
+            recurrenceInterval = item.recurrence?.interval ?? 1
+        }
         .onChange(of: hasDueDate) { _, on in
             if !on { item.dueDate = nil }
             else if item.dueDate == nil { item.dueDate = Date().addingTimeInterval(3600) }
         }
-        .onDisappear { Store.shared.update(item) }
+        .onDisappear {
+            item.recurrence = hasDueDate && hasRecurrence ? Recurrence(frequency: recurrenceFreq, interval: recurrenceInterval, endDate: nil) : nil
+            Store.shared.update(item)
+        }
     }
 
     private var header: some View {

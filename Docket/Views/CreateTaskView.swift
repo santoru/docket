@@ -20,6 +20,9 @@ struct CreateTaskView: View {
     @State private var naturalDateText = ""
     @State private var parsedDatePreview: String? = nil
     @State private var selectedLabelIds: [UUID] = []
+    @State private var hasRecurrence = false
+    @State private var recurrenceFreq: Frequency = .weekly
+    @State private var recurrenceInterval: Int = 1
     @FocusState private var titleFocused: Bool
 
     private var accent: Color { ThemeManager.resolvedAccent(themeRaw: themeRaw, customHue: customHue) }
@@ -92,6 +95,7 @@ struct CreateTaskView: View {
                                 .transition(.opacity.combined(with: .scale(scale: 0.97)))
                             TimePickerView(date: $dueDate)
                             ReminderPickerView(offset: $reminderOffset)
+                            RecurrencePickerView(hasRecurrence: $hasRecurrence, frequency: $recurrenceFreq, interval: $recurrenceInterval)
                         }
                     }
                 }
@@ -119,7 +123,8 @@ struct CreateTaskView: View {
                     Store.shared.add(TodoItem(
                         title: title, notes: notes, priority: priority,
                         dueDate: hasDueDate ? dueDate : nil, reminderOffset: reminderOffset,
-                        labelIds: selectedLabelIds
+                        labelIds: selectedLabelIds,
+                        recurrence: hasDueDate && hasRecurrence ? Recurrence(frequency: recurrenceFreq, interval: recurrenceInterval, endDate: nil) : nil
                     ))
                     path.removeLast()
                 } label: {

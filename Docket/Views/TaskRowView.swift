@@ -54,6 +54,12 @@ struct TaskRowView: View {
 
             Spacer()
 
+            if item.recurrence != nil {
+                Image(systemName: "arrow.trianglehead.2.counterclockwise")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+
             Button(action: onComplete) {
                 Image(systemName: "circle")
                     .font(.title3)

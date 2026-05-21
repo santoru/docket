@@ -34,6 +34,7 @@ struct TodoItem: Identifiable, Codable, Hashable {
     var sortOrder: Int
     var listId: UUID?
     var labelIds: [UUID]
+    var recurrence: Recurrence?
 
     // MARK: Computed Properties
 
@@ -58,7 +59,7 @@ struct TodoItem: Identifiable, Codable, Hashable {
 
     enum CodingKeys: String, CodingKey {
         case id, title, notes, createdAt, completedAt
-        case priorityRaw, dueDate, reminderOffsetRaw, sortOrder, listId, labelIds
+        case priorityRaw, dueDate, reminderOffsetRaw, sortOrder, listId, labelIds, recurrence
     }
 
     init(from decoder: Decoder) throws {
@@ -74,6 +75,7 @@ struct TodoItem: Identifiable, Codable, Hashable {
         sortOrder = try c.decodeIfPresent(Int.self, forKey: .sortOrder) ?? 0
         listId = try c.decodeIfPresent(UUID.self, forKey: .listId)
         labelIds = try c.decodeIfPresent([UUID].self, forKey: .labelIds) ?? []
+        recurrence = try c.decodeIfPresent(Recurrence.self, forKey: .recurrence)
     }
 
     // MARK: Init
@@ -85,7 +87,8 @@ struct TodoItem: Identifiable, Codable, Hashable {
         dueDate: Date? = nil,
         reminderOffset: ReminderOffset = .tenMinutes,
         listId: UUID? = nil,
-        labelIds: [UUID] = []
+        labelIds: [UUID] = [],
+        recurrence: Recurrence? = nil
     ) {
         self.id = UUID()
         self.title = title
@@ -98,5 +101,6 @@ struct TodoItem: Identifiable, Codable, Hashable {
         self.sortOrder = 0
         self.listId = listId
         self.labelIds = labelIds
+        self.recurrence = recurrence
     }
 }

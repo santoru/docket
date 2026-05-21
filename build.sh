@@ -28,6 +28,7 @@ swiftc \
     "$SRC_DIR/Models/TodoItem.swift" \
     "$SRC_DIR/Models/TaskList.swift" \
     "$SRC_DIR/Models/TaskLabel.swift" \
+    "$SRC_DIR/Models/Recurrence.swift" \
     "$SRC_DIR/Models/AppTheme.swift" \
     "$SRC_DIR/Models/SortMode.swift" \
     "$SRC_DIR/Models/Strings.swift" \
@@ -40,6 +41,7 @@ swiftc \
     "$SRC_DIR/Views/CalendarPickerView.swift" \
     "$SRC_DIR/Views/TimePickerView.swift" \
     "$SRC_DIR/Views/ReminderPickerView.swift" \
+    "$SRC_DIR/Views/RecurrencePickerView.swift" \
     "$SRC_DIR/Views/PriorityPickerView.swift" \
     "$SRC_DIR/Views/LabelPickerView.swift" \
     "$SRC_DIR/Views/ThemedToggle.swift" \
