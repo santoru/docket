@@ -123,32 +123,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let count = Store.shared.badgeCount
         guard let button = statusItem.button else { return }
 
-        // Remove old badge subviews
         button.subviews.forEach { $0.removeFromSuperview() }
         button.title = ""
 
         if count > 0 {
-            let badge = NSTextField(labelWithString: "\(count)")
-            badge.font = NSFont.systemFont(ofSize: 9, weight: .bold)
-            badge.textColor = .white
-            badge.alignment = .center
-            badge.isBezeled = false
-            badge.drawsBackground = false
-            badge.sizeToFit()
+            let height: CGFloat = 14
+            let text = "\(count)"
+            let width: CGFloat = text.count > 1 ? height + 4 : height // pill for 2+ digits, circle for 1
 
-            let size = max(badge.frame.width + 6, 14.0)
-            let x = button.bounds.width - size + 2
-            let y = button.bounds.height - 12
+            let x = button.bounds.width - width / 2 - 1
+            let y = button.bounds.height - height + 2
 
-            let bg = NSView(frame: NSRect(x: x, y: y, width: size, height: 14))
+            let bg = NSView(frame: NSRect(x: x, y: y, width: width, height: height))
             bg.wantsLayer = true
             bg.layer?.backgroundColor = NSColor.systemRed.cgColor
-            bg.layer?.cornerRadius = 7
+            bg.layer?.cornerRadius = height / 2
 
-            badge.frame = NSRect(x: x, y: y, width: size, height: 14)
+            let label = NSTextField(labelWithString: text)
+            label.font = NSFont.systemFont(ofSize: 9, weight: .bold)
+            label.textColor = .white
+            label.alignment = .center
+            label.isBezeled = false
+            label.drawsBackground = false
+            label.frame = NSRect(x: x, y: y, width: width, height: height)
 
             button.addSubview(bg)
-            button.addSubview(badge)
+            button.addSubview(label)
         }
     }
 
