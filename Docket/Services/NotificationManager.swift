@@ -16,9 +16,10 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     }
 
     func requestPermission() {
-        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
-            if !granted {
-                print("⚠️ Notification permission denied")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
+            center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                if let error { print("⚠️ Notification auth error: \(error)") }
+                if !granted { print("⚠️ Notification permission denied") }
             }
         }
     }
