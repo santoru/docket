@@ -505,7 +505,7 @@ struct SettingsView: View {
         card {
             VStack(alignment: .leading, spacing: 10) {
                 Text("Theme").font(.body.weight(.medium))
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 50))], spacing: 10) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5), spacing: 10) {
                     ForEach(AppTheme.allCases) { t in
                         Button {
                             withAnimation(.easeInOut(duration: 0.3)) { themeRaw = t.rawValue }
