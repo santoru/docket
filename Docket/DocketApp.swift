@@ -122,15 +122,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     func updateBadge() {
         let count = Store.shared.badgeCount
         guard let button = statusItem.button else { return }
+
+        // Remove old badge subviews
+        button.subviews.forEach { $0.removeFromSuperview() }
+        button.title = ""
+
         if count > 0 {
-            let attr = NSMutableAttributedString(string: " \(count)")
-            attr.addAttributes([
-                .foregroundColor: NSColor.systemRed,
-                .font: NSFont.monospacedSystemFont(ofSize: 11, weight: .bold)
-            ], range: NSRange(location: 0, length: attr.length))
-            button.attributedTitle = attr
-        } else {
-            button.attributedTitle = NSAttributedString(string: "")
+            let badge = NSTextField(labelWithString: "\(count)")
+            badge.font = NSFont.systemFont(ofSize: 9, weight: .bold)
+            badge.textColor = .white
+            badge.alignment = .center
+            badge.isBezeled = false
+            badge.drawsBackground = false
+            badge.sizeToFit()
+
+            let size = max(badge.frame.width + 6, 14.0)
+            let x = button.bounds.width - size + 2
+            let y = button.bounds.height - 12
+
+            let bg = NSView(frame: NSRect(x: x, y: y, width: size, height: 14))
+            bg.wantsLayer = true
+            bg.layer?.backgroundColor = NSColor.systemRed.cgColor
+            bg.layer?.cornerRadius = 7
+
+            badge.frame = NSRect(x: x, y: y, width: size, height: 14)
+
+            button.addSubview(bg)
+            button.addSubview(badge)
         }
     }
 
