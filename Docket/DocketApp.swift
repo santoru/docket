@@ -131,8 +131,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             let text = "\(count)"
             let width: CGFloat = text.count > 1 ? height + 4 : height // pill for 2+ digits, circle for 1
 
-            let x = button.bounds.width - width / 2 - 1
-            let y = button.bounds.height - height + 2
+            let x = button.bounds.width - width - 1
+            let y = button.bounds.height - height + 1
 
             let bg = NSView(frame: NSRect(x: x, y: y, width: width, height: height))
             bg.wantsLayer = true
