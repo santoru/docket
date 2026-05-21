@@ -65,6 +65,17 @@ struct SettingsView: View {
                 .padding(20)
             }
         }
+        .alert("Delete List", isPresented: $showDeleteConfirm) {
+            Button("Delete", role: .destructive) {
+                if let list = listToDelete { withAnimation { store.deleteList(list) } }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            if let list = listToDelete {
+                let count = store.items.filter { $0.listId == list.id }.count
+                Text("\"\(list.name)\" has \(count) task\(count == 1 ? "" : "s"). They will be moved to the default list.")
+            }
+        }
     }
 
     // MARK: - Header
@@ -211,6 +222,8 @@ struct SettingsView: View {
 
     @State private var editingListId: UUID?
     @State private var editingName = ""
+    @State private var listToDelete: TaskList?
+    @State private var showDeleteConfirm = false
 
     private var listsSection: some View {
         card {
@@ -266,7 +279,15 @@ struct SettingsView: View {
                                     }.buttonStyle(.plain)
 
                                     if !list.isDefault {
-                                        Button { withAnimation { store.deleteList(list) } } label: {
+                                        Button {
+                                            let taskCount = store.items.filter { $0.listId == list.id }.count
+                                            if taskCount > 0 {
+                                                listToDelete = list
+                                                showDeleteConfirm = true
+                                            } else {
+                                                withAnimation { store.deleteList(list) }
+                                            }
+                                        } label: {
                                             Image(systemName: "xmark")
                                                 .font(.system(size: 11, weight: .semibold))
                                                 .foregroundStyle(.secondary)
