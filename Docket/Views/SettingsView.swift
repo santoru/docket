@@ -16,6 +16,7 @@ struct SettingsView: View {
     @AppStorage("launchAtLogin") private var launchAtLogin = false
     @AppStorage("useGlass") private var useGlass = true
     @AppStorage("notifSound") private var notifSound = "default"
+    @AppStorage("badgeAllLists") private var badgeAllLists = false
     @AppStorage("hotkeyEnabled") private var hotkeyEnabled = true
     @AppStorage("hotkeyKeyCode") private var hotkeyKeyCode = kVK_ANSI_D
     @AppStorage("hotkeyModifiers") private var hotkeyModifiers = Int(cmdKey | shiftKey)
@@ -121,6 +122,23 @@ struct SettingsView: View {
                         Button("None") { setSound("none") }
                     } label: {
                         Text(notifSound == "default" ? "Default" : notifSound == "none" ? "None" : notifSound)
+                            .font(.system(size: 12, weight: .semibold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(accent.opacity(0.12)))
+                            .foregroundStyle(accent)
+                    }
+                    .buttonStyle(.plain)
+                }
+                Divider()
+                HStack {
+                    Text("Badge counts").font(.body)
+                    Spacer()
+                    Menu {
+                        Button("Current list") { badgeAllLists = false }
+                        Button("All lists") { badgeAllLists = true }
+                    } label: {
+                        Text(badgeAllLists ? "All lists" : "Current list")
                             .font(.system(size: 12, weight: .semibold))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)

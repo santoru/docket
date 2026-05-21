@@ -56,10 +56,15 @@ final class Store {
             .sorted { ($0.completedAt ?? .distantPast) > ($1.completedAt ?? .distantPast) }
     }
 
-    /// Number of tasks due today or overdue (across active list).
+    /// Number of tasks due today or overdue.
     var badgeCount: Int {
         let endOfToday = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Date()))!
-        return items.filter { !$0.isCompleted && $0.listId == activeListId && $0.dueDate != nil && $0.dueDate! <= endOfToday }.count
+        let allLists = UserDefaults.standard.bool(forKey: "badgeAllLists")
+        return items.filter {
+            !$0.isCompleted &&
+            (allLists || $0.listId == activeListId) &&
+            $0.dueDate != nil && $0.dueDate! <= endOfToday
+        }.count
     }
 
     /// Tasks grouped by due date category for "By Due Date" sort mode.

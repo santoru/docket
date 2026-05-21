@@ -58,6 +58,27 @@ struct TaskDetailView: View {
                         }
                     }
 
+                    // Move to list
+                    if Store.shared.lists.count > 1 {
+                        HStack {
+                            Text("List").font(.body)
+                            Spacer()
+                            Menu {
+                                ForEach(Store.shared.lists) { list in
+                                    Button(list.name) { item.listId = list.id }
+                                }
+                            } label: {
+                                Text(Store.shared.lists.first(where: { $0.id == item.listId })?.name ?? "—")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(RoundedRectangle(cornerRadius: 6).fill(accent.opacity(0.12)))
+                                    .foregroundStyle(accent)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+
                     // Meta
                     HStack {
                         Text("Created").font(.caption).foregroundStyle(.tertiary)
