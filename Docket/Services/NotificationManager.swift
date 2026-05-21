@@ -6,12 +6,21 @@ import Foundation
 import UserNotifications
 
 /// Manages scheduling and cancellation of task reminder notifications.
-final class NotificationManager {
+final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationManager()
     private let center = UNUserNotificationCenter.current()
 
+    override init() {
+        super.init()
+        center.delegate = self
+    }
+
     func requestPermission() {
-        center.requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+            if !granted {
+                print("⚠️ Notification permission denied")
+            }
+        }
     }
 
     func scheduleReminder(for item: TodoItem) {
@@ -36,10 +45,20 @@ final class NotificationManager {
         )
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let request = UNNotificationRequest(identifier: item.id.uuidString, content: content, trigger: trigger)
-        center.add(request)
+        center.add(request) { error in
+            if let error { print("⚠️ Failed to schedule: \(error)") }
+        }
     }
 
     func cancelReminder(for item: TodoItem) {
         center.removePendingNotificationRequests(withIdentifiers: [item.id.uuidString])
+    }
+
+    // MARK: - Delegate — show notifications even when app is in foreground
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound])
     }
 }
