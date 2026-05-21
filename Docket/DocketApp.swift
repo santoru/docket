@@ -121,7 +121,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     func updateBadge() {
         let count = Store.shared.badgeCount
-        statusItem.button?.title = count > 0 ? " \(count)" : ""
+        guard let button = statusItem.button else { return }
+        if count > 0 {
+            let attr = NSMutableAttributedString(string: " \(count)")
+            attr.addAttributes([
+                .foregroundColor: NSColor.systemRed,
+                .font: NSFont.monospacedSystemFont(ofSize: 11, weight: .bold)
+            ], range: NSRange(location: 0, length: attr.length))
+            button.attributedTitle = attr
+        } else {
+            button.attributedTitle = NSAttributedString(string: "")
+        }
     }
 
     // MARK: - Global Hotkey
