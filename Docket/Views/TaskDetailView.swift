@@ -122,7 +122,7 @@ struct TaskDetailView: View {
             Spacer()
             Text("Edit Task").font(.headline)
             Spacer()
-            Color.clear.frame(width: 28, height: 28)
+            Button { path.removeLast() } label: { Image(systemName: "checkmark").font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).frame(width: 28, height: 28).background(Circle().fill(.quaternary.opacity(0.5))) }.buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
