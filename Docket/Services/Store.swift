@@ -166,8 +166,22 @@ final class Store {
     func complete(_ item: TodoItem) {
         guard let i = items.firstIndex(where: { $0.id == item.id }) else { return }
         items[i].completedAt = Date()
-        saveTasks()
         NotificationManager.shared.cancelReminder(for: items[i])
+
+        // Spawn next instance for recurring tasks
+        if let recurrence = items[i].recurrence, let dueDate = items[i].dueDate,
+           let nextDate = recurrence.nextDueDate(from: dueDate) {
+            var next = items[i]
+            next.id = UUID()
+            next.createdAt = Date()
+            next.completedAt = nil
+            next.dueDate = nextDate
+            next.sortOrder = (activeTasks.map(\.sortOrder).max() ?? -1) + 1
+            items.append(next)
+            NotificationManager.shared.scheduleReminder(for: next)
+        }
+
+        saveTasks()
     }
 
     func restore(_ item: TodoItem) {
