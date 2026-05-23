@@ -55,9 +55,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private func setupStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            let img = NSImage(contentsOfFile: Bundle.main.path(forResource: "menubar-icon", ofType: "png") ?? "")
-            img?.isTemplate = true
+            let img = NSImage(contentsOfFile: Bundle.main.path(forResource: "menubar-icon@2x", ofType: "png") ?? "")
+                ?? NSImage(contentsOfFile: Bundle.main.path(forResource: "menubar-icon", ofType: "png") ?? "")
             img?.size = NSSize(width: 18, height: 18)
+            img?.isTemplate = true
             button.image = img ?? NSImage(systemSymbolName: "checkmark.circle.fill", accessibilityDescription: "Docket")
             button.action = #selector(handleClick)
             button.target = self
