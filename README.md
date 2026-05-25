@@ -96,6 +96,28 @@
 
 </td>
 </tr>
+<tr>
+<td>
+
+`🔄 Reminders Sync`
+- Two-way sync with Apple Reminders
+- iCloud sync across all devices — free
+- Siri & Apple Watch support
+- Pick which Reminders lists to sync
+- Auto-creates "Docket" list in Reminders
+- Conflict resolution (last-write-wins)
+
+</td>
+<td>
+
+`🔁 Recurring Tasks`
+- Daily, weekly, or monthly repeat
+- Configurable interval (every N days/weeks/months)
+- Auto-creates next task on completion
+- Frequency shown on task cards
+
+</td>
+</tr>
 </table>
 
 ---
@@ -152,6 +174,32 @@ Type natural language in the due date field:
 
 ---
 
+## 🔄 Reminders Integration
+
+Docket syncs bidirectionally with Apple Reminders — giving you **iCloud sync, Siri, and Apple Watch** for free.
+
+**How it works:**
+1. Toggle "Sync with Reminders" in Settings
+2. Docket creates a "Docket" list in Apple Reminders (or links to an existing one)
+3. All tasks push to Reminders automatically
+4. Changes made in Reminders (or via Siri/Watch) pull back into Docket
+
+**What syncs:**
+
+| ✅ Synced | ❌ Docket-only |
+|-----------|---------------|
+| Title, notes | Labels |
+| Due date | Sort order |
+| Priority | Custom themes |
+| Completion status | |
+| Recurrence rules | |
+
+**Multi-list sync:** You can pick additional Reminders lists to sync — each maps to a Docket list. Tasks flow both ways.
+
+**Conflict resolution:** Last-modified-date wins. If you edit a task in both Docket and Reminders between syncs, the most recent change is kept.
+
+---
+
 ## 🎨 Themes
 
 | Light | Dark | Custom | Glass |
@@ -178,6 +226,7 @@ Docket/
 ├── Services/
 │   ├── Store.swift                 # JSON persistence, CRUD, lists, labels, reorder
 │   ├── NotificationManager.swift   # UNUserNotifications scheduling
+│   ├── RemindersSync.swift         # Two-way Apple Reminders sync (EventKit)
 │   ├── DateParser.swift            # Natural language → Date parsing
 │   └── DueDateFormatter.swift      # Relative date display formatting
 └── Views/
@@ -220,6 +269,7 @@ Docket/
 | App Lifecycle | AppKit (NSStatusItem, NSPopover) |
 | Persistence | JSON → Application Support |
 | Notifications | UserNotifications |
+| Reminders Sync | EventKit |
 | Global Hotkey | Carbon HIToolbox |
 | Launch at Login | ServiceManagement |
 | Build | Single `swiftc` invocation |
@@ -246,6 +296,7 @@ Settings use `UserDefaults` (standard macOS preferences).
 |-----------|-----|------|
 | Notifications | Task reminders | First launch |
 | Accessibility | Global keyboard shortcut | When using hotkey |
+| Reminders | Two-way sync with Apple Reminders | When enabling sync |
 
 ---
 
