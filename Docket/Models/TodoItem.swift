@@ -35,6 +35,8 @@ struct TodoItem: Identifiable, Codable, Hashable {
     var listId: UUID?
     var labelIds: [UUID]
     var recurrence: Recurrence?
+    var reminderId: String?
+    var lastSyncedAt: Date?
 
     // MARK: Computed Properties
 
@@ -60,6 +62,7 @@ struct TodoItem: Identifiable, Codable, Hashable {
     enum CodingKeys: String, CodingKey {
         case id, title, notes, createdAt, completedAt
         case priorityRaw, dueDate, reminderOffsetRaw, sortOrder, listId, labelIds, recurrence
+        case reminderId, lastSyncedAt
     }
 
     init(from decoder: Decoder) throws {
@@ -76,6 +79,8 @@ struct TodoItem: Identifiable, Codable, Hashable {
         listId = try c.decodeIfPresent(UUID.self, forKey: .listId)
         labelIds = try c.decodeIfPresent([UUID].self, forKey: .labelIds) ?? []
         recurrence = try c.decodeIfPresent(Recurrence.self, forKey: .recurrence)
+        reminderId = try c.decodeIfPresent(String.self, forKey: .reminderId)
+        lastSyncedAt = try c.decodeIfPresent(Date.self, forKey: .lastSyncedAt)
     }
 
     // MARK: Init
@@ -102,5 +107,7 @@ struct TodoItem: Identifiable, Codable, Hashable {
         self.listId = listId
         self.labelIds = labelIds
         self.recurrence = recurrence
+        self.reminderId = nil
+        self.lastSyncedAt = nil
     }
 }

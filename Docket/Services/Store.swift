@@ -161,6 +161,7 @@ final class Store {
         items.append(newItem)
         saveTasks()
         NotificationManager.shared.scheduleReminder(for: newItem)
+        syncPush(newItem)
     }
 
     func complete(_ item: TodoItem) {
@@ -176,11 +177,14 @@ final class Store {
             next.createdAt = Date()
             next.completedAt = nil
             next.dueDate = nextDate
+            next.reminderId = nil
             next.sortOrder = (activeTasks.map(\.sortOrder).max() ?? -1) + 1
             items.append(next)
             NotificationManager.shared.scheduleReminder(for: next)
+            syncPush(next)
         }
 
+        syncPush(items[i])
         saveTasks()
     }
 
@@ -190,6 +194,7 @@ final class Store {
         items[i].sortOrder = (activeTasks.map(\.sortOrder).max() ?? -1) + 1
         saveTasks()
         NotificationManager.shared.scheduleReminder(for: items[i])
+        syncPush(items[i])
     }
 
     func update(_ item: TodoItem) {
@@ -197,9 +202,11 @@ final class Store {
         items[i] = item
         saveTasks()
         NotificationManager.shared.scheduleReminder(for: item)
+        syncPush(item)
     }
 
     func delete(_ item: TodoItem) {
+        RemindersSync.shared.deleteReminder(for: item)
         items.removeAll { $0.id == item.id }
         saveTasks()
         NotificationManager.shared.cancelReminder(for: item)
@@ -255,5 +262,14 @@ final class Store {
 
     private func saveLabels() {
         try? JSONEncoder().encode(labels).write(to: labelsURL, options: .atomic)
+    }
+
+    // MARK: - Reminders Sync
+
+    private func syncPush(_ item: TodoItem) {
+        guard UserDefaults.standard.bool(forKey: "remindersSyncEnabled") else { return }
+        let list = lists.first(where: { $0.id == item.listId })
+        RemindersSync.shared.pushTask(item, calendarId: list?.remindersCalendarId)
+        saveTasks()
     }
 }

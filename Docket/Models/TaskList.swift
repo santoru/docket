@@ -10,12 +10,14 @@ struct TaskList: Identifiable, Codable, Hashable {
     var name: String
     var createdAt: Date
     var isDefault: Bool
+    var remindersCalendarId: String?
 
-    init(name: String, isDefault: Bool = false) {
+    init(name: String, isDefault: Bool = false, remindersCalendarId: String? = nil) {
         self.id = UUID()
         self.name = name
         self.createdAt = Date()
         self.isDefault = isDefault
+        self.remindersCalendarId = remindersCalendarId
     }
 }
 
