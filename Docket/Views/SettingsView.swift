@@ -109,9 +109,10 @@ struct SettingsView: View {
 
     private var reminderSection: some View {
         card {
-            VStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Notifications").font(.body.weight(.medium))
                 HStack {
-                    Text("Default reminder").font(.body)
+                    Text("Default reminder").font(.subheadline)
                     Spacer()
                     Menu {
                         ForEach(ReminderOffset.allCases) { r in
@@ -129,7 +130,7 @@ struct SettingsView: View {
                 }
                 Divider()
                 HStack {
-                    Text("Sound").font(.body)
+                    Text("Sound").font(.subheadline)
                     Spacer()
                     Menu {
                         Button("Default") { setSound("default") }
@@ -152,7 +153,7 @@ struct SettingsView: View {
                 }
                 Divider()
                 HStack {
-                    Text("Badge counts").font(.body)
+                    Text("Badge counts").font(.subheadline)
                     Spacer()
                     Menu {
                         Button("Current list") { badgeAllLists = false }
@@ -184,7 +185,8 @@ struct SettingsView: View {
 
     private var launchSection: some View {
         card {
-            VStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("General").font(.body.weight(.medium))
                 ThemedToggle(label: "Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, on in
                         if on { try? SMAppService.mainApp.register() }
@@ -201,11 +203,12 @@ struct SettingsView: View {
     private var hotkeySection: some View {
         card {
             VStack(alignment: .leading, spacing: 8) {
+                Text("Keyboard").font(.body.weight(.medium))
                 ThemedToggle(label: "Global shortcut", isOn: $hotkeyEnabled)
                     .onChange(of: hotkeyEnabled) { _, _ in AppDelegate.shared?.registerHotkey() }
                 if hotkeyEnabled {
                     HStack {
-                        Text("Shortcut").font(.body)
+                        Text("Shortcut").font(.subheadline)
                         Spacer()
                         Menu {
                             Button("⌘⇧D") { setHotkey(kVK_ANSI_D, Int(cmdKey | shiftKey)) }
