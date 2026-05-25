@@ -54,10 +54,14 @@ struct TaskRowView: View {
 
             Spacer()
 
-            if item.recurrence != nil {
-                Image(systemName: "arrow.trianglehead.2.counterclockwise")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+            if let rec = item.recurrence {
+                HStack(spacing: 2) {
+                    Image(systemName: "arrow.trianglehead.2.counterclockwise")
+                        .font(.system(size: 8))
+                    Text(rec.interval == 1 ? rec.frequency.displayName : "Every \(rec.interval) \(rec.frequency.unit)s")
+                        .font(.system(size: 9))
+                }
+                .foregroundStyle(.tertiary)
             }
 
             Button(action: onComplete) {
