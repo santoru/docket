@@ -12,34 +12,165 @@ All notable changes to Docket will be documented in this file.
 - Conflict resolution: last-modified-date wins
 - EKEventStoreChanged observer for reactive sync
 - "Sync Now" button and last sync timestamp
-- NSRemindersUsageDescription for permission prompt
+
+### 📝 README
+- Added Reminders integration section
+- Updated architecture, tech stack, and permissions
+
+---
+
+## [1.4.0] — 2026-05-25
 
 ### 🔁 Recurring Tasks
-- Daily, weekly, monthly repeat with configurable interval
+- Daily, weekly, monthly repeat with configurable interval (1–10)
 - Auto-creates next task instance on completion
-- Recurrence picker in create/edit views
-- Frequency label shown on task cards (e.g. "Weekly", "Every 2 weeks")
+- RecurrencePickerView in create/edit views
+- Frequency label shown on task cards ("Weekly", "Every 2 weeks")
 
 ### 🎨 UI Improvements
-- Consistent font hierarchy across all settings (section headers + subheadline labels)
-- Action buttons for Export/Import/Clear (outlined, colored)
+- Redesigned Export/Import/Clear as outlined action buttons
 - Confirmation dialog for clearing completed tasks
-- Multi-line task title setting
-- Theme grid fixed to 5 columns
-- Retina menu bar icon
-- Red badge circle for overdue count
+- Multi-line task title setting (toggle in Settings)
+- Theme grid fixed to 5 columns (was overflowing to 3 rows)
+- Recurrence indicator with text label on task cards
+
+---
+
+## [1.3.1] — 2026-05-23
 
 ### 🐛 Fixes
-- Notification permission: codesign with bundle ID
-- Notification delegate for foreground delivery
-- Undo toast timer reset on rapid completions
-- Tap gesture priority (entire card tappable)
-- Search text cleared on close
-- Delete list confirmation when tasks exist
+- Retina menu bar icon: load @2x image with correct display size
+
+---
+
+## [1.3.0] — 2026-05-22
+
+### 🔁 Recurring Tasks (initial)
+- Recurrence model (Frequency + interval + end date)
+- Store spawns next instance on complete
+- Theme grid fix (5 columns)
+
+### 🐛 Fixes
+- Notification permission: codesign app with bundle ID
+- Notification delegate for foreground banner delivery
+- Delayed permission request for proper initialization
+
+---
+
+## [1.2.0] — 2026-05-21
+
+### 📋 Features
+- Move task to another list (picker in edit view)
+- Badge scope setting: count current list only or all lists
+- Delete list confirmation when list has tasks
+- Navigation: back arrow (←) + checkmark (✓) on all sub-screens
+
+### 🎨 UI
+- Consistent materials (search bar, undo toast, calendar arrows)
+- Completed view shows task count in header
+- Tappable empty state ("Add your first task")
+- Updated onboarding tips (mentions lists, labels, sort)
+- Unified × close buttons across all views
+- TaskDetailView redesigned to match CreateTaskView style
+- Standardized 20px content padding
+- ZStack centered title in CreateTaskView header
+
+---
+
+## [1.1.0] — 2026-05-21
+
+### 🔔 Notifications
+- Notification sound picker (Default, Ping, Glass, Pop, Purr, Submarine, Tink, None)
+- Sound preview on selection
+- Sound setting grouped with default reminder
+
+### 🎨 UI
+- Red circle badge on menu bar icon for overdue/due-today count
+- Softer pastel priority colors (dusty blue, warm amber, muted coral)
 
 ---
 
 ## [1.0.0] — 2026-05-20
+
+### 🎉 Initial Release
+
+#### Core
+- Menu bar-only app with NSPopover (no Dock icon)
+- Create, edit, complete, and delete tasks
+- Priority levels: Low, Medium, High with color-coded indicators
+- Persistent JSON storage
+- Backward-compatible data model
+
+#### Multiple Lists
+- Create, rename, and delete task lists
+- List switcher dropdown (hidden when only one list)
+- Each list has its own tasks and labels
+
+#### Labels
+- Create labels with custom name, color (8 presets), and icon (15 SF Symbols)
+- Multi-select label picker in create/edit views
+- Labels displayed on task cards
+- Filter tasks by label in sort bar
+
+#### Reminders & Notifications
+- Optional due dates with custom calendar picker
+- Custom time picker
+- Configurable reminder offsets (5min → 1 day)
+- macOS native notifications
+
+#### Natural Language Dates
+- Smart parser: today, tomorrow, next weekday, in X hours/days/weeks
+- Additional: noon, eod, later, weekend, midnight, this afternoon
+- Live preview as you type
+
+#### Interactions
+- Swipe right → complete, left → delete
+- Reorder mode with ▲/▼ buttons
+- Confetti on completion
+- Undo toast (3s auto-dismiss)
+
+#### Sort & Filter
+- Custom order or By Due Date (grouped sections)
+- Label filter pills
+- Animated search bar
+
+#### Keyboard & Shortcuts
+- Global hotkey (⌘⇧D, configurable)
+- Quick-add (double-press)
+- ⌘N new task, Esc go back
+- Right-click context menu
+
+#### Themes
+- 9 built-in + custom color picker
+- Liquid Glass mode (macOS 26)
+- Dark mode (Night theme)
+- Accent-colored UI throughout
+
+#### Custom Components
+- CalendarPickerView, TimePickerView, ReminderPickerView
+- PriorityPickerView, LabelPickerView, ThemedToggle
+- ConfettiOverlay, UndoToast, SwipeableTaskRow
+
+#### Settings
+- Default reminder, launch at login, global shortcut
+- Lists/labels management, theme picker
+- Export/import JSON, clear completed
+- Version + GitHub link
+
+#### Build
+- Single build.sh script, zero dependencies
+- Custom app icon (.icns) and menu bar template icon
+- Codesigned with bundle ID
+
+---
+
+[1.5.0]: https://github.com/santoru/docket/releases/tag/v1.5.0
+[1.4.0]: https://github.com/santoru/docket/releases/tag/v1.4.0
+[1.3.1]: https://github.com/santoru/docket/releases/tag/v1.3.1
+[1.3.0]: https://github.com/santoru/docket/releases/tag/v1.3.0
+[1.2.0]: https://github.com/santoru/docket/releases/tag/v1.2.0
+[1.1.0]: https://github.com/santoru/docket/releases/tag/v1.1.0
+[1.0.0]: https://github.com/santoru/docket/releases/tag/v1.0.0
 
 ### 🎉 Initial Release
 
