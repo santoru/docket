@@ -17,7 +17,7 @@ struct ThemedToggle: View {
 
     var body: some View {
         HStack {
-            Text(label).font(.body.weight(.medium))
+            Text(label).font(.subheadline)
             Spacer()
             Button {
                 if animated {

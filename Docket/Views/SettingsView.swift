@@ -4,6 +4,7 @@
 
 import SwiftUI
 import AppKit
+import EventKit
 import ServiceManagement
 import Carbon.HIToolbox
 
@@ -49,6 +50,7 @@ struct SettingsView: View {
                     reminderSection
                     launchSection
                     hotkeySection
+                    remindersSection
                     listsSection
                     labelsSection
                     themeSection
@@ -107,9 +109,10 @@ struct SettingsView: View {
 
     private var reminderSection: some View {
         card {
-            VStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Notifications").font(.body.weight(.medium))
                 HStack {
-                    Text("Default reminder").font(.body)
+                    Text("Default reminder").font(.subheadline)
                     Spacer()
                     Menu {
                         ForEach(ReminderOffset.allCases) { r in
@@ -127,7 +130,7 @@ struct SettingsView: View {
                 }
                 Divider()
                 HStack {
-                    Text("Sound").font(.body)
+                    Text("Sound").font(.subheadline)
                     Spacer()
                     Menu {
                         Button("Default") { setSound("default") }
@@ -150,7 +153,7 @@ struct SettingsView: View {
                 }
                 Divider()
                 HStack {
-                    Text("Badge counts").font(.body)
+                    Text("Badge counts").font(.subheadline)
                     Spacer()
                     Menu {
                         Button("Current list") { badgeAllLists = false }
@@ -182,7 +185,8 @@ struct SettingsView: View {
 
     private var launchSection: some View {
         card {
-            VStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("General").font(.body.weight(.medium))
                 ThemedToggle(label: "Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, on in
                         if on { try? SMAppService.mainApp.register() }
@@ -199,11 +203,12 @@ struct SettingsView: View {
     private var hotkeySection: some View {
         card {
             VStack(alignment: .leading, spacing: 8) {
+                Text("Keyboard").font(.body.weight(.medium))
                 ThemedToggle(label: "Global shortcut", isOn: $hotkeyEnabled)
                     .onChange(of: hotkeyEnabled) { _, _ in AppDelegate.shared?.registerHotkey() }
                 if hotkeyEnabled {
                     HStack {
-                        Text("Shortcut").font(.body)
+                        Text("Shortcut").font(.subheadline)
                         Spacer()
                         Menu {
                             Button("⌘⇧D") { setHotkey(kVK_ANSI_D, Int(cmdKey | shiftKey)) }
@@ -225,6 +230,149 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Reminders Sync
+
+    @AppStorage("remindersSyncEnabled") private var remindersSyncEnabled = false
+    @State private var availableCalendars: [EKCalendar] = []
+    @State private var syncedCalendarIds: Set<String> = []
+
+    private var remindersSection: some View {
+        card {
+            VStack(alignment: .leading, spacing: 10) {
+                ThemedToggle(label: "Sync with Reminders", isOn: $remindersSyncEnabled)
+                    .onChange(of: remindersSyncEnabled) { _, on in
+                        if on { enableSync() } else { disableSync() }
+                    }
+
+                if remindersSyncEnabled {
+                    if availableCalendars.isEmpty {
+                        Text("No access to Reminders").font(.caption).foregroundStyle(.secondary)
+                    } else {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Lists to sync").font(.caption).foregroundStyle(.secondary)
+                            ForEach(availableCalendars, id: \.calendarIdentifier) { cal in
+                                HStack(spacing: 8) {
+                                    Image(systemName: syncedCalendarIds.contains(cal.calendarIdentifier) ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(syncedCalendarIds.contains(cal.calendarIdentifier) ? accent : .secondary)
+                                        .font(.body)
+                                    Text(cal.title).font(.subheadline)
+                                    Spacer()
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture { toggleCalendar(cal) }
+                            }
+                        }
+
+                        if let lastSync = RemindersSync.shared.lastSyncDate {
+                            Text("Last sync: \(lastSync, style: .relative) ago")
+                                .font(.caption).foregroundStyle(.tertiary)
+                        }
+
+                        Button { RemindersSync.shared.syncAll() } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.triangle.2.circlepath").font(.caption)
+                                Text("Sync Now").font(.caption.weight(.medium))
+                            }.foregroundStyle(accent)
+                        }.buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+        .onAppear { loadSyncState() }
+    }
+
+    private func enableSync() {
+        Task {
+            let granted = await RemindersSync.shared.requestAccess()
+            if granted {
+                availableCalendars = RemindersSync.shared.availableCalendars()
+                // Link the default/active list to a Reminders calendar
+                let defaultList = store.lists.first(where: { $0.isDefault }) ?? store.lists[0]
+                let calName = defaultList.name == "Default" ? "Docket" : defaultList.name
+
+                // Check if calendar already exists
+                if let existing = availableCalendars.first(where: { $0.title == calName }) {
+                    // Link existing calendar to default list
+                    if let i = store.lists.firstIndex(where: { $0.id == defaultList.id }) {
+                        store.lists[i].remindersCalendarId = existing.calendarIdentifier
+                    }
+                    syncedCalendarIds.insert(existing.calendarIdentifier)
+                } else if let newCal = RemindersSync.shared.findOrCreateCalendar(named: calName) {
+                    if let i = store.lists.firstIndex(where: { $0.id == defaultList.id }) {
+                        store.lists[i].remindersCalendarId = newCal.calendarIdentifier
+                    }
+                    syncedCalendarIds.insert(newCal.calendarIdentifier)
+                }
+
+                // Also link any other Docket lists that have matching Reminders calendars
+                for j in store.lists.indices where store.lists[j].remindersCalendarId == nil && !store.lists[j].isDefault {
+                    if let match = availableCalendars.first(where: { $0.title == store.lists[j].name }) {
+                        store.lists[j].remindersCalendarId = match.calendarIdentifier
+                        syncedCalendarIds.insert(match.calendarIdentifier)
+                    }
+                }
+
+                RemindersSync.shared.startObserving()
+                saveSyncedIds()
+                store.saveLists()
+                RemindersSync.shared.syncAll()
+            } else {
+                remindersSyncEnabled = false
+            }
+        }
+    }
+
+    private func disableSync() {
+        RemindersSync.shared.stopObserving()
+        syncedCalendarIds.removeAll()
+        saveSyncedIds()
+    }
+
+    private func toggleCalendar(_ cal: EKCalendar) {
+        let id = cal.calendarIdentifier
+        if syncedCalendarIds.contains(id) {
+            syncedCalendarIds.remove(id)
+            // Unlink from Docket list
+            if let i = store.lists.firstIndex(where: { $0.remindersCalendarId == id }) {
+                store.lists[i].remindersCalendarId = nil
+            }
+        } else {
+            syncedCalendarIds.insert(id)
+            linkCalendar(cal)
+        }
+        saveSyncedIds()
+        RemindersSync.shared.syncAll()
+    }
+
+    private func linkCalendar(_ cal: EKCalendar) {
+        let id = cal.calendarIdentifier
+        // Find or create matching Docket list
+        if let i = store.lists.firstIndex(where: { $0.remindersCalendarId == id }) {
+            _ = i // already linked
+        } else if let i = store.lists.firstIndex(where: { $0.name == cal.title && $0.remindersCalendarId == nil }) {
+            store.lists[i].remindersCalendarId = id
+        } else {
+            var newList = TaskList(name: cal.title, remindersCalendarId: id)
+            newList.remindersCalendarId = id
+            store.lists.append(newList)
+        }
+    }
+
+    private func loadSyncState() {
+        if remindersSyncEnabled {
+            RemindersSync.shared.checkAccess()
+            if RemindersSync.shared.isAuthorized {
+                availableCalendars = RemindersSync.shared.availableCalendars()
+                syncedCalendarIds = Set(UserDefaults.standard.stringArray(forKey: "syncedCalendarIds") ?? [])
+                RemindersSync.shared.startObserving()
+            }
+        }
+    }
+
+    private func saveSyncedIds() {
+        UserDefaults.standard.set(Array(syncedCalendarIds), forKey: "syncedCalendarIds")
     }
 
     // MARK: - Lists
@@ -360,7 +508,7 @@ struct SettingsView: View {
         HStack(spacing: 10) {
             Circle().fill(label.color).frame(width: 10, height: 10)
             Image(systemName: label.icon).font(.system(size: 11)).foregroundStyle(label.color)
-            Text(label.name).font(.body)
+            Text(label.name).font(.subheadline)
             Spacer()
             Button {
                 labelName = label.name

@@ -22,6 +22,7 @@ swiftc \
     -framework UserNotifications \
     -framework ServiceManagement \
     -framework Carbon \
+    -framework EventKit \
     -parse-as-library \
     -suppress-warnings \
     "$SRC_DIR/Models/ReminderOffset.swift" \
@@ -36,6 +37,7 @@ swiftc \
     "$SRC_DIR/Services/Store.swift" \
     "$SRC_DIR/Services/DateParser.swift" \
     "$SRC_DIR/Services/DueDateFormatter.swift" \
+    "$SRC_DIR/Services/RemindersSync.swift" \
     "$SRC_DIR/Views/TaskRowView.swift" \
     "$SRC_DIR/Views/SwipeableTaskRow.swift" \
     "$SRC_DIR/Views/CalendarPickerView.swift" \
@@ -87,6 +89,8 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
     <true/>
     <key>LSMinimumSystemVersion</key>
     <string>14.0</string>
+    <key>NSRemindersUsageDescription</key>
+    <string>Docket syncs your tasks with Apple Reminders for iCloud, Siri, and Apple Watch access.</string>
 </dict>
 </plist>
 PLIST
