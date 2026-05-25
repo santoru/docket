@@ -436,80 +436,74 @@ struct SettingsView: View {
     @State private var showClearConfirm = false
 
     private var clearSection: some View {
-        card {
-            Button { showClearConfirm = true } label: {
-                HStack {
-                    Text("Clear completed")
-                    Spacer()
-                    Text("\(store.completedTasks.count)")
-                        .font(.caption.weight(.medium))
-                        .padding(.horizontal, 8).padding(.vertical, 2)
-                        .background(Capsule().fill(.quaternary))
-                }
-            }
-            .buttonStyle(.plain)
+        VStack(spacing: 8) {
+            actionButton(
+                label: "Clear completed",
+                icon: "trash",
+                color: .red,
+                badge: "\(store.completedTasks.count)"
+            ) { showClearConfirm = true }
             .disabled(store.completedTasks.isEmpty)
+            .opacity(store.completedTasks.isEmpty ? 0.5 : 1)
         }
     }
 
     private var exportImportSection: some View {
-        card {
-            VStack(spacing: 10) {
-                Button {
-                    let panel = NSSavePanel()
-                    panel.allowedContentTypes = [.json]
-                    panel.nameFieldStringValue = "docket-export.json"
-                    if panel.runModal() == .OK, let url = panel.url {
-                        let export = DocketExport(lists: store.lists, labels: store.labels, tasks: store.items)
-                        try? JSONEncoder().encode(export).write(to: url, options: .atomic)
-                    }
-                } label: {
-                    HStack {
-                        Text(L10n.exportTasks)
-                        Spacer()
-                        Image(systemName: "arrow.up.doc").font(.body).foregroundStyle(accent)
-                    }
+        HStack(spacing: 8) {
+            actionButton(label: "Export", icon: "arrow.up.doc", color: accent) {
+                let panel = NSSavePanel()
+                panel.allowedContentTypes = [.json]
+                panel.nameFieldStringValue = "docket-export.json"
+                if panel.runModal() == .OK, let url = panel.url {
+                    let export = DocketExport(lists: store.lists, labels: store.labels, tasks: store.items)
+                    try? JSONEncoder().encode(export).write(to: url, options: .atomic)
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(L10n.exportTasks)
-
-                Divider()
-
-                Button {
-                    let panel = NSOpenPanel()
-                    panel.allowedContentTypes = [.json]
-                    panel.allowsMultipleSelection = false
-                    if panel.runModal() == .OK, let url = panel.url,
-                       let data = try? Data(contentsOf: url) {
-                        // Try new format first
-                        if let export = try? JSONDecoder().decode(DocketExport.self, from: data) {
-                            for list in export.lists where !store.lists.contains(where: { $0.name == list.name }) {
-                                store.lists.append(list)
-                            }
-                            for label in export.labels where !store.labels.contains(where: { $0.id == label.id }) {
-                                store.labels.append(label)
-                            }
-                            for item in export.tasks where !store.items.contains(where: { $0.id == item.id }) {
-                                store.items.append(item)
-                            }
-                        } else if let tasks = try? JSONDecoder().decode([TodoItem].self, from: data) {
-                            // Legacy format
-                            for item in tasks where !store.items.contains(where: { $0.id == item.id }) {
-                                store.add(item)
-                            }
+            }
+            actionButton(label: "Import", icon: "arrow.down.doc", color: accent) {
+                let panel = NSOpenPanel()
+                panel.allowedContentTypes = [.json]
+                panel.allowsMultipleSelection = false
+                if panel.runModal() == .OK, let url = panel.url,
+                   let data = try? Data(contentsOf: url) {
+                    if let export = try? JSONDecoder().decode(DocketExport.self, from: data) {
+                        for list in export.lists where !store.lists.contains(where: { $0.name == list.name }) {
+                            store.lists.append(list)
+                        }
+                        for label in export.labels where !store.labels.contains(where: { $0.id == label.id }) {
+                            store.labels.append(label)
+                        }
+                        for item in export.tasks where !store.items.contains(where: { $0.id == item.id }) {
+                            store.items.append(item)
+                        }
+                    } else if let tasks = try? JSONDecoder().decode([TodoItem].self, from: data) {
+                        for item in tasks where !store.items.contains(where: { $0.id == item.id }) {
+                            store.add(item)
                         }
                     }
-                } label: {
-                    HStack {
-                        Text(L10n.importTasks)
-                        Spacer()
-                        Image(systemName: "arrow.down.doc").font(.body).foregroundStyle(accent)
-                    }
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(L10n.importTasks)
             }
         }
+    }
+
+    private func actionButton(label: String, icon: String, color: Color, badge: String? = nil, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: icon).font(.system(size: 12))
+                Text(label).font(.subheadline.weight(.medium))
+                if let badge {
+                    Text(badge)
+                        .font(.system(size: 10, weight: .bold))
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1)
+                        .background(Capsule().fill(color.opacity(0.2)))
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 9)
+            .background(RoundedRectangle(cornerRadius: 8).stroke(color.opacity(0.4), lineWidth: 1))
+            .foregroundStyle(color)
+        }
+        .buttonStyle(.plain)
     }
 
     private var themeSection: some View {
