@@ -12,6 +12,7 @@ struct TaskRowView: View {
     @AppStorage("appTheme") private var themeRaw: Int = AppTheme.white.rawValue
     @AppStorage("customHue") private var customHue: Double = 0.55
     @AppStorage("useGlass") private var useGlass = true
+    @AppStorage("multiLineTask") private var multiLineTask = false
     @State private var isHovered = false
 
     private var priorityColor: Color {
@@ -31,7 +32,7 @@ struct TaskRowView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(item.title)
                     .font(.body.weight(.medium))
-                    .lineLimit(1)
+                    .lineLimit(multiLineTask ? nil : 1)
                 HStack(spacing: 4) {
                     if let due = item.dueDate {
                         Image(systemName: "clock").font(.caption2)

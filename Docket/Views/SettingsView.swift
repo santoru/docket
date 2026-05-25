@@ -17,6 +17,7 @@ struct SettingsView: View {
     @AppStorage("useGlass") private var useGlass = true
     @AppStorage("notifSound") private var notifSound = "default"
     @AppStorage("badgeAllLists") private var badgeAllLists = false
+    @AppStorage("multiLineTask") private var multiLineTask = false
     @AppStorage("hotkeyEnabled") private var hotkeyEnabled = true
     @AppStorage("hotkeyKeyCode") private var hotkeyKeyCode = kVK_ANSI_D
     @AppStorage("hotkeyModifiers") private var hotkeyModifiers = Int(cmdKey | shiftKey)
@@ -183,6 +184,8 @@ struct SettingsView: View {
                     }
                 Divider()
                 ThemedToggle(label: "Liquid Glass", isOn: $useGlass)
+                Divider()
+                ThemedToggle(label: "Multi-line tasks", isOn: $multiLineTask)
             }
         }
     }
