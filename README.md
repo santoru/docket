@@ -4,7 +4,7 @@
 
 <p align="center">
   <strong>A beautiful, minimal task manager that lives in your macOS menu bar.</strong><br>
-  Create tasks with natural language dates, organize with labels and multiple lists, swipe to complete, and sync with Apple Reminders for iCloud, Siri, and Apple Watch support.<br>
+  Integrates with Apple Reminders — iCloud, Siri, and Apple Watch support out of the box.<br>
   No dock icon. No clutter. Just click the ✓ and get things done.
 </p>
 
