@@ -4,7 +4,7 @@
 
 <p align="center">
   <strong>A beautiful, minimal task manager that lives in your macOS menu bar.</strong><br>
-  Integrates with Apple Reminders — get iCloud, Siri, and Apple Watch for free.<br>
+  Integrates with Apple Reminders — iCloud, Siri, and Apple Watch support out of the box.<br>
   No dock icon. No clutter. Just click the ✓ and get things done.
 </p>
 
