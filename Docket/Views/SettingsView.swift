@@ -285,11 +285,32 @@ struct SettingsView: View {
             let granted = await RemindersSync.shared.requestAccess()
             if granted {
                 availableCalendars = RemindersSync.shared.availableCalendars()
-                // Auto-create and select Docket calendar
-                if let docketCal = RemindersSync.shared.findOrCreateDocketCalendar() {
-                    syncedCalendarIds.insert(docketCal.calendarIdentifier)
-                    linkCalendar(docketCal)
+                // Link the default/active list to a Reminders calendar
+                let defaultList = store.lists.first(where: { $0.isDefault }) ?? store.lists[0]
+                let calName = defaultList.name == "Default" ? "Docket" : defaultList.name
+
+                // Check if calendar already exists
+                if let existing = availableCalendars.first(where: { $0.title == calName }) {
+                    // Link existing calendar to default list
+                    if let i = store.lists.firstIndex(where: { $0.id == defaultList.id }) {
+                        store.lists[i].remindersCalendarId = existing.calendarIdentifier
+                    }
+                    syncedCalendarIds.insert(existing.calendarIdentifier)
+                } else if let newCal = RemindersSync.shared.findOrCreateCalendar(named: calName) {
+                    if let i = store.lists.firstIndex(where: { $0.id == defaultList.id }) {
+                        store.lists[i].remindersCalendarId = newCal.calendarIdentifier
+                    }
+                    syncedCalendarIds.insert(newCal.calendarIdentifier)
                 }
+
+                // Also link any other Docket lists that have matching Reminders calendars
+                for j in store.lists.indices where store.lists[j].remindersCalendarId == nil && !store.lists[j].isDefault {
+                    if let match = availableCalendars.first(where: { $0.title == store.lists[j].name }) {
+                        store.lists[j].remindersCalendarId = match.calendarIdentifier
+                        syncedCalendarIds.insert(match.calendarIdentifier)
+                    }
+                }
+
                 RemindersSync.shared.startObserving()
                 saveSyncedIds()
                 store.saveLists()

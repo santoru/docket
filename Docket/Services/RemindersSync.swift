@@ -46,13 +46,17 @@ final class RemindersSync {
     }
 
     func findOrCreateDocketCalendar() -> EKCalendar? {
+        return findOrCreateCalendar(named: "Docket")
+    }
+
+    func findOrCreateCalendar(named name: String) -> EKCalendar? {
         guard isAuthorized else { return nil }
         let calendars = store.calendars(for: .reminder)
-        if let existing = calendars.first(where: { $0.title == "Docket" }) {
+        if let existing = calendars.first(where: { $0.title == name }) {
             return existing
         }
         let cal = EKCalendar(for: .reminder, eventStore: store)
-        cal.title = "Docket"
+        cal.title = name
         cal.source = store.defaultCalendarForNewReminders()?.source
         do {
             try store.saveCalendar(cal, commit: true)
