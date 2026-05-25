@@ -251,7 +251,7 @@ final class Store {
         }
     }
 
-    private func saveLists() {
+    func saveLists() {
         try? JSONEncoder().encode(lists).write(to: listsURL, options: .atomic)
     }
 
