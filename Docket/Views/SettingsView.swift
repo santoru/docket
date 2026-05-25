@@ -77,9 +77,15 @@ struct SettingsView: View {
                 Text("\"\(list.name)\" has \(count) task\(count == 1 ? "" : "s"). They will be moved to the default list.")
             }
         }
+        .alert("Clear Completed", isPresented: $showClearConfirm) {
+            Button("Clear \(store.completedTasks.count) tasks", role: .destructive) {
+                withAnimation { store.clearCompleted() }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will permanently delete all completed tasks.")
+        }
     }
-
-    // MARK: - Header
 
     private var header: some View {
         HStack {
@@ -427,9 +433,11 @@ struct SettingsView: View {
         editingLabelId = newLabel.id
     }
 
+    @State private var showClearConfirm = false
+
     private var clearSection: some View {
         card {
-            Button { withAnimation { store.clearCompleted() } } label: {
+            Button { showClearConfirm = true } label: {
                 HStack {
                     Text("Clear completed")
                     Spacer()
