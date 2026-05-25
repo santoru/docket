@@ -257,7 +257,7 @@ struct SettingsView: View {
                                     Image(systemName: syncedCalendarIds.contains(cal.calendarIdentifier) ? "checkmark.circle.fill" : "circle")
                                         .foregroundStyle(syncedCalendarIds.contains(cal.calendarIdentifier) ? accent : .secondary)
                                         .font(.body)
-                                    Text(cal.title).font(.body)
+                                    Text(cal.title).font(.subheadline)
                                     Spacer()
                                 }
                                 .contentShape(Rectangle())
@@ -508,7 +508,7 @@ struct SettingsView: View {
         HStack(spacing: 10) {
             Circle().fill(label.color).frame(width: 10, height: 10)
             Image(systemName: label.icon).font(.system(size: 11)).foregroundStyle(label.color)
-            Text(label.name).font(.body)
+            Text(label.name).font(.subheadline)
             Spacer()
             Button {
                 labelName = label.name
