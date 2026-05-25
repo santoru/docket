@@ -2,6 +2,43 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.5.0] — 2026-05-25
+
+### 🔄 Apple Reminders Integration
+- Two-way sync with Apple Reminders via EventKit
+- Auto-creates "Docket" list in Reminders (or links existing)
+- Pick additional Reminders lists to sync into Docket
+- Changes in Reminders (or via Siri/Apple Watch) pull back into Docket
+- Conflict resolution: last-modified-date wins
+- EKEventStoreChanged observer for reactive sync
+- "Sync Now" button and last sync timestamp
+- NSRemindersUsageDescription for permission prompt
+
+### 🔁 Recurring Tasks
+- Daily, weekly, monthly repeat with configurable interval
+- Auto-creates next task instance on completion
+- Recurrence picker in create/edit views
+- Frequency label shown on task cards (e.g. "Weekly", "Every 2 weeks")
+
+### 🎨 UI Improvements
+- Consistent font hierarchy across all settings (section headers + subheadline labels)
+- Action buttons for Export/Import/Clear (outlined, colored)
+- Confirmation dialog for clearing completed tasks
+- Multi-line task title setting
+- Theme grid fixed to 5 columns
+- Retina menu bar icon
+- Red badge circle for overdue count
+
+### 🐛 Fixes
+- Notification permission: codesign with bundle ID
+- Notification delegate for foreground delivery
+- Undo toast timer reset on rapid completions
+- Tap gesture priority (entire card tappable)
+- Search text cleared on close
+- Delete list confirmation when tasks exist
+
+---
+
 ## [1.0.0] — 2026-05-20
 
 ### 🎉 Initial Release
@@ -118,4 +155,5 @@ All notable changes to Docket will be documented in this file.
 
 ---
 
+[1.5.0]: https://github.com/santoru/docket/releases/tag/v1.5.0
 [1.0.0]: https://github.com/santoru/docket/releases/tag/v1.0.0
