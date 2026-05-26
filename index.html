@@ -35,7 +35,7 @@
         </div>
     </nav>
 
-    <!-- Hero with full-width screenshot background -->
+    <!-- Hero -->
     <section class="hero">
         <div class="hero-overlay"></div>
         <div class="hero-content">
@@ -48,64 +48,59 @@
         </div>
     </section>
 
-    <!-- App Screenshots -->
-    <section class="screenshots">
-        <div class="screenshots-inner">
-            <div class="screenshot-card">
-                <img src="assets/docket1.png" alt="Docket — Task List" />
-                <div class="screenshot-caption">
-                    <h3>Clean & focused</h3>
-                    <p>Your tasks at a glance — priorities, labels, due dates, and swipe actions. All from the menu bar.</p>
-                </div>
+    <!-- Feature Showcase -->
+    <section class="showcase" id="features">
+
+        <!-- Row 1: Image left, text right -->
+        <div class="showcase-row">
+            <div class="showcase-image">
+                <img src="assets/docket1.png" alt="Docket task list interface" />
             </div>
-            <div class="screenshot-card">
-                <img src="assets/docket2.png" alt="Docket — Settings with Lemon theme" />
-                <div class="screenshot-caption">
-                    <h3>Make it yours</h3>
-                    <p>9 pastel themes, Liquid Glass, custom colors — shown here in Lemon. Every detail adapts.</p>
+            <div class="showcase-text">
+                <div class="showcase-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
                 </div>
+                <h3>Syncs with Apple Reminders</h3>
+                <p>Two-way sync keeps your tasks on iPhone, Apple Watch, and Siri. Edit anywhere — changes flow back to Docket automatically.</p>
             </div>
+        </div>
+
+        <!-- Row 2: Text left, image right -->
+        <div class="showcase-row reverse">
+            <div class="showcase-image">
+                <img src="assets/docket2.png" alt="Docket settings with Lemon theme" />
+            </div>
+            <div class="showcase-text">
+                <div class="showcase-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                </div>
+                <h3>Themes, labels & your way</h3>
+                <p>9 pastel themes with Liquid Glass on macOS 26. Color-coded labels, multiple lists, smart filtering — shown here in Lemon.</p>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Compact features grid -->
+    <section class="features-grid">
+        <div class="mini-feature">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
+            <h4>Smart Dates</h4>
+            <p>Type "tomorrow 3pm" — natural language due dates</p>
+        </div>
+        <div class="mini-feature">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 8h.01M12 12h.01M14 8h.01M20 4v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2Z"/><path d="m9 16 3-8 3 8"/></svg>
+            <h4>Global Hotkey</h4>
+            <p>Open from anywhere with a single shortcut</p>
+        </div>
+        <div class="mini-feature">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2.1l4 4-4 4"/><path d="M3 12.2v-2a4 4 0 0 1 4-4h12.8M7 21.9l-4-4 4-4"/><path d="M21 11.8v2a4 4 0 0 1-4 4H4.2"/></svg>
+            <h4>Recurring Tasks</h4>
+            <p>Daily, weekly, monthly — auto-creates on complete</p>
         </div>
     </section>
 
-    <!-- Features -->
-    <section class="features" id="features">
-        <h2>Everything you need, nothing you don't</h2>
-        <div class="feature-grid">
-            <div class="feature">
-                <span class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></span>
-                <h3>Reminders Sync</h3>
-                <p>Two-way sync with Apple Reminders. Your tasks on iPhone, Apple Watch, and Siri — automatically.</p>
-            </div>
-            <div class="feature">
-                <span class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="m9 16 2 2 4-4"/></svg></span>
-                <h3>Smart Dates</h3>
-                <p>Type "tomorrow 3pm" or "next friday" — natural language parsed into due dates instantly.</p>
-            </div>
-            <div class="feature">
-                <span class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 8h.01M12 12h.01M14 8h.01M20 4v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2Z"/><path d="m9 16 3-8 3 8"/></svg></span>
-                <h3>Global Hotkey</h3>
-                <p>⌘⇧D opens Docket from anywhere. Double-press to quick-add a task without leaving your flow.</p>
-            </div>
-            <div class="feature">
-                <span class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg></span>
-                <h3>Labels & Lists</h3>
-                <p>Color-coded labels, multiple lists, and smart filtering. Organize your way.</p>
-            </div>
-            <div class="feature">
-                <span class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2.1l4 4-4 4"/><path d="M3 12.2v-2a4 4 0 0 1 4-4h12.8M7 21.9l-4-4 4-4"/><path d="M21 11.8v2a4 4 0 0 1-4 4H4.2"/></svg></span>
-                <h3>Recurring Tasks</h3>
-                <p>Daily, weekly, or monthly — tasks auto-recreate on completion. Never forget the routine.</p>
-            </div>
-            <div class="feature">
-                <span class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></span>
-                <h3>Themes & Liquid Glass</h3>
-                <p>9 pastel themes, custom colors, and native Liquid Glass on macOS 26. Make it yours.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA -->
+    <!-- Final CTA -->
     <section class="final-cta">
         <h2>Ready to get things done?</h2>
         <a target="_blank" rel="noopener" href="https://apps.apple.com/app/docket/id000000000" class="btn btn-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg> Download on the Mac App Store</a>
