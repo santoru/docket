@@ -256,9 +256,10 @@ body {
 }
 
 .feature-icon {
-    font-size: 1.8rem;
-    display: block;
+    display: flex;
+    justify-content: center;
     margin-bottom: 14px;
+    color: var(--mint);
 }
 
 .feature h3 {
