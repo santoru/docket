@@ -23,7 +23,7 @@ window.addEventListener('scroll', updateNavbar);
 // Parallax on hero background — scrolls same direction but slower
 const hero = document.querySelector('.hero');
 window.addEventListener('scroll', () => {
-    const offset = 64 + (window.scrollY * 0.3);
+    const offset = 69 + (window.scrollY * 0.3);
     hero.style.backgroundPositionY = `${offset}px`;
 });
 
