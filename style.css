@@ -57,14 +57,17 @@ body {
     align-items: center;
     gap: 10px;
     text-decoration: none;
+    color: var(--text);
 }
+
+.nav-left:hover { opacity: 0.9; }
 
 .nav-icon { width: 30px; height: 30px; }
 
 .nav-title {
     font-size: 1.05rem;
     font-weight: 700;
-    color: var(--text);
+    color: inherit;
 }
 
 .nav-right {
