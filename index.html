@@ -100,6 +100,25 @@
             background: rgba(110, 231, 183, 0.05);
         }
 
+        /* Screenshot */
+        .screenshot {
+            padding: 0 0 80px;
+        }
+
+        .screenshot-frame {
+            max-width: 800px;
+            margin: 0 auto;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(110, 231, 183, 0.1);
+        }
+
+        .screenshot-frame img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
         /* Features */
         .features {
             padding: 80px 0;
@@ -249,7 +268,16 @@
         </div>
 
         <a href="https://github.com/santoru/docket/releases/latest" class="cta">↓ Download</a>
+        <a href="https://apps.apple.com/app/docket/id000000000" class="cta">🍎 Mac App Store</a>
         <a href="https://github.com/santoru/docket" class="cta-secondary">GitHub →</a>
+    </section>
+
+    <section class="screenshot">
+        <div class="container">
+            <div class="screenshot-frame">
+                <img src="screenshot.png" alt="Docket app screenshot" />
+            </div>
+        </div>
     </section>
 
     <section class="features">
