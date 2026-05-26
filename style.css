@@ -186,42 +186,75 @@ body {
 
 /* Screenshots */
 .screenshots {
-    padding: 100px 24px;
-    background: linear-gradient(180deg, var(--bg) 0%, var(--surface) 50%, var(--bg) 100%);
+    padding: 100px 24px 120px;
+    position: relative;
     overflow: hidden;
 }
 
+.screenshots::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(110, 231, 183, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+}
+
 .screenshots-inner {
-    max-width: 720px;
+    max-width: 780px;
     margin: 0 auto;
     display: flex;
     justify-content: center;
-    gap: 28px;
+    gap: 36px;
 }
 
-.screenshots-inner img {
-    width: 44%;
-    max-width: 310px;
-    border-radius: 14px;
-    box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.5),
-        0 0 0 1px var(--border),
-        0 0 32px var(--glow);
+.screenshot-card {
+    flex: 1;
+    max-width: 340px;
     opacity: 0;
     transform: translateY(40px);
     animation: fadeUp 0.8s ease forwards;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.screenshots-inner img:nth-child(1) { animation-delay: 0.2s; }
-.screenshots-inner img:nth-child(2) { animation-delay: 0.4s; }
+.screenshot-card:nth-child(1) { animation-delay: 0.2s; }
+.screenshot-card:nth-child(2) { animation-delay: 0.4s; }
 
-.screenshots-inner img:hover {
-    transform: translateY(-6px) scale(1.02);
+.screenshot-card img {
+    width: 100%;
+    border-radius: 14px;
     box-shadow:
-        0 28px 72px rgba(0, 0, 0, 0.6),
+        0 20px 60px rgba(0, 0, 0, 0.45),
+        0 0 0 1px var(--border);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.screenshot-card:hover img {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow:
+        0 32px 80px rgba(0, 0, 0, 0.55),
         0 0 0 1px rgba(110, 231, 183, 0.2),
-        0 0 48px rgba(110, 231, 183, 0.1);
+        0 0 40px rgba(110, 231, 183, 0.06);
+}
+
+.screenshot-caption {
+    text-align: center;
+    padding-top: 20px;
+}
+
+.screenshot-caption h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text);
+}
+
+.screenshot-caption p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
 }
 
 /* Features */
