@@ -15,6 +15,30 @@ window.addEventListener('scroll', () => {
         : 'rgba(11, 17, 23, 0.8)';
 });
 
+// Parallax on hero background
+const hero = document.querySelector('.hero');
+window.addEventListener('scroll', () => {
+    const offset = window.scrollY * 0.4;
+    hero.style.backgroundPositionY = `${offset}px`;
+});
+
+// Dark/Light theme toggle
+const toggle = document.getElementById('themeToggle');
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'light') document.body.classList.add('light');
+
+toggle.addEventListener('click', () => {
+    document.body.classList.toggle('light');
+    const isLight = document.body.classList.contains('light');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    // Update navbar bg for light mode
+    if (isLight) {
+        navbar.style.background = window.scrollY > 50
+            ? 'rgba(248, 250, 251, 0.95)'
+            : 'rgba(248, 250, 251, 0.85)';
+    }
+});
+
 // Scroll-triggered animations
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
