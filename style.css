@@ -269,7 +269,7 @@ footer a:hover { text-decoration: underline; }
     .nav-right { gap: 12px; }
     .nav-link { display: none; }
     .hero-content h1 { font-size: 2rem; }
-    .hero { min-height: 80vh; padding-top: 69px; background-position: right top !important; background-size: auto 80% !important; background-origin: content-box !important; }
+    .hero { min-height: 80vh; background-position: right top !important; background-size: cover !important; }
     .showcase-row, .showcase-row.reverse { flex-direction: column; gap: 24px; }
     .showcase-image { max-width: 260px; }
     .features-grid { flex-direction: column; gap: 28px; }
