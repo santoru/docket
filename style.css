@@ -111,6 +111,7 @@ body {
     align-items: flex-end;
     justify-content: center;
     background: url('assets/screenshot.jpg') center top / cover no-repeat;
+    padding-top: 64px;
     padding-bottom: 80px;
 }
 
