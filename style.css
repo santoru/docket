@@ -16,6 +16,7 @@ body {
     background: var(--bg);
     color: var(--text);
     line-height: 1.6;
+    transition: background 0.4s ease, color 0.4s ease;
 }
 
 /* Animations */
@@ -53,7 +54,7 @@ body {
     background: rgba(11, 17, 23, 0.8);
     backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border);
-    transition: background 0.3s;
+    transition: background 0.4s ease, border-color 0.4s ease;
 }
 
 .nav-left {
@@ -316,10 +317,11 @@ footer a:hover { text-decoration: underline; }
     justify-content: center;
     cursor: pointer;
     color: var(--muted);
-    transition: color 0.2s, border-color 0.2s;
+    transition: color 0.3s, border-color 0.3s, transform 0.4s;
 }
 
 .theme-toggle:hover { color: var(--mint); border-color: var(--mint); }
+.theme-toggle:active { transform: rotate(180deg); }
 
 .icon-sun { display: none; }
 .icon-moon { display: block; }
@@ -332,14 +334,22 @@ body.light {
     --muted: #5A6B7D;
     --border: rgba(0, 0, 0, 0.08);
     --glow: rgba(59, 130, 246, 0.06);
+    --mint: #059669;
+    --blue: #2563EB;
 }
 
 body.light .navbar {
     background: rgba(248, 250, 251, 0.85);
+    backdrop-filter: blur(16px);
     border-bottom-color: rgba(0, 0, 0, 0.06);
 }
 
 body.light .nav-left { color: var(--text); }
+body.light .nav-link { color: var(--muted); }
+body.light .nav-link:hover { color: var(--text); }
+body.light .nav-cta { color: #fff; }
+body.light .theme-toggle { color: var(--muted); border-color: rgba(0,0,0,0.1); }
+body.light .theme-toggle:hover { color: var(--blue); border-color: var(--blue); }
 
 body.light .hero-overlay {
     background: linear-gradient(to bottom,

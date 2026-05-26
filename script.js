@@ -9,11 +9,16 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 
 // Navbar solidify on scroll
 const navbar = document.querySelector('.navbar');
-window.addEventListener('scroll', () => {
-    navbar.style.background = window.scrollY > 50
-        ? 'rgba(11, 17, 23, 0.95)'
-        : 'rgba(11, 17, 23, 0.8)';
-});
+function updateNavbar() {
+    const isLight = document.body.classList.contains('light');
+    const scrolled = window.scrollY > 50;
+    if (isLight) {
+        navbar.style.background = scrolled ? 'rgba(248, 250, 251, 0.95)' : 'rgba(248, 250, 251, 0.85)';
+    } else {
+        navbar.style.background = scrolled ? 'rgba(11, 17, 23, 0.95)' : 'rgba(11, 17, 23, 0.8)';
+    }
+}
+window.addEventListener('scroll', updateNavbar);
 
 // Parallax on hero background
 const hero = document.querySelector('.hero');
@@ -31,12 +36,7 @@ toggle.addEventListener('click', () => {
     document.body.classList.toggle('light');
     const isLight = document.body.classList.contains('light');
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    // Update navbar bg for light mode
-    if (isLight) {
-        navbar.style.background = window.scrollY > 50
-            ? 'rgba(248, 250, 251, 0.95)'
-            : 'rgba(248, 250, 251, 0.85)';
-    }
+    updateNavbar();
 });
 
 // Scroll-triggered animations
