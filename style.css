@@ -104,7 +104,7 @@ body {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    background: url('assets/screenshot.jpg') center top / cover no-repeat fixed;
+    background: url('assets/screenshot.jpg') center 64px / cover no-repeat fixed;
     padding-top: 64px;
     padding-bottom: 80px;
 }
