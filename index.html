@@ -5,284 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Docket — Menu Bar Task Manager for macOS</title>
     <meta name="description" content="A beautiful, minimal task manager that lives in your macOS menu bar. Integrates with Apple Reminders.">
-    <style>
-        :root {
-            --bg: #0B1117;
-            --surface: #151F2B;
-            --mint: #6EE7B7;
-            --blue: #3B82F6;
-            --text: #F1F5F9;
-            --muted: #7B8FA3;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-        }
-
-        /* Hero */
-        .hero {
-            text-align: center;
-            padding: 80px 24px 48px;
-        }
-
-        .hero-icon {
-            width: 72px;
-            height: 72px;
-            margin-bottom: 24px;
-        }
-
-        .hero h1 {
-            font-size: 2.8rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 12px;
-            background: linear-gradient(135deg, var(--mint), var(--blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero p {
-            font-size: 1.1rem;
-            color: var(--muted);
-            max-width: 520px;
-            margin: 0 auto 32px;
-        }
-
-        .buttons {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 12px 24px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            border-radius: 50px;
-            text-decoration: none;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .btn:hover { transform: translateY(-2px); }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--mint), var(--blue));
-            color: var(--bg);
-            box-shadow: 0 4px 16px rgba(110, 231, 183, 0.2);
-        }
-
-        .btn-secondary {
-            border: 1px solid rgba(110, 231, 183, 0.25);
-            color: var(--mint);
-        }
-
-        .btn-secondary:hover { background: rgba(110, 231, 183, 0.05); }
-
-        /* Slideshow */
-        .slideshow {
-            position: relative;
-            width: 100%;
-            max-width: 100%;
-            overflow: hidden;
-            padding: 48px 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 520px;
-        }
-
-        .slideshow img {
-            position: absolute;
-            max-height: 460px;
-            border-radius: 16px;
-            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
-            opacity: 0;
-            transition: opacity 0.8s ease;
-        }
-
-        .slideshow img.active { opacity: 1; }
-
-        /* Features */
-        .features {
-            padding: 80px 24px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .features h2 {
-            text-align: center;
-            font-size: 1.8rem;
-            margin-bottom: 48px;
-            font-weight: 600;
-        }
-
-        .feature-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 32px;
-        }
-
-        .feature {
-            text-align: center;
-        }
-
-        .feature .icon {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-        }
-
-        .feature h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: var(--text);
-        }
-
-        .feature p {
-            font-size: 0.85rem;
-            color: var(--muted);
-        }
-
-        /* Install */
-        .install {
-            text-align: center;
-            padding: 64px 24px;
-            border-top: 1px solid rgba(255,255,255,0.04);
-        }
-
-        .install code {
-            display: inline-block;
-            background: var(--surface);
-            padding: 14px 28px;
-            border-radius: 10px;
-            font-family: 'SF Mono', monospace;
-            font-size: 0.9rem;
-            color: var(--mint);
-            margin-bottom: 12px;
-        }
-
-        .install p {
-            color: var(--muted);
-            font-size: 0.8rem;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 32px 24px;
-            color: var(--muted);
-            font-size: 0.8rem;
-        }
-
-        footer a { color: var(--mint); text-decoration: none; }
-
-        @media (max-width: 600px) {
-            .hero h1 { font-size: 2rem; }
-            .slideshow { min-height: 360px; }
-            .slideshow img { max-height: 320px; }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <svg class="nav-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#1E2A3A"/>
+                        <stop offset="100%" style="stop-color:#0F1922"/>
+                    </linearGradient>
+                    <linearGradient id="ck" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#6EE7B7"/>
+                        <stop offset="100%" style="stop-color:#34D399"/>
+                    </linearGradient>
+                </defs>
+                <rect x="32" y="32" width="448" height="448" rx="100" fill="url(#bg)"/>
+                <path d="M 175 262 L 230 320 L 340 200" fill="none" stroke="url(#ck)" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="nav-title">Docket</span>
+        </div>
+        <div class="nav-right">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="https://github.com/santoru/docket" class="nav-link">GitHub</a>
+            <a href="https://apps.apple.com/app/docket/id000000000" class="nav-cta">Download</a>
+        </div>
+    </nav>
+
+    <!-- Hero with full-width screenshot background -->
     <section class="hero">
-        <svg class="hero-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#1E2A3A"/>
-                    <stop offset="100%" style="stop-color:#0F1922"/>
-                </linearGradient>
-                <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#6EE7B7"/>
-                    <stop offset="100%" style="stop-color:#3B82F6"/>
-                </linearGradient>
-                <linearGradient id="check" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#6EE7B7"/>
-                    <stop offset="100%" style="stop-color:#34D399"/>
-                </linearGradient>
-            </defs>
-            <rect x="32" y="32" width="448" height="448" rx="100" ry="100" fill="url(#bg)"/>
-            <circle cx="256" cy="256" r="140" fill="none" stroke="url(#ring)" stroke-width="18" opacity="0.3"/>
-            <circle cx="256" cy="256" r="110" fill="none" stroke="url(#ring)" stroke-width="3" opacity="0.5"/>
-            <path d="M 175 262 L 230 320 L 340 200" fill="none" stroke="url(#check)" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-
-        <h1>Docket</h1>
-        <p>A beautiful, minimal task manager that lives in your macOS menu bar. Integrates with Apple Reminders — iCloud, Siri, and Apple Watch support out of the box.</p>
-
-        <div class="buttons">
-            <a href="https://apps.apple.com/app/docket/id000000000" class="btn btn-primary">🍎 Mac App Store</a>
-            <a href="https://github.com/santoru/docket/releases/latest" class="btn btn-secondary">↓ Download</a>
-            <a href="https://github.com/santoru/docket" class="btn btn-secondary">GitHub →</a>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>Your tasks, one click away</h1>
+            <p>A beautiful, minimal task manager that lives in your macOS menu bar. Integrates with Apple Reminders — iCloud, Siri, and Apple Watch support out of the box.</p>
+            <div class="hero-buttons">
+                <a href="https://apps.apple.com/app/docket/id000000000" class="btn btn-primary">🍎 Get on Mac App Store</a>
+                <a href="https://github.com/santoru/docket/releases/latest" class="btn btn-secondary">Download from GitHub</a>
+            </div>
         </div>
     </section>
 
-    <section class="slideshow">
-        <img src="assets/docket1.png" class="active" alt="Docket task list" />
-        <img src="assets/docket2.png" alt="Docket settings" />
-    </section>
-
-    <section class="features">
+    <!-- Features -->
+    <section class="features" id="features">
         <h2>Everything you need, nothing you don't</h2>
-        <div class="feature-list">
+        <div class="feature-grid">
             <div class="feature">
-                <div class="icon">🔄</div>
+                <span class="feature-icon">🔄</span>
                 <h3>Reminders Sync</h3>
-                <p>Two-way sync with Apple Reminders. iCloud, Siri, Apple Watch.</p>
+                <p>Two-way sync with Apple Reminders. Your tasks on iPhone, Apple Watch, and Siri — automatically.</p>
             </div>
             <div class="feature">
-                <div class="icon">📅</div>
+                <span class="feature-icon">📅</span>
                 <h3>Smart Dates</h3>
-                <p>Type "tomorrow 3pm" — natural language due dates.</p>
+                <p>Type "tomorrow 3pm" or "next friday" — natural language parsed into due dates instantly.</p>
             </div>
             <div class="feature">
-                <div class="icon">⌨️</div>
+                <span class="feature-icon">⌨️</span>
                 <h3>Global Hotkey</h3>
-                <p>⌘⇧D from anywhere. Double-press to quick-add.</p>
+                <p>⌘⇧D opens Docket from anywhere. Double-press to quick-add a task without leaving your flow.</p>
             </div>
             <div class="feature">
-                <div class="icon">🏷️</div>
+                <span class="feature-icon">🏷️</span>
                 <h3>Labels & Lists</h3>
-                <p>Color-coded labels, multiple lists, smart filtering.</p>
+                <p>Color-coded labels, multiple lists, and smart filtering. Organize your way.</p>
             </div>
             <div class="feature">
-                <div class="icon">🔁</div>
-                <h3>Recurring</h3>
-                <p>Daily, weekly, monthly. Auto-creates on completion.</p>
+                <span class="feature-icon">🔁</span>
+                <h3>Recurring Tasks</h3>
+                <p>Daily, weekly, or monthly — tasks auto-recreate on completion. Never forget the routine.</p>
             </div>
             <div class="feature">
-                <div class="icon">🎨</div>
-                <h3>Themes & Glass</h3>
-                <p>9 themes, custom colors, Liquid Glass on macOS 26.</p>
+                <span class="feature-icon">🎨</span>
+                <h3>Themes & Liquid Glass</h3>
+                <p>9 pastel themes, custom colors, and native Liquid Glass on macOS 26. Make it yours.</p>
             </div>
         </div>
     </section>
 
+    <!-- Install -->
     <section class="install">
+        <h2>Build from source</h2>
         <code>./build.sh && open build/Docket.app</code>
         <p>macOS 14+ · Xcode Command Line Tools · Zero dependencies</p>
     </section>
 
+    <!-- Footer -->
     <footer>
-        <p>Made by <a href="https://github.com/santoru">@santoru</a></p>
+        <p>Made by <a href="https://github.com/santoru">@santoru</a> · <a href="https://github.com/santoru/docket">Source on GitHub</a> · MIT License</p>
     </footer>
 
-    <script>
-        const imgs = document.querySelectorAll('.slideshow img');
-        let current = 0;
-        setInterval(() => {
-            imgs[current].classList.remove('active');
-            current = (current + 1) % imgs.length;
-            imgs[current].classList.add('active');
-        }, 4000);
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
