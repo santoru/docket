@@ -41,20 +41,11 @@ document.querySelectorAll('.showcase-row').forEach(row => {
     observer.observe(row);
 });
 
-// Animate mini features
-document.querySelectorAll('.mini-feature').forEach((el, i) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = `opacity 0.5s ease ${i * 0.1}s, transform 0.5s ease ${i * 0.1}s`;
-    observer.observe(el);
-});
-
 // Apply visible state
 const style = document.createElement('style');
 style.textContent = `
     .showcase-row.visible .showcase-image,
-    .showcase-row.visible .showcase-text,
-    .mini-feature.visible {
+    .showcase-row.visible .showcase-text {
         opacity: 1 !important;
         transform: none !important;
     }
