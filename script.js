@@ -20,11 +20,14 @@ function updateNavbar() {
 }
 window.addEventListener('scroll', updateNavbar);
 
-// Parallax on hero background — scrolls same direction but slower
+// Parallax on hero background — scrolls same direction but slower (desktop only)
 const hero = document.querySelector('.hero');
+const isMobile = window.matchMedia('(max-width: 700px)');
 window.addEventListener('scroll', () => {
-    const offset = 69 + (window.scrollY * 0.3);
-    hero.style.backgroundPositionY = `${offset}px`;
+    if (!isMobile.matches) {
+        const offset = 69 + (window.scrollY * 0.3);
+        hero.style.backgroundPositionY = `${offset}px`;
+    }
 });
 
 // Dark/Light theme toggle
