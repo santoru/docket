@@ -7,13 +7,12 @@
     <meta name="description" content="A beautiful, minimal task manager that lives in your macOS menu bar. Integrates with Apple Reminders.">
     <style>
         :root {
-            --bg: #0F1922;
-            --surface: #1E2A3A;
+            --bg: #0B1117;
+            --surface: #151F2B;
             --mint: #6EE7B7;
             --blue: #3B82F6;
             --text: #F1F5F9;
-            --muted: #94A3B8;
-            --radius: 16px;
+            --muted: #7B8FA3;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,213 +22,173 @@
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 24px;
         }
 
         /* Hero */
         .hero {
             text-align: center;
-            padding: 100px 24px 80px;
+            padding: 80px 24px 48px;
         }
 
         .hero-icon {
-            width: 96px;
-            height: 96px;
-            margin-bottom: 32px;
-            filter: drop-shadow(0 8px 32px rgba(110, 231, 183, 0.3));
+            width: 72px;
+            height: 72px;
+            margin-bottom: 24px;
         }
 
         .hero h1 {
-            font-size: 3rem;
+            font-size: 2.8rem;
             font-weight: 700;
-            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
             background: linear-gradient(135deg, var(--mint), var(--blue));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .hero p {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--muted);
-            max-width: 600px;
-            margin: 0 auto 40px;
+            max-width: 520px;
+            margin: 0 auto 32px;
         }
 
-        .cta {
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 14px 28px;
-            background: linear-gradient(135deg, var(--mint), var(--blue));
-            color: var(--bg);
+            gap: 6px;
+            padding: 12px 24px;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.9rem;
             border-radius: 50px;
             text-decoration: none;
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(110, 231, 183, 0.3);
+        .btn:hover { transform: translateY(-2px); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--mint), var(--blue));
+            color: var(--bg);
+            box-shadow: 0 4px 16px rgba(110, 231, 183, 0.2);
         }
 
-        .cta-secondary {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 14px 28px;
-            border: 1px solid rgba(110, 231, 183, 0.3);
+        .btn-secondary {
+            border: 1px solid rgba(110, 231, 183, 0.25);
             color: var(--mint);
-            font-weight: 600;
-            font-size: 1rem;
-            border-radius: 50px;
-            text-decoration: none;
-            margin-left: 12px;
-            transition: transform 0.2s, background 0.2s;
         }
 
-        .cta-secondary:hover {
-            transform: translateY(-2px);
-            background: rgba(110, 231, 183, 0.05);
-        }
+        .btn-secondary:hover { background: rgba(110, 231, 183, 0.05); }
 
-        /* Screenshot */
-        .screenshot {
-            padding: 0 0 80px;
-        }
-
-        .screenshot-frame {
-            max-width: 800px;
-            margin: 0 auto;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(110, 231, 183, 0.1);
-        }
-
-        .screenshot-frame img {
+        /* Slideshow */
+        .slideshow {
+            position: relative;
             width: 100%;
-            height: auto;
-            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            padding: 48px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 520px;
         }
+
+        .slideshow img {
+            position: absolute;
+            max-height: 460px;
+            border-radius: 16px;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        .slideshow img.active { opacity: 1; }
 
         /* Features */
         .features {
-            padding: 80px 0;
+            padding: 80px 24px;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .features h2 {
             text-align: center;
-            font-size: 2rem;
+            font-size: 1.8rem;
             margin-bottom: 48px;
+            font-weight: 600;
         }
 
-        .feature-grid {
+        .feature-list {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 32px;
         }
 
-        .feature-card {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 28px;
-            border: 1px solid rgba(110, 231, 183, 0.1);
-            transition: transform 0.2s, border-color 0.2s;
+        .feature {
+            text-align: center;
         }
 
-        .feature-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(110, 231, 183, 0.3);
+        .feature .icon {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
         }
 
-        .feature-card .icon {
-            font-size: 1.5rem;
-            margin-bottom: 12px;
+        .feature h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text);
         }
 
-        .feature-card h3 {
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-            color: var(--mint);
-        }
-
-        .feature-card p {
-            font-size: 0.9rem;
+        .feature p {
+            font-size: 0.85rem;
             color: var(--muted);
         }
 
         /* Install */
         .install {
-            padding: 80px 0;
             text-align: center;
+            padding: 64px 24px;
+            border-top: 1px solid rgba(255,255,255,0.04);
         }
 
-        .install h2 {
-            font-size: 2rem;
-            margin-bottom: 24px;
-        }
-
-        .install-code {
+        .install code {
             display: inline-block;
             background: var(--surface);
-            border-radius: 12px;
-            padding: 20px 32px;
+            padding: 14px 28px;
+            border-radius: 10px;
             font-family: 'SF Mono', monospace;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--mint);
-            border: 1px solid rgba(110, 231, 183, 0.15);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .install p {
             color: var(--muted);
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         /* Footer */
         footer {
             text-align: center;
-            padding: 48px 24px;
+            padding: 32px 24px;
             color: var(--muted);
-            font-size: 0.85rem;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.8rem;
         }
 
-        footer a {
-            color: var(--mint);
-            text-decoration: none;
-        }
-
-        /* Badges */
-        .badges {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: var(--surface);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--muted);
-        }
+        footer a { color: var(--mint); text-decoration: none; }
 
         @media (max-width: 600px) {
             .hero h1 { font-size: 2rem; }
-            .hero p { font-size: 1rem; }
-            .cta-secondary { margin-left: 0; margin-top: 12px; }
+            .slideshow { min-height: 360px; }
+            .slideshow img { max-height: 320px; }
         }
     </style>
 </head>
@@ -259,90 +218,71 @@
         <h1>Docket</h1>
         <p>A beautiful, minimal task manager that lives in your macOS menu bar. Integrates with Apple Reminders — iCloud, Siri, and Apple Watch support out of the box.</p>
 
-        <div class="badges">
-            <span class="badge">macOS 14+</span>
-            <span class="badge">Swift & SwiftUI</span>
-            <span class="badge">Zero Dependencies</span>
-            <span class="badge">Liquid Glass</span>
-            <span class="badge">MIT License</span>
+        <div class="buttons">
+            <a href="https://apps.apple.com/app/docket/id000000000" class="btn btn-primary">🍎 Mac App Store</a>
+            <a href="https://github.com/santoru/docket/releases/latest" class="btn btn-secondary">↓ Download</a>
+            <a href="https://github.com/santoru/docket" class="btn btn-secondary">GitHub →</a>
         </div>
-
-        <a href="https://github.com/santoru/docket/releases/latest" class="cta">↓ Download</a>
-        <a href="https://apps.apple.com/app/docket/id000000000" class="cta">🍎 Mac App Store</a>
-        <a href="https://github.com/santoru/docket" class="cta-secondary">GitHub →</a>
     </section>
 
-    <section class="screenshot">
-        <div class="container">
-            <div class="screenshot-frame">
-                <img src="screenshot.png" alt="Docket app screenshot" />
-            </div>
-        </div>
+    <section class="slideshow">
+        <img src="assets/docket1.png" class="active" alt="Docket task list" />
+        <img src="assets/docket2.png" alt="Docket settings" />
     </section>
 
     <section class="features">
-        <div class="container">
-            <h2>Everything you need, nothing you don't</h2>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="icon">🔄</div>
-                    <h3>Reminders Sync</h3>
-                    <p>Two-way sync with Apple Reminders. Your tasks on iPhone, Apple Watch, and Siri — automatically.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">📅</div>
-                    <h3>Smart Dates</h3>
-                    <p>Type "tomorrow 3pm" or "next friday" — natural language parsed into due dates instantly.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">⌨️</div>
-                    <h3>Global Hotkey</h3>
-                    <p>⌘⇧D opens Docket from anywhere. Double-press to quick-add a task without leaving your flow.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">🏷️</div>
-                    <h3>Labels & Lists</h3>
-                    <p>Color-coded labels, multiple lists, and smart filtering. Organize your way.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">🔁</div>
-                    <h3>Recurring Tasks</h3>
-                    <p>Daily, weekly, or monthly — tasks auto-recreate on completion. Never forget the routine.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">🎨</div>
-                    <h3>Themes & Glass</h3>
-                    <p>9 pastel themes, custom colors, and native Liquid Glass on macOS 26. Make it yours.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">👆</div>
-                    <h3>Swipe Gestures</h3>
-                    <p>Swipe right to complete, left to delete. Confetti on every win. Undo if you change your mind.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">🔔</div>
-                    <h3>Smart Reminders</h3>
-                    <p>Get notified before tasks are due. Configurable from 5 minutes to 1 day ahead.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">⚡</div>
-                    <h3>Zero Dependencies</h3>
-                    <p>Single build.sh script. No Xcode project, no SPM, no CocoaPods. Pure Swift compiled with swiftc.</p>
-                </div>
+        <h2>Everything you need, nothing you don't</h2>
+        <div class="feature-list">
+            <div class="feature">
+                <div class="icon">🔄</div>
+                <h3>Reminders Sync</h3>
+                <p>Two-way sync with Apple Reminders. iCloud, Siri, Apple Watch.</p>
+            </div>
+            <div class="feature">
+                <div class="icon">📅</div>
+                <h3>Smart Dates</h3>
+                <p>Type "tomorrow 3pm" — natural language due dates.</p>
+            </div>
+            <div class="feature">
+                <div class="icon">⌨️</div>
+                <h3>Global Hotkey</h3>
+                <p>⌘⇧D from anywhere. Double-press to quick-add.</p>
+            </div>
+            <div class="feature">
+                <div class="icon">🏷️</div>
+                <h3>Labels & Lists</h3>
+                <p>Color-coded labels, multiple lists, smart filtering.</p>
+            </div>
+            <div class="feature">
+                <div class="icon">🔁</div>
+                <h3>Recurring</h3>
+                <p>Daily, weekly, monthly. Auto-creates on completion.</p>
+            </div>
+            <div class="feature">
+                <div class="icon">🎨</div>
+                <h3>Themes & Glass</h3>
+                <p>9 themes, custom colors, Liquid Glass on macOS 26.</p>
             </div>
         </div>
     </section>
 
     <section class="install">
-        <div class="container">
-            <h2>Get started in seconds</h2>
-            <div class="install-code">./build.sh && open build/Docket.app</div>
-            <p>Requires macOS 14+ and Xcode Command Line Tools</p>
-        </div>
+        <code>./build.sh && open build/Docket.app</code>
+        <p>macOS 14+ · Xcode Command Line Tools · Zero dependencies</p>
     </section>
 
     <footer>
-        <p>Made with ☕ by <a href="https://github.com/santoru">@santoru</a> · <a href="https://github.com/santoru/docket">Source on GitHub</a></p>
+        <p>Made by <a href="https://github.com/santoru">@santoru</a></p>
     </footer>
+
+    <script>
+        const imgs = document.querySelectorAll('.slideshow img');
+        let current = 0;
+        setInterval(() => {
+            imgs[current].classList.remove('active');
+            current = (current + 1) % imgs.length;
+            imgs[current].classList.add('active');
+        }, 4000);
+    </script>
 </body>
 </html>
