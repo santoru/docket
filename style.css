@@ -155,6 +155,27 @@ body {
 
 .btn-secondary:hover { background: rgba(110, 231, 183, 0.05); }
 
+/* Screenshots */
+.screenshots {
+    padding: 80px 24px;
+    background: var(--surface);
+}
+
+.screenshots-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+
+.screenshots-inner img {
+    width: 45%;
+    max-width: 340px;
+    border-radius: 12px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+}
+
 /* Features */
 .features {
     padding: 100px 24px;
