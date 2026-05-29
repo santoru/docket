@@ -46,7 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private func setupPopover() {
         popover = NSPopover()
         popover.contentSize = NSSize(width: 340, height: 480)
-        popover.behavior = .transient
+        popover.behavior = .applicationDefined
         popover.delegate = self
         popover.setValue(true, forKeyPath: "shouldHideAnchor")
         popover.contentViewController = NSHostingController(rootView: ContentView())
@@ -221,7 +221,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     private func startEventMonitor() {
         eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-            self?.closePopover()
+            // Only close if our app lost focus (click went to another app, not a system panel like emoji picker)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                if !NSApp.isActive {
+                    self?.closePopover()
+                }
+            }
         }
     }
 
