@@ -5,9 +5,10 @@
 set -e
 
 APP_NAME="Docket"
-BUILD_DIR="$HOME/Projects/Docket/build"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+BUILD_DIR="$SCRIPT_DIR/build"
 APP_BUNDLE="$BUILD_DIR/$APP_NAME.app"
-SRC_DIR="$HOME/Projects/Docket/Docket"
+SRC_DIR="$SCRIPT_DIR/Docket"
 
 echo "🔨 Building $APP_NAME..."
 
