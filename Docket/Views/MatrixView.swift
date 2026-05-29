@@ -68,6 +68,7 @@ struct MatrixView: View {
                     Spacer().frame(height: 12)
 
             // Axis labels
+            if matrixShowAxes {
             HStack(spacing: 0) {
                 Color.clear.frame(width: 14)
                 HStack(spacing: 3) {
@@ -85,11 +86,12 @@ struct MatrixView: View {
             }
             .padding(.horizontal, 8)
             .padding(.bottom, 4)
-            .opacity(matrixShowAxes ? 1 : 0)
+            }
 
             // Matrix grid
             HStack(spacing: 0) {
                 // Y-axis labels aligned with rows
+                if matrixShowAxes {
                 VStack(spacing: 3) {
                     VStack(spacing: 1) {
                         ForEach(Array("IMPORTANT"), id: \.self) { c in
@@ -105,7 +107,7 @@ struct MatrixView: View {
                     .frame(height: 140)
                 }
                 .frame(width: 14)
-                .opacity(matrixShowAxes ? 1 : 0)
+                }
 
                 VStack(spacing: 3) {
                     HStack(spacing: 3) {
