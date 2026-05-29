@@ -26,7 +26,7 @@ struct MatrixView: View {
                             .background(Circle().fill(.quaternary.opacity(0.5)))
                     }.buttonStyle(.plain)
                     Spacer()
-                    Text("Matrix").font(.headline)
+                    Text("Eisenhower Matrix").font(.headline)
                     Spacer()
                     Color.clear.frame(width: 28, height: 28)
                 }
