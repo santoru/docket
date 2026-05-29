@@ -252,6 +252,7 @@ struct TaskDot: View {
         .overlay(Capsule().stroke(quadrant.color.opacity(isDragging ? 0.5 : 0.2), lineWidth: 0.5))
         .scaleEffect(isDragging ? 1.1 : 1.0)
         .position(x: position.x + dragOffset.width, y: position.y + dragOffset.height)
+        .draggable(item.id.uuidString)
         .gesture(
             DragGesture()
                 .onChanged { value in
