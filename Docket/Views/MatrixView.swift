@@ -38,7 +38,7 @@ struct MatrixView: View {
             Color.clear.frame(width: 28, height: 28)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.vertical, 10)
     }
 
     // MARK: - Matrix Grid
@@ -64,14 +64,14 @@ struct MatrixView: View {
             ZStack(alignment: .topLeading) {
                 // Background
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(quadrant.color.opacity(0.05))
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(quadrant.color.opacity(0.2), lineWidth: 0.5))
+                    .fill(quadrant.color.opacity(0.12))
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(quadrant.color.opacity(0.4), lineWidth: 1))
 
                 // Quadrant label
                 Text(quadrant.name)
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(quadrant.color)
-                    .padding(4)
+                    .padding(6)
 
                 // Tasks positioned freely
                 ForEach(tasks) { item in
