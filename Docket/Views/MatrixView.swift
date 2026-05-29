@@ -65,30 +65,28 @@ struct MatrixView: View {
                 .padding(.vertical, 12)
 
             // Axis labels
-            if matrixShowAxes {
-                HStack(spacing: 0) {
-                    Color.clear.frame(width: 14)
-                    HStack(spacing: 3) {
-                        Text("URGENT")
-                            .font(.system(size: 8, weight: .bold))
-                            .foregroundStyle(.secondary)
-                            .tracking(1)
-                            .frame(maxWidth: .infinity)
-                        Text("NOT URGENT")
-                            .font(.system(size: 8, weight: .bold))
-                            .foregroundStyle(.secondary)
-                            .tracking(1)
-                            .frame(maxWidth: .infinity)
-                    }
+            HStack(spacing: 0) {
+                Color.clear.frame(width: 14)
+                HStack(spacing: 3) {
+                    Text("URGENT")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .tracking(1)
+                        .frame(maxWidth: .infinity)
+                    Text("NOT URGENT")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .tracking(1)
+                        .frame(maxWidth: .infinity)
                 }
-                .padding(.horizontal, 8)
-                .padding(.bottom, 4)
             }
+            .padding(.horizontal, 8)
+            .padding(.bottom, 4)
+            .opacity(matrixShowAxes ? 1 : 0)
 
             // Matrix grid
             HStack(spacing: 0) {
                 // Y-axis labels aligned with rows
-                if matrixShowAxes {
                 VStack(spacing: 3) {
                     VStack(spacing: 1) {
                         ForEach(Array("IMPORTANT"), id: \.self) { c in
@@ -104,7 +102,7 @@ struct MatrixView: View {
                     .frame(height: 140)
                 }
                 .frame(width: 14)
-                }
+                .opacity(matrixShowAxes ? 1 : 0)
 
                 VStack(spacing: 3) {
                     HStack(spacing: 3) {
