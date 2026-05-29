@@ -17,10 +17,11 @@ struct MatrixView: View {
         VStack(spacing: 0) {
             header
             matrixGrid
+            Spacer(minLength: 0)
             unassignedSection
         }
+        .navigationTitle("")
         .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden)
     }
 
     // MARK: - Header
