@@ -53,6 +53,7 @@ struct SettingsView: View {
                     remindersSection
                     listsSection
                     labelsSection
+                    matrixSection
                     themeSection
                     exportImportSection
                     clearSection
@@ -652,6 +653,85 @@ struct SettingsView: View {
             .foregroundStyle(color)
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Matrix Settings
+
+    @AppStorage("matrixDoFirstColor") private var doFirstColor = "#EF4444"
+    @AppStorage("matrixScheduleColor") private var scheduleColor = "#3B82F6"
+    @AppStorage("matrixDelegateColor") private var delegateColor = "#F59E0B"
+    @AppStorage("matrixEliminateColor") private var eliminateColor = "#9CA3AF"
+    @AppStorage("matrixDoFirstLabel") private var doFirstLabel = "Do First"
+    @AppStorage("matrixScheduleLabel") private var scheduleLabel = "Schedule"
+    @AppStorage("matrixDelegateLabel") private var delegateLabel = "Delegate"
+    @AppStorage("matrixEliminateLabel") private var eliminateLabel = "Eliminate"
+    @AppStorage("matrixLabelLength") private var matrixLabelLength = 14
+    @AppStorage("matrixShowAxes") private var matrixShowAxes = true
+    @AppStorage("matrixShowBadges") private var matrixShowBadges = true
+
+    private let matrixColorPresets = ["#EF4444", "#F59E0B", "#10B981", "#3B82F6", "#8B5CF6", "#EC4899", "#6B7280", "#14B8A6"]
+
+    private var matrixSection: some View {
+        card {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Eisenhower Matrix").font(.body.weight(.medium))
+
+                // Quadrant colors + labels
+                VStack(spacing: 8) {
+                    matrixQuadrantRow(label: $doFirstLabel, color: $doFirstColor, defaultLabel: "Do First")
+                    matrixQuadrantRow(label: $scheduleLabel, color: $scheduleColor, defaultLabel: "Schedule")
+                    matrixQuadrantRow(label: $delegateLabel, color: $delegateColor, defaultLabel: "Delegate")
+                    matrixQuadrantRow(label: $eliminateLabel, color: $eliminateColor, defaultLabel: "Eliminate")
+                }
+
+                Divider()
+
+                // Label length
+                HStack {
+                    Text("Label length").font(.subheadline)
+                    Spacer()
+                    Text("\(matrixLabelLength) chars").font(.system(size: 11, weight: .medium)).foregroundStyle(accent)
+                }
+                Slider(value: Binding(get: { Double(matrixLabelLength) }, set: { matrixLabelLength = Int($0) }), in: 6...20, step: 1)
+                    .tint(accent)
+
+                Divider()
+
+                // Toggles
+                ThemedToggle(label: "Show axis labels", isOn: $matrixShowAxes)
+                ThemedToggle(label: "Show count badges", isOn: $matrixShowBadges)
+            }
+        }
+    }
+
+    private func matrixQuadrantRow(label: Binding<String>, color: Binding<String>, defaultLabel: String) -> some View {
+        HStack(spacing: 8) {
+            // Color picker
+            Menu {
+                ForEach(matrixColorPresets, id: \.self) { hex in
+                    Button {
+                        color.wrappedValue = hex
+                    } label: {
+                        HStack {
+                            Image(systemName: "circle.fill")
+                            Text(hex)
+                        }
+                    }
+                }
+            } label: {
+                Circle()
+                    .fill(Color(hex: color.wrappedValue))
+                    .frame(width: 18, height: 18)
+                    .overlay(Circle().stroke(.quaternary, lineWidth: 0.5))
+            }
+            .buttonStyle(.plain)
+
+            // Editable label
+            TextField(defaultLabel, text: label)
+                .textFieldStyle(.plain)
+                .font(.subheadline)
+                .frame(maxWidth: .infinity)
+        }
     }
 
     private var themeSection: some View {

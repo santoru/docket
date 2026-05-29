@@ -11,7 +11,36 @@ struct MatrixView: View {
 
     @AppStorage("appTheme") private var themeRaw: Int = AppTheme.white.rawValue
     @AppStorage("customHue") private var customHue: Double = 0.55
+    @AppStorage("matrixDoFirstColor") private var doFirstColor = "#EF4444"
+    @AppStorage("matrixScheduleColor") private var scheduleColor = "#3B82F6"
+    @AppStorage("matrixDelegateColor") private var delegateColor = "#F59E0B"
+    @AppStorage("matrixEliminateColor") private var eliminateColor = "#9CA3AF"
+    @AppStorage("matrixDoFirstLabel") private var doFirstLabel = "Do First"
+    @AppStorage("matrixScheduleLabel") private var scheduleLabel = "Schedule"
+    @AppStorage("matrixDelegateLabel") private var delegateLabel = "Delegate"
+    @AppStorage("matrixEliminateLabel") private var eliminateLabel = "Eliminate"
+    @AppStorage("matrixLabelLength") private var matrixLabelLength = 14
+    @AppStorage("matrixShowAxes") private var matrixShowAxes = true
+    @AppStorage("matrixShowBadges") private var matrixShowBadges = true
     private var accent: Color { ThemeManager.resolvedAccent(themeRaw: themeRaw, customHue: customHue) }
+
+    private func quadrantColor(_ q: Quadrant) -> Color {
+        switch q {
+        case .doFirst: Color(hex: doFirstColor)
+        case .schedule: Color(hex: scheduleColor)
+        case .delegate: Color(hex: delegateColor)
+        case .eliminate: Color(hex: eliminateColor)
+        }
+    }
+
+    private func quadrantLabel(_ q: Quadrant) -> String {
+        switch q {
+        case .doFirst: doFirstLabel
+        case .schedule: scheduleLabel
+        case .delegate: delegateLabel
+        case .eliminate: eliminateLabel
+        }
+    }
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -36,27 +65,30 @@ struct MatrixView: View {
                 .padding(.vertical, 12)
 
             // Axis labels
-            HStack(spacing: 0) {
-                Color.clear.frame(width: 14) // match Y-axis width
-                HStack(spacing: 3) {
-                    Text("URGENT")
-                        .font(.system(size: 8, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .tracking(1)
-                        .frame(maxWidth: .infinity)
-                    Text("NOT URGENT")
-                        .font(.system(size: 8, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .tracking(1)
-                        .frame(maxWidth: .infinity)
+            if matrixShowAxes {
+                HStack(spacing: 0) {
+                    Color.clear.frame(width: 14)
+                    HStack(spacing: 3) {
+                        Text("URGENT")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundStyle(.secondary)
+                            .tracking(1)
+                            .frame(maxWidth: .infinity)
+                        Text("NOT URGENT")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundStyle(.secondary)
+                            .tracking(1)
+                            .frame(maxWidth: .infinity)
+                    }
                 }
+                .padding(.horizontal, 8)
+                .padding(.bottom, 4)
             }
-            .padding(.horizontal, 8)
-            .padding(.bottom, 4)
 
             // Matrix grid
             HStack(spacing: 0) {
                 // Y-axis labels aligned with rows
+                if matrixShowAxes {
                 VStack(spacing: 3) {
                     VStack(spacing: 1) {
                         ForEach(Array("IMPORTANT"), id: \.self) { c in
@@ -72,6 +104,7 @@ struct MatrixView: View {
                     .frame(height: 140)
                 }
                 .frame(width: 14)
+                }
 
                 VStack(spacing: 3) {
                     HStack(spacing: 3) {
@@ -97,6 +130,8 @@ struct MatrixView: View {
 
     private func quadrantBox(_ quadrant: Quadrant) -> some View {
         let tasks = store.activeTasks.filter { $0.quadrant == quadrant }
+        let color = quadrantColor(quadrant)
+        let label = quadrantLabel(quadrant)
 
         return GeometryReader { geo in
             ZStack(alignment: .topLeading) {
@@ -104,40 +139,40 @@ struct MatrixView: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(
                         LinearGradient(
-                            colors: [quadrant.color.opacity(0.15), quadrant.color.opacity(0.05)],
+                            colors: [color.opacity(0.15), color.opacity(0.05)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(quadrant.color.opacity(0.3), lineWidth: 1)
+                            .stroke(color.opacity(0.3), lineWidth: 1)
                     )
 
                 // Label with icon
                 HStack(spacing: 3) {
                     Image(systemName: quadrant.icon)
                         .font(.system(size: 8))
-                    Text(quadrant.name)
+                    Text(label)
                         .font(.system(size: 9, weight: .bold))
                 }
-                .foregroundStyle(quadrant.color)
+                .foregroundStyle(color)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 5)
 
                 // Task count badge
-                if !tasks.isEmpty {
+                if matrixShowBadges && !tasks.isEmpty {
                     Text("\(tasks.count)")
                         .font(.system(size: 8, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(width: 16, height: 16)
-                        .background(Circle().fill(quadrant.color))
+                        .background(Circle().fill(color))
                         .position(x: geo.size.width - 14, y: 14)
                 }
 
                 // Tasks
                 ForEach(tasks) { item in
-                    TaskDot(item: item, quadrant: quadrant, bounds: geo.size, onTap: {
+                    TaskDot(item: item, quadrant: quadrant, color: color, maxChars: matrixLabelLength, bounds: geo.size, onTap: {
                         path.append(.detail(item))
                     })
                 }
@@ -222,6 +257,8 @@ struct MatrixView: View {
 struct TaskDot: View {
     let item: TodoItem
     let quadrant: Quadrant
+    let color: Color
+    let maxChars: Int
     let bounds: CGSize
     let onTap: () -> Void
 
@@ -232,9 +269,9 @@ struct TaskDot: View {
     var body: some View {
         HStack(spacing: 3) {
             Circle()
-                .fill(quadrant.color)
+                .fill(color)
                 .frame(width: 5, height: 5)
-            Text(String(item.title.prefix(14)))
+            Text(String(item.title.prefix(maxChars)))
                 .font(.system(size: 9, weight: .medium))
                 .lineLimit(1)
         }
@@ -243,9 +280,9 @@ struct TaskDot: View {
         .background(
             Capsule()
                 .fill(.regularMaterial)
-                .shadow(color: quadrant.color.opacity(isDragging ? 0.3 : 0.1), radius: isDragging ? 6 : 2, y: isDragging ? 3 : 1)
+                .shadow(color: color.opacity(isDragging ? 0.3 : 0.1), radius: isDragging ? 6 : 2, y: isDragging ? 3 : 1)
         )
-        .overlay(Capsule().stroke(quadrant.color.opacity(isDragging ? 0.5 : 0.2), lineWidth: 0.5))
+        .overlay(Capsule().stroke(color.opacity(isDragging ? 0.5 : 0.2), lineWidth: 0.5))
         .scaleEffect(isDragging ? 1.1 : 1.0)
         .position(x: position.x + dragOffset.width, y: position.y + dragOffset.height)
         .gesture(
