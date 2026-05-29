@@ -19,6 +19,8 @@ struct MatrixView: View {
             matrixGrid
             unassignedSection
         }
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden)
     }
 
     // MARK: - Header
