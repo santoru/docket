@@ -52,18 +52,18 @@ struct MatrixView: View {
             HStack(spacing: 0) {
                 // Y-axis labels aligned with rows
                 VStack(spacing: 3) {
-                    Text("IMPORTANT")
-                        .font(.system(size: 7, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .tracking(0.5)
-                        .rotationEffect(.degrees(-90))
-                        .frame(height: 140)
-                    Text("NOT")
-                        .font(.system(size: 7, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .tracking(0.5)
-                        .rotationEffect(.degrees(-90))
-                        .frame(height: 140)
+                    VStack(spacing: 1) {
+                        ForEach(Array("IMPORTANT"), id: \.self) { c in
+                            Text(String(c)).font(.system(size: 7, weight: .bold)).foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(height: 140)
+                    VStack(spacing: 1) {
+                        ForEach(Array("NOT"), id: \.self) { c in
+                            Text(String(c)).font(.system(size: 7, weight: .bold)).foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(height: 140)
                 }
                 .frame(width: 14)
 
