@@ -80,6 +80,17 @@ struct MatrixView: View {
                     })
                 }
             }
+            .dropDestination(for: String.self) { items, _ in
+                for idString in items {
+                    if let uuid = UUID(uuidString: idString),
+                       let i = store.items.firstIndex(where: { $0.id == uuid }) {
+                        store.items[i].quadrant = quadrant
+                        store.items[i].matrixX = 0.5
+                        store.items[i].matrixY = 0.5
+                    }
+                }
+                return true
+            }
         }
         .aspectRatio(1.3, contentMode: .fit)
     }
@@ -108,19 +119,7 @@ struct MatrixView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 .buttonStyle(.plain)
-                                .contextMenu {
-                                    ForEach(Quadrant.allCases) { q in
-                                        Button {
-                                            if let i = store.items.firstIndex(where: { $0.id == item.id }) {
-                                                store.items[i].quadrant = q
-                                                store.items[i].matrixX = 0.5
-                                                store.items[i].matrixY = 0.5
-                                            }
-                                        } label: {
-                                            Label(q.name, systemImage: q.icon)
-                                        }
-                                    }
-                                }
+                                .draggable(item.id.uuidString)
                             }
                         }
                         .padding(.horizontal, 12)
