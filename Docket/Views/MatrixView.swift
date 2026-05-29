@@ -43,26 +43,26 @@ struct MatrixView: View {
     }
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Button { path.removeLast() } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .frame(width: 28, height: 28)
-                            .background(Circle().fill(.quaternary.opacity(0.5)))
-                    }.buttonStyle(.plain)
-                    Spacer()
-                    Text("Eisenhower Matrix").font(.headline)
-                    Spacer()
-                    Color.clear.frame(width: 28, height: 28)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+        VStack(spacing: 0) {
+            // Header (fixed)
+            HStack {
+                Button { path.removeLast() } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 28, height: 28)
+                        .background(Circle().fill(.quaternary.opacity(0.5)))
+                }.buttonStyle(.plain)
+                Spacer()
+                Text("Eisenhower Matrix").font(.headline)
+                Spacer()
+                Color.clear.frame(width: 28, height: 28)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
 
             // Axis labels
             HStack(spacing: 0) {
@@ -118,6 +118,7 @@ struct MatrixView: View {
             .padding(.horizontal, 8)
 
             unassignedSection
+                }
             }
         }
         .navigationTitle("")

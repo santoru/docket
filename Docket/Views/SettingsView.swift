@@ -705,33 +705,27 @@ struct SettingsView: View {
     }
 
     private func matrixQuadrantRow(label: Binding<String>, color: Binding<String>, defaultLabel: String) -> some View {
-        HStack(spacing: 8) {
-            // Color picker
-            Menu {
-                ForEach(matrixColorPresets, id: \.self) { hex in
-                    Button {
-                        color.wrappedValue = hex
-                    } label: {
-                        HStack {
-                            Image(systemName: "circle.fill")
-                            Text(hex)
-                        }
-                    }
-                }
-            } label: {
-                Circle()
-                    .fill(Color(hex: color.wrappedValue))
-                    .frame(width: 18, height: 18)
-                    .overlay(Circle().stroke(.quaternary, lineWidth: 0.5))
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 8) {
+                // Editable label
+                TextField(defaultLabel, text: label)
+                    .textFieldStyle(.plain)
+                    .font(.subheadline)
+                Spacer()
             }
-            .buttonStyle(.plain)
-
-            // Editable label
-            TextField(defaultLabel, text: label)
-                .textFieldStyle(.plain)
-                .font(.subheadline)
-                .frame(maxWidth: .infinity)
+            HStack(spacing: 5) {
+                ForEach(matrixColorPresets, id: \.self) { hex in
+                    Button { color.wrappedValue = hex } label: {
+                        Circle()
+                            .fill(Color(hex: hex))
+                            .frame(width: 16, height: 16)
+                            .overlay(Circle().stroke(.white, lineWidth: color.wrappedValue == hex ? 2 : 0))
+                            .overlay(Circle().stroke(Color(hex: hex).opacity(0.5), lineWidth: color.wrappedValue == hex ? 1 : 0).scaleEffect(1.3))
+                    }.buttonStyle(.plain)
+                }
+            }
         }
+        .padding(.vertical, 4)
     }
 
     private var themeSection: some View {
