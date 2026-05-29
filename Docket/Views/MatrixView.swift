@@ -252,24 +252,61 @@ struct TaskDot: View {
         .overlay(Capsule().stroke(quadrant.color.opacity(isDragging ? 0.5 : 0.2), lineWidth: 0.5))
         .scaleEffect(isDragging ? 1.1 : 1.0)
         .position(x: position.x + dragOffset.width, y: position.y + dragOffset.height)
-        .draggable(item.id.uuidString)
         .gesture(
-            DragGesture()
+            DragGesture(coordinateSpace: .named("matrix"))
                 .onChanged { value in
                     isDragging = true
                     dragOffset = value.translation
                 }
                 .onEnded { value in
                     isDragging = false
-                    let newX = clamp((position.x + value.translation.width) / bounds.width, 0.08, 0.92)
-                    let newY = clamp((position.y + value.translation.height) / bounds.height, 0.15, 0.9)
                     dragOffset = .zero
-                    withAnimation(.spring(duration: 0.25)) {
-                        position = CGPoint(x: newX * bounds.width, y: newY * bounds.height)
-                    }
-                    if let i = Store.shared.items.firstIndex(where: { $0.id == item.id }) {
-                        Store.shared.items[i].matrixX = newX
-                        Store.shared.items[i].matrixY = newY
+
+                    // Calculate where in the matrix the drop landed
+                    let dropPoint = value.location
+
+                    // Determine which quadrant the drop is in based on matrix center
+                    let store = Store.shared
+                    if let i = store.items.firstIndex(where: { $0.id == item.id }) {
+                        // For now, reposition within current quadrant
+                        let newX = clamp((position.x + value.translation.width) / bounds.width, 0.08, 0.92)
+                        let newY = clamp((position.y + value.translation.height) / bounds.height, 0.15, 0.9)
+
+                        // Check if dragged outside bounds (cross-quadrant)
+                        let finalX = position.x + value.translation.width
+                        let finalY = position.y + value.translation.height
+
+                        if finalX < 0 || finalX > bounds.width || finalY < 0 || finalY > bounds.height {
+                            // Crossed boundary — determine target quadrant
+                            let wentLeft = finalX < 0
+                            let wentRight = finalX > bounds.width
+                            let wentUp = finalY < 0
+                            let wentDown = finalY > bounds.height
+
+                            let newQuadrant: Quadrant? = switch quadrant {
+                            case .doFirst:
+                                wentRight ? .schedule : wentDown ? .delegate : nil
+                            case .schedule:
+                                wentLeft ? .doFirst : wentDown ? .eliminate : nil
+                            case .delegate:
+                                wentRight ? .eliminate : wentUp ? .doFirst : nil
+                            case .eliminate:
+                                wentLeft ? .delegate : wentUp ? .schedule : nil
+                            }
+
+                            if let target = newQuadrant {
+                                store.items[i].quadrant = target
+                                store.items[i].matrixX = 0.5
+                                store.items[i].matrixY = 0.5
+                            }
+                        } else {
+                            // Stay in same quadrant, update position
+                            withAnimation(.spring(duration: 0.25)) {
+                                position = CGPoint(x: newX * bounds.width, y: newY * bounds.height)
+                            }
+                            store.items[i].matrixX = newX
+                            store.items[i].matrixY = newY
+                        }
                     }
                 }
         )
