@@ -40,12 +40,21 @@ struct MatrixView: View {
 
             // Axis labels
             HStack(spacing: 0) {
-                Spacer()
-                Text("URGENT").font(.system(size: 8, weight: .bold)).foregroundStyle(.secondary).tracking(1)
-                Spacer()
-                Text("NOT URGENT").font(.system(size: 8, weight: .bold)).foregroundStyle(.secondary).tracking(1)
-                Spacer()
+                Color.clear.frame(width: 14) // match Y-axis width
+                HStack(spacing: 3) {
+                    Text("URGENT")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .tracking(1)
+                        .frame(maxWidth: .infinity)
+                    Text("NOT URGENT")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .tracking(1)
+                        .frame(maxWidth: .infinity)
+                }
             }
+            .padding(.horizontal, 8)
             .padding(.bottom, 4)
 
             // Matrix grid
@@ -59,7 +68,7 @@ struct MatrixView: View {
                     }
                     .frame(height: 140)
                     VStack(spacing: 1) {
-                        ForEach(Array("NOT"), id: \.self) { c in
+                        ForEach(Array("NOT IMP."), id: \.self) { c in
                             Text(String(c)).font(.system(size: 7, weight: .bold)).foregroundStyle(.secondary)
                         }
                     }
