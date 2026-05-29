@@ -12,6 +12,8 @@ struct TaskDetailView: View {
     @State private var hasRecurrence = false
     @State private var recurrenceFreq: Frequency = .weekly
     @State private var recurrenceInterval: Int = 1
+    @State private var naturalDateText = ""
+    @State private var parsedDatePreview: String? = nil
 
     @AppStorage("appTheme") private var themeRaw: Int = AppTheme.white.rawValue
     @AppStorage("customHue") private var customHue: Double = 0.55
@@ -48,6 +50,34 @@ struct TaskDetailView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         ThemedToggle(label: "Due date", isOn: $hasDueDate, animated: true)
                         if hasDueDate {
+                            // Natural language input
+                            HStack(spacing: 8) {
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(accent)
+                                TextField("tomorrow 3pm, next friday...", text: $naturalDateText)
+                                    .textFieldStyle(.plain)
+                                    .font(.subheadline)
+                                    .onSubmit { parseNaturalDate() }
+                                    .onChange(of: naturalDateText) { _, _ in parseNaturalDate() }
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(accent.opacity(0.05))
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(accent.opacity(0.15), lineWidth: 1))
+                            )
+
+                            if let parsed = parsedDatePreview {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "arrow.right").font(.system(size: 9))
+                                    Text(parsed).font(.caption)
+                                }
+                                .foregroundStyle(accent)
+                                .padding(.leading, 4)
+                            }
+
                             CalendarPickerView(selectedDate: Binding(
                                 get: { item.dueDate ?? Date().addingTimeInterval(3600) },
                                 set: { item.dueDate = $0 }
@@ -138,5 +168,14 @@ struct TaskDetailView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+    }
+
+    private func parseNaturalDate() {
+        if let date = DateParser.parse(naturalDateText) {
+            item.dueDate = date
+            parsedDatePreview = date.formatted(date: .abbreviated, time: .shortened)
+        } else {
+            parsedDatePreview = nil
+        }
     }
 }
