@@ -37,6 +37,9 @@ struct TodoItem: Identifiable, Codable, Hashable {
     var recurrence: Recurrence?
     var reminderId: String?
     var lastSyncedAt: Date?
+    var quadrant: Quadrant?
+    var matrixX: Double?
+    var matrixY: Double?
 
     // MARK: Computed Properties
 
@@ -62,7 +65,7 @@ struct TodoItem: Identifiable, Codable, Hashable {
     enum CodingKeys: String, CodingKey {
         case id, title, notes, createdAt, completedAt
         case priorityRaw, dueDate, reminderOffsetRaw, sortOrder, listId, labelIds, recurrence
-        case reminderId, lastSyncedAt
+        case reminderId, lastSyncedAt, quadrant, matrixX, matrixY
     }
 
     init(from decoder: Decoder) throws {
@@ -81,6 +84,9 @@ struct TodoItem: Identifiable, Codable, Hashable {
         recurrence = try c.decodeIfPresent(Recurrence.self, forKey: .recurrence)
         reminderId = try c.decodeIfPresent(String.self, forKey: .reminderId)
         lastSyncedAt = try c.decodeIfPresent(Date.self, forKey: .lastSyncedAt)
+        quadrant = try c.decodeIfPresent(Quadrant.self, forKey: .quadrant)
+        matrixX = try c.decodeIfPresent(Double.self, forKey: .matrixX)
+        matrixY = try c.decodeIfPresent(Double.self, forKey: .matrixY)
     }
 
     // MARK: Init
@@ -109,5 +115,8 @@ struct TodoItem: Identifiable, Codable, Hashable {
         self.recurrence = recurrence
         self.reminderId = nil
         self.lastSyncedAt = nil
+        self.quadrant = nil
+        self.matrixX = nil
+        self.matrixY = nil
     }
 }

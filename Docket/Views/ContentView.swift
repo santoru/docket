@@ -10,6 +10,7 @@ enum NavDestination: Hashable {
     case detail(TodoItem)
     case completed
     case settings
+    case matrix
 }
 
 /// Root view that applies the theme, handles onboarding, and routes navigation.
@@ -33,6 +34,7 @@ struct ContentView: View {
                         case .detail(let t): TaskDetailView(item: t, path: $path)
                         case .completed:    CompletedTasksView(path: $path)
                         case .settings:     SettingsView(path: $path)
+                        case .matrix:       MatrixView(path: $path)
                         }
                     }
             }

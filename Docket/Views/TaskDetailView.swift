@@ -43,6 +43,7 @@ struct TaskDetailView: View {
                     VStack(alignment: .leading, spacing: 14) {
                         PriorityPickerView(priority: $item.priority)
                         LabelPickerView(selectedIds: $item.labelIds)
+                        QuadrantPickerView(quadrant: $item.quadrant)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
