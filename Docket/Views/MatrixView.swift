@@ -19,7 +19,7 @@ struct MatrixView: View {
                 // Header
                 HStack {
                     Button { path.removeLast() } label: {
-                        Image(systemName: "xmark")
+                        Image(systemName: "chevron.left")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(.secondary)
                             .frame(width: 28, height: 28)
@@ -28,14 +28,10 @@ struct MatrixView: View {
                     Spacer()
                     Text("Matrix").font(.headline)
                     Spacer()
-                    Button { path.removeLast() } label: {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .frame(width: 28, height: 28)
-                            .background(Circle().fill(.quaternary.opacity(0.5)))
-                    }.buttonStyle(.plain)
+                    Color.clear.frame(width: 28, height: 28)
                 }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
 
