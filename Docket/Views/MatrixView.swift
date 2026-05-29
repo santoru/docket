@@ -28,19 +28,19 @@ struct MatrixView: View {
     private var header: some View {
         HStack {
             Button { path.removeLast() } label: {
-                Image(systemName: "chevron.left")
+                Image(systemName: "xmark")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.secondary)
                     .frame(width: 28, height: 28)
                     .background(Circle().fill(.quaternary.opacity(0.5)))
             }.buttonStyle(.plain)
             Spacer()
-            Text("Eisenhower Matrix").font(.headline)
+            Text("Matrix").font(.headline)
             Spacer()
-            Color.clear.frame(width: 28, height: 28)
+            Button { path.removeLast() } label: { Image(systemName: "checkmark").font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).frame(width: 28, height: 28).background(Circle().fill(.quaternary.opacity(0.5))) }.buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.vertical, 12)
     }
 
     // MARK: - Matrix Grid
