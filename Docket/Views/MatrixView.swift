@@ -65,6 +65,7 @@ struct MatrixView: View {
 
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 0) {
+                    Spacer().frame(height: 12)
 
             // Axis labels
             HStack(spacing: 0) {
