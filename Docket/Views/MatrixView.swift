@@ -61,6 +61,8 @@ struct MatrixView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
 
+            Divider()
+
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 0) {
 
