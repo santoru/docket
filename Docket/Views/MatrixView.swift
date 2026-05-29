@@ -108,6 +108,19 @@ struct MatrixView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 .buttonStyle(.plain)
+                                .contextMenu {
+                                    ForEach(Quadrant.allCases) { q in
+                                        Button {
+                                            if let i = store.items.firstIndex(where: { $0.id == item.id }) {
+                                                store.items[i].quadrant = q
+                                                store.items[i].matrixX = 0.5
+                                                store.items[i].matrixY = 0.5
+                                            }
+                                        } label: {
+                                            Label(q.name, systemImage: q.icon)
+                                        }
+                                    }
+                                }
                             }
                         }
                         .padding(.horizontal, 12)
