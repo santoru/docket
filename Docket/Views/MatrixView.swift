@@ -50,18 +50,22 @@ struct MatrixView: View {
 
             // Matrix grid
             HStack(spacing: 0) {
-                // Y-axis label
-                VStack {
-                    Text("I").font(.system(size: 7, weight: .bold)).foregroundStyle(.secondary)
-                    Text("M").font(.system(size: 7, weight: .bold)).foregroundStyle(.secondary)
-                    Text("P").font(.system(size: 7, weight: .bold)).foregroundStyle(.secondary)
-                    Spacer()
-                    Text("N").font(.system(size: 7, weight: .bold)).foregroundStyle(.secondary)
-                    Text("O").font(.system(size: 7, weight: .bold)).foregroundStyle(.secondary)
-                    Text("T").font(.system(size: 7, weight: .bold)).foregroundStyle(.secondary)
+                // Y-axis labels aligned with rows
+                VStack(spacing: 3) {
+                    Text("IMPORTANT")
+                        .font(.system(size: 7, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .tracking(0.5)
+                        .rotationEffect(.degrees(-90))
+                        .frame(height: 140)
+                    Text("NOT")
+                        .font(.system(size: 7, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .tracking(0.5)
+                        .rotationEffect(.degrees(-90))
+                        .frame(height: 140)
                 }
-                .frame(width: 12)
-                .padding(.vertical, 8)
+                .frame(width: 14)
 
                 VStack(spacing: 3) {
                     HStack(spacing: 3) {
