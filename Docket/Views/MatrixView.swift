@@ -14,29 +14,30 @@ struct MatrixView: View {
     private var accent: Color { ThemeManager.resolvedAccent(themeRaw: themeRaw, customHue: customHue) }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            HStack {
-                Button { path.removeLast() } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 28, height: 28)
-                        .background(Circle().fill(.quaternary.opacity(0.5)))
-                }.buttonStyle(.plain)
-                Spacer()
-                Text("Matrix").font(.headline)
-                Spacer()
-                Button { path.removeLast() } label: {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 28, height: 28)
-                        .background(Circle().fill(.quaternary.opacity(0.5)))
-                }.buttonStyle(.plain)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(spacing: 0) {
+                // Header
+                HStack {
+                    Button { path.removeLast() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 28, height: 28)
+                            .background(Circle().fill(.quaternary.opacity(0.5)))
+                    }.buttonStyle(.plain)
+                    Spacer()
+                    Text("Matrix").font(.headline)
+                    Spacer()
+                    Button { path.removeLast() } label: {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 28, height: 28)
+                            .background(Circle().fill(.quaternary.opacity(0.5)))
+                    }.buttonStyle(.plain)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
 
             // Axis labels
             HStack(spacing: 0) {
@@ -89,10 +90,8 @@ struct MatrixView: View {
             }
             .padding(.horizontal, 8)
 
-            Spacer(minLength: 0)
-
-            // Unassigned
             unassignedSection
+            }
         }
         .navigationTitle("")
         .navigationBarBackButtonHidden(true)
