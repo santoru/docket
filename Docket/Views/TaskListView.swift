@@ -100,8 +100,8 @@ struct TaskListView: View {
             headerButton(icon: "magnifyingglass", color: accent) {
                 withAnimation(.spring(duration: 0.25)) { showSearch.toggle(); if !showSearch { searchText = "" } }
             }
-            headerButton(icon: "square.grid.2x2", color: accent) { path.append(.matrix) }.opacity(showMatrixButton ? 1 : 0).frame(width: showMatrixButton ? nil : 0)
-            headerButton(icon: "tray.full", color: accent) { path.append(.completed) }.opacity(showCompletedButton ? 1 : 0).frame(width: showCompletedButton ? nil : 0)
+            if showMatrixButton { headerButton(icon: "square.grid.2x2", color: accent) { path.append(.matrix) } }
+            if showCompletedButton { headerButton(icon: "tray.full", color: accent) { path.append(.completed) } }
             headerButton(icon: "gear", color: accent) { path.append(.settings) }
             headerButton(icon: "plus", color: .green) { path.append(.create) }
         }
