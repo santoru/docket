@@ -24,6 +24,9 @@ struct TaskListView: View {
     @State private var undoTrigger = 0
 
     private enum UndoAction { case complete, delete }
+    @AppStorage("showMatrixButton") private var showMatrixButton = true
+    @AppStorage("showCompletedButton") private var showCompletedButton = true
+
     private var accent: Color { ThemeManager.resolvedAccent(themeRaw: themeRaw, customHue: customHue) }
     private var sortMode: SortMode { SortMode(rawValue: sortModeRaw) ?? .custom }
 
@@ -97,8 +100,8 @@ struct TaskListView: View {
             headerButton(icon: "magnifyingglass", color: accent) {
                 withAnimation(.spring(duration: 0.25)) { showSearch.toggle(); if !showSearch { searchText = "" } }
             }
-            headerButton(icon: "square.grid.2x2", color: accent) { path.append(.matrix) }
-            headerButton(icon: "tray.full", color: accent) { path.append(.completed) }
+            headerButton(icon: "square.grid.2x2", color: accent) { path.append(.matrix) }.opacity(showMatrixButton ? 1 : 0).frame(width: showMatrixButton ? nil : 0)
+            headerButton(icon: "tray.full", color: accent) { path.append(.completed) }.opacity(showCompletedButton ? 1 : 0).frame(width: showCompletedButton ? nil : 0)
             headerButton(icon: "gear", color: accent) { path.append(.settings) }
             headerButton(icon: "plus", color: .green) { path.append(.create) }
         }

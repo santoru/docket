@@ -54,6 +54,7 @@ struct SettingsView: View {
                     listsSection
                     labelsSection
                     matrixSection
+                    visibilitySection
                     themeSection
                     exportImportSection
                     clearSection
@@ -726,6 +727,21 @@ struct SettingsView: View {
             }
         }
         .padding(.vertical, 4)
+    }
+
+    // MARK: - Visibility
+
+    @AppStorage("showMatrixButton") private var showMatrixButton = true
+    @AppStorage("showCompletedButton") private var showCompletedButton = true
+
+    private var visibilitySection: some View {
+        card {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Show in toolbar").font(.body.weight(.medium))
+                ThemedToggle(label: "Matrix button", isOn: $showMatrixButton)
+                ThemedToggle(label: "Completed button", isOn: $showCompletedButton)
+            }
+        }
     }
 
     private var themeSection: some View {
