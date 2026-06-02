@@ -701,6 +701,26 @@ struct SettingsView: View {
                 // Toggles
                 ThemedToggle(label: "Show axis labels", isOn: $matrixShowAxes)
                 ThemedToggle(label: "Show count badges", isOn: $matrixShowBadges)
+
+                Divider()
+
+                HStack {
+                    Text("Label lines").font(.subheadline)
+                    Spacer()
+                    Menu {
+                        ForEach(1...5, id: \.self) { n in
+                            Button("\(n)") { matrixLineCount = n }
+                        }
+                    } label: {
+                        Text("\(matrixLineCount)")
+                            .font(.system(size: 12, weight: .semibold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(accent.opacity(0.12)))
+                            .foregroundStyle(accent)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
     }
@@ -741,8 +761,6 @@ struct SettingsView: View {
                 Text("Show in toolbar").font(.body.weight(.medium))
                 ThemedToggle(label: "Matrix button", isOn: $showMatrixButton)
                 ThemedToggle(label: "Completed button", isOn: $showCompletedButton)
-                Divider()
-                HStack { Text("Matrix label lines").font(.subheadline); Spacer(); Menu { ForEach(1...5, id: \.self) { n in Button("\(n)") { matrixLineCount = n } } } label: { Text("\(matrixLineCount)").font(.system(size: 12, weight: .semibold)).padding(.horizontal, 10).padding(.vertical, 5).background(RoundedRectangle(cornerRadius: 6).fill(accent.opacity(0.12))).foregroundStyle(accent) }.buttonStyle(.plain) }
             }
         }
     }

@@ -276,9 +276,11 @@ struct TaskDot: View {
             Circle()
                 .fill(color)
                 .frame(width: 5, height: 5)
-            Text(String(item.title.prefix(maxChars)))
+            Text(String(item.title.prefix(maxChars * matrixLineCount)))
                 .font(.system(size: 9, weight: .medium))
                 .lineLimit(matrixLineCount)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: 80)
         }
         .padding(.horizontal, 7)
         .padding(.vertical, 4)
