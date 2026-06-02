@@ -266,7 +266,7 @@ struct TaskDot: View {
     let bounds: CGSize
     let onTap: () -> Void
 
-    @AppStorage("matrixWrapTitle") private var matrixWrapTitle = false
+    @AppStorage("matrixLineCount") private var matrixLineCount = 1
     @State private var position: CGPoint = .zero
     @State private var dragOffset: CGSize = .zero
     @State private var isDragging = false
@@ -276,13 +276,13 @@ struct TaskDot: View {
             Circle()
                 .fill(color)
                 .frame(width: 5, height: 5)
-            Text(matrixWrapTitle ? item.title : String(item.title.prefix(maxChars)))
+            Text(matrixLineCount > 1 ? item.title : String(item.title.prefix(maxChars)))
                 .font(.system(size: 9, weight: .medium))
-                .lineLimit(matrixWrapTitle ? 2 : 1)
+                .lineLimit(matrixLineCount)
         }
         .padding(.horizontal, 7)
         .padding(.vertical, 4)
-        .frame(maxWidth: matrixWrapTitle ? 90 : .infinity)
+        .frame(maxWidth: matrixLineCount > 1 ? 90 : .infinity)
         .background(
             Capsule()
                 .fill(.regularMaterial)

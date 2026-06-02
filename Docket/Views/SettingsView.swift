@@ -733,7 +733,7 @@ struct SettingsView: View {
 
     @AppStorage("showMatrixButton") private var showMatrixButton = true
     @AppStorage("showCompletedButton") private var showCompletedButton = true
-    @AppStorage("matrixWrapTitle") private var matrixWrapTitle = false
+    @AppStorage("matrixLineCount") private var matrixLineCount = 1
 
     private var visibilitySection: some View {
         card {
@@ -742,7 +742,7 @@ struct SettingsView: View {
                 ThemedToggle(label: "Matrix button", isOn: $showMatrixButton)
                 ThemedToggle(label: "Completed button", isOn: $showCompletedButton)
                 Divider()
-                ThemedToggle(label: "Wrap matrix labels", isOn: $matrixWrapTitle)
+                HStack { Text("Matrix label lines").font(.subheadline); Spacer(); Menu { ForEach(1...5, id: \.self) { n in Button("\(n)") { matrixLineCount = n } } } label: { Text("\(matrixLineCount)").font(.system(size: 12, weight: .semibold)).padding(.horizontal, 10).padding(.vertical, 5).background(RoundedRectangle(cornerRadius: 6).fill(accent.opacity(0.12))).foregroundStyle(accent) }.buttonStyle(.plain) }
             }
         }
     }
