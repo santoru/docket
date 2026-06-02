@@ -14,6 +14,7 @@ struct TaskDetailView: View {
     @State private var recurrenceInterval: Int = 1
     @State private var naturalDateText = ""
     @State private var parsedDatePreview: String? = nil
+    @State private var originalItem: TodoItem?
 
     @AppStorage("appTheme") private var themeRaw: Int = AppTheme.white.rawValue
     @AppStorage("customHue") private var customHue: Double = 0.55
@@ -22,7 +23,8 @@ struct TaskDetailView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            ScrollView(.vertical, showsIndicators: false) {
+            Divider()
+            ScrollView(.vertical) {
                 VStack(spacing: 20) {
                     // Title
                     VStack(alignment: .leading, spacing: 4) {
@@ -43,6 +45,7 @@ struct TaskDetailView: View {
                     VStack(alignment: .leading, spacing: 14) {
                         PriorityPickerView(priority: $item.priority)
                         LabelPickerView(selectedIds: $item.labelIds)
+                        QuadrantPickerView(quadrant: $item.quadrant)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -137,6 +140,7 @@ struct TaskDetailView: View {
             }
         }
         .onAppear {
+            originalItem = item
             hasDueDate = item.dueDate != nil
             hasRecurrence = item.recurrence != nil
             recurrenceFreq = item.recurrence?.frequency ?? .weekly
@@ -146,15 +150,11 @@ struct TaskDetailView: View {
             if !on { item.dueDate = nil }
             else if item.dueDate == nil { item.dueDate = Date().addingTimeInterval(3600) }
         }
-        .onDisappear {
-            item.recurrence = hasDueDate && hasRecurrence ? Recurrence(frequency: recurrenceFreq, interval: recurrenceInterval, endDate: nil) : nil
-            Store.shared.update(item)
-        }
     }
 
     private var header: some View {
         HStack {
-            Button { path.removeLast() } label: {
+            Button { cancelEdit() } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.secondary)
@@ -164,10 +164,24 @@ struct TaskDetailView: View {
             Spacer()
             Text("Edit Task").font(.headline)
             Spacer()
-            Button { path.removeLast() } label: { Image(systemName: "checkmark").font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).frame(width: 28, height: 28).background(Circle().fill(.quaternary.opacity(0.5))) }.buttonStyle(.plain)
+            Button { confirmEdit() } label: { Image(systemName: "checkmark").font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).frame(width: 28, height: 28).background(Circle().fill(.quaternary.opacity(0.5))) }.buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+
+    }
+
+    private func confirmEdit() {
+        item.recurrence = hasDueDate && hasRecurrence ? Recurrence(frequency: recurrenceFreq, interval: recurrenceInterval, endDate: nil) : nil
+        Store.shared.update(item)
+        path.removeLast()
+    }
+
+    private func cancelEdit() {
+        if let original = originalItem {
+            Store.shared.update(original)
+        }
+        path.removeLast()
     }
 
     private func parseNaturalDate() {

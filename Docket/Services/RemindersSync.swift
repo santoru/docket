@@ -3,6 +3,7 @@
 // Created by @santoru
 
 import Foundation
+import os
 import EventKit
 
 /// Two-way sync between Docket and Apple Reminders via EventKit.
@@ -11,6 +12,7 @@ final class RemindersSync {
     static let shared = RemindersSync()
 
     let store = EKEventStore()
+    private let logger = Logger(subsystem: "blog.insecurity.docket", category: "reminders-sync")
     var isAuthorized = false
     var lastSyncDate: Date?
 
@@ -108,8 +110,9 @@ final class RemindersSync {
             if let i = Store.shared.items.firstIndex(where: { $0.id == item.id }) {
                 Store.shared.items[i].reminderId = reminder.calendarItemIdentifier
                 Store.shared.items[i].lastSyncedAt = Date()
+                Store.shared.persist()
             }
-        } catch {}
+        } catch { logger.error("Save reminder failed: \(error.localizedDescription)") }
     }
 
     func deleteReminder(for item: TodoItem) {
@@ -179,6 +182,8 @@ final class RemindersSync {
         docketStore.items.removeAll { item in
             item.listId == list.id && item.reminderId != nil && !reminderIds.contains(item.reminderId!)
         }
+
+        docketStore.persist()
     }
 
     // MARK: - Observe Changes

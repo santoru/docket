@@ -4,11 +4,13 @@
 
 import Foundation
 import UserNotifications
+import os
 
 /// Manages scheduling and cancellation of task reminder notifications.
 final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationManager()
     private let center = UNUserNotificationCenter.current()
+    private let logger = Logger(subsystem: "blog.insecurity.docket", category: "notifications")
 
     override init() {
         super.init()
@@ -18,8 +20,8 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     func requestPermission() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
             center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-                if let error { print("⚠️ Notification auth error: \(error)") }
-                if !granted { print("⚠️ Notification permission denied") }
+                if let error { self.logger.error("Auth error: \(error.localizedDescription)") }
+                if !granted { self.logger.warning("Permission denied") }
             }
         }
     }
@@ -53,7 +55,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let request = UNNotificationRequest(identifier: item.id.uuidString, content: content, trigger: trigger)
         center.add(request) { error in
-            if let error { print("⚠️ Failed to schedule: \(error)") }
+            if let error { self.logger.error("Schedule failed: \(error.localizedDescription)") }
         }
     }
 

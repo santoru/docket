@@ -251,8 +251,14 @@ final class Store {
         }
     }
 
-    func saveLists() {
+    private func saveLists() {
         try? JSONEncoder().encode(lists).write(to: listsURL, options: .atomic)
+    }
+
+    /// Persist all data (tasks + lists). Call after direct item mutations.
+    func persist() {
+        saveTasks()
+        saveLists()
     }
 
     private func loadLabels() {
@@ -270,6 +276,5 @@ final class Store {
         guard UserDefaults.standard.bool(forKey: "remindersSyncEnabled") else { return }
         let list = lists.first(where: { $0.id == item.listId })
         RemindersSync.shared.pushTask(item, calendarId: list?.remindersCalendarId)
-        saveTasks()
     }
 }

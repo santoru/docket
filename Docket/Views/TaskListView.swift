@@ -24,6 +24,9 @@ struct TaskListView: View {
     @State private var undoTrigger = 0
 
     private enum UndoAction { case complete, delete }
+    @AppStorage("showMatrixButton") private var showMatrixButton = true
+    @AppStorage("showCompletedButton") private var showCompletedButton = true
+
     private var accent: Color { ThemeManager.resolvedAccent(themeRaw: themeRaw, customHue: customHue) }
     private var sortMode: SortMode { SortMode(rawValue: sortModeRaw) ?? .custom }
 
@@ -97,7 +100,8 @@ struct TaskListView: View {
             headerButton(icon: "magnifyingglass", color: accent) {
                 withAnimation(.spring(duration: 0.25)) { showSearch.toggle(); if !showSearch { searchText = "" } }
             }
-            headerButton(icon: "tray.full", color: accent) { path.append(.completed) }
+            if showMatrixButton { headerButton(icon: "square.grid.2x2", color: accent) { path.append(.matrix) } }
+            if showCompletedButton { headerButton(icon: "tray.full", color: accent) { path.append(.completed) } }
             headerButton(icon: "gear", color: accent) { path.append(.settings) }
             headerButton(icon: "plus", color: .green) { path.append(.create) }
         }
@@ -230,7 +234,7 @@ struct TaskListView: View {
     // MARK: - Custom Sort List
 
     private var customList: some View {
-        ScrollView(.vertical, showsIndicators: false) {
+        ScrollView(.vertical) {
             LazyVStack(spacing: 8) {
                 let tasks = filteredTasks
                 ForEach(Array(tasks.enumerated()), id: \.element.id) { index, item in
@@ -261,7 +265,7 @@ struct TaskListView: View {
     // MARK: - Grouped by Due Date List
 
     private var groupedList: some View {
-        ScrollView(.vertical, showsIndicators: false) {
+        ScrollView(.vertical) {
             LazyVStack(spacing: 12) {
                 ForEach(store.groupedByDueDate, id: \.title) { group in
                     VStack(alignment: .leading, spacing: 6) {

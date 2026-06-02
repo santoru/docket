@@ -31,6 +31,7 @@ swiftc \
     "$SRC_DIR/Models/TaskList.swift" \
     "$SRC_DIR/Models/TaskLabel.swift" \
     "$SRC_DIR/Models/Recurrence.swift" \
+    "$SRC_DIR/Models/Quadrant.swift" \
     "$SRC_DIR/Models/AppTheme.swift" \
     "$SRC_DIR/Models/SortMode.swift" \
     "$SRC_DIR/Models/Strings.swift" \
@@ -47,6 +48,8 @@ swiftc \
     "$SRC_DIR/Views/RecurrencePickerView.swift" \
     "$SRC_DIR/Views/PriorityPickerView.swift" \
     "$SRC_DIR/Views/LabelPickerView.swift" \
+    "$SRC_DIR/Views/QuadrantPickerView.swift" \
+    "$SRC_DIR/Views/MatrixView.swift" \
     "$SRC_DIR/Views/ThemedToggle.swift" \
     "$SRC_DIR/Views/ConfettiView.swift" \
     "$SRC_DIR/Views/OnboardingView.swift" \

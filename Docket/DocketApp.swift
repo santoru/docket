@@ -107,7 +107,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     @objc private func menuNewTask() {
         if !popover.isShown { togglePopover() }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { self.onQuickAdd?() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in self?.onQuickAdd?() }
     }
 
     @objc private func menuGitHub() {
@@ -195,7 +195,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         } else {
             togglePopover()
             if elapsed < 0.8 {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { self.onQuickAdd?() }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in self?.onQuickAdd?() }
             }
         }
     }

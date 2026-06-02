@@ -45,7 +45,7 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             header
             Divider()
-            ScrollView(.vertical, showsIndicators: false) {
+            ScrollView(.vertical) {
                 VStack(spacing: 16) {
                     reminderSection
                     launchSection
@@ -53,6 +53,8 @@ struct SettingsView: View {
                     remindersSection
                     listsSection
                     labelsSection
+                    matrixSection
+                    visibilitySection
                     themeSection
                     exportImportSection
                     clearSection
@@ -316,7 +318,7 @@ struct SettingsView: View {
 
                 RemindersSync.shared.startObserving()
                 saveSyncedIds()
-                store.saveLists()
+                store.persist()
                 RemindersSync.shared.syncAll()
             } else {
                 remindersSyncEnabled = false
@@ -652,6 +654,115 @@ struct SettingsView: View {
             .foregroundStyle(color)
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Matrix Settings
+
+    @AppStorage("matrixDoFirstColor") private var doFirstColor = "#EF4444"
+    @AppStorage("matrixScheduleColor") private var scheduleColor = "#3B82F6"
+    @AppStorage("matrixDelegateColor") private var delegateColor = "#F59E0B"
+    @AppStorage("matrixEliminateColor") private var eliminateColor = "#9CA3AF"
+    @AppStorage("matrixDoFirstLabel") private var doFirstLabel = "Do First"
+    @AppStorage("matrixScheduleLabel") private var scheduleLabel = "Schedule"
+    @AppStorage("matrixDelegateLabel") private var delegateLabel = "Delegate"
+    @AppStorage("matrixEliminateLabel") private var eliminateLabel = "Eliminate"
+    @AppStorage("matrixLabelLength") private var matrixLabelLength = 14
+    @AppStorage("matrixShowAxes") private var matrixShowAxes = true
+    @AppStorage("matrixShowBadges") private var matrixShowBadges = true
+
+    private let matrixColorPresets = ["#EF4444", "#F59E0B", "#10B981", "#3B82F6", "#8B5CF6", "#EC4899", "#6B7280", "#14B8A6"]
+
+    private var matrixSection: some View {
+        card {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Eisenhower Matrix").font(.body.weight(.medium))
+
+                // Quadrant colors + labels
+                VStack(spacing: 8) {
+                    matrixQuadrantRow(label: $doFirstLabel, color: $doFirstColor, defaultLabel: "Do First")
+                    matrixQuadrantRow(label: $scheduleLabel, color: $scheduleColor, defaultLabel: "Schedule")
+                    matrixQuadrantRow(label: $delegateLabel, color: $delegateColor, defaultLabel: "Delegate")
+                    matrixQuadrantRow(label: $eliminateLabel, color: $eliminateColor, defaultLabel: "Eliminate")
+                }
+
+                Divider()
+
+                // Label length
+                HStack {
+                    Text("Label length").font(.subheadline)
+                    Spacer()
+                    Text("\(matrixLabelLength) chars").font(.system(size: 11, weight: .medium)).foregroundStyle(accent)
+                }
+                Slider(value: Binding(get: { Double(matrixLabelLength) }, set: { matrixLabelLength = Int($0) }), in: 6...20, step: 1)
+                    .tint(accent)
+
+                Divider()
+
+                // Toggles
+                ThemedToggle(label: "Show axis labels", isOn: $matrixShowAxes)
+                ThemedToggle(label: "Show count badges", isOn: $matrixShowBadges)
+
+                Divider()
+
+                HStack {
+                    Text("Label lines").font(.subheadline)
+                    Spacer()
+                    Menu {
+                        ForEach(1...5, id: \.self) { n in
+                            Button("\(n)") { matrixLineCount = n }
+                        }
+                    } label: {
+                        Text("\(matrixLineCount)")
+                            .font(.system(size: 12, weight: .semibold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(accent.opacity(0.12)))
+                            .foregroundStyle(accent)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private func matrixQuadrantRow(label: Binding<String>, color: Binding<String>, defaultLabel: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 8) {
+                // Editable label
+                TextField(defaultLabel, text: label)
+                    .textFieldStyle(.plain)
+                    .font(.subheadline)
+                Spacer()
+            }
+            HStack(spacing: 5) {
+                ForEach(matrixColorPresets, id: \.self) { hex in
+                    Button { color.wrappedValue = hex } label: {
+                        Circle()
+                            .fill(Color(hex: hex))
+                            .frame(width: 16, height: 16)
+                            .overlay(Circle().stroke(.white, lineWidth: color.wrappedValue == hex ? 2 : 0))
+                            .overlay(Circle().stroke(Color(hex: hex).opacity(0.5), lineWidth: color.wrappedValue == hex ? 1 : 0).scaleEffect(1.3))
+                    }.buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    // MARK: - Visibility
+
+    @AppStorage("showMatrixButton") private var showMatrixButton = true
+    @AppStorage("showCompletedButton") private var showCompletedButton = true
+    @AppStorage("matrixLineCount") private var matrixLineCount = 1
+
+    private var visibilitySection: some View {
+        card {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Show in toolbar").font(.body.weight(.medium))
+                ThemedToggle(label: "Matrix button", isOn: $showMatrixButton)
+                ThemedToggle(label: "Completed button", isOn: $showCompletedButton)
+            }
+        }
     }
 
     private var themeSection: some View {

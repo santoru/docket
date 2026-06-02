@@ -20,6 +20,7 @@ struct CreateTaskView: View {
     @State private var naturalDateText = ""
     @State private var parsedDatePreview: String? = nil
     @State private var selectedLabelIds: [UUID] = []
+    @State private var selectedQuadrant: Quadrant? = nil
     @State private var hasRecurrence = false
     @State private var recurrenceFreq: Frequency = .weekly
     @State private var recurrenceInterval: Int = 1
@@ -30,7 +31,7 @@ struct CreateTaskView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            ScrollView(.vertical, showsIndicators: false) {
+            ScrollView(.vertical) {
                 VStack(spacing: 20) {
                     // Title - prominent, large
                     VStack(alignment: .leading, spacing: 4) {
@@ -55,6 +56,7 @@ struct CreateTaskView: View {
                     VStack(alignment: .leading, spacing: 14) {
                         PriorityPickerView(priority: $priority)
                         LabelPickerView(selectedIds: $selectedLabelIds)
+                        QuadrantPickerView(quadrant: $selectedQuadrant)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
