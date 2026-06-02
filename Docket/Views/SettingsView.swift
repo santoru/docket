@@ -733,6 +733,7 @@ struct SettingsView: View {
 
     @AppStorage("showMatrixButton") private var showMatrixButton = true
     @AppStorage("showCompletedButton") private var showCompletedButton = true
+    @AppStorage("matrixWrapTitle") private var matrixWrapTitle = false
 
     private var visibilitySection: some View {
         card {
@@ -740,6 +741,8 @@ struct SettingsView: View {
                 Text("Show in toolbar").font(.body.weight(.medium))
                 ThemedToggle(label: "Matrix button", isOn: $showMatrixButton)
                 ThemedToggle(label: "Completed button", isOn: $showCompletedButton)
+                Divider()
+                ThemedToggle(label: "Wrap matrix labels", isOn: $matrixWrapTitle)
             }
         }
     }

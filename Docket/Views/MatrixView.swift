@@ -266,6 +266,7 @@ struct TaskDot: View {
     let bounds: CGSize
     let onTap: () -> Void
 
+    @AppStorage("matrixWrapTitle") private var matrixWrapTitle = false
     @State private var position: CGPoint = .zero
     @State private var dragOffset: CGSize = .zero
     @State private var isDragging = false
