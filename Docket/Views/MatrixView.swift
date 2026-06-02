@@ -276,13 +276,12 @@ struct TaskDot: View {
             Circle()
                 .fill(color)
                 .frame(width: 5, height: 5)
-            Text(matrixLineCount > 1 ? item.title : String(item.title.prefix(maxChars)))
+            Text(String(item.title.prefix(maxChars)))
                 .font(.system(size: 9, weight: .medium))
                 .lineLimit(matrixLineCount)
         }
         .padding(.horizontal, 7)
         .padding(.vertical, 4)
-        .frame(maxWidth: matrixLineCount > 1 ? 90 : .infinity)
         .background(
             Capsule()
                 .fill(.regularMaterial)
