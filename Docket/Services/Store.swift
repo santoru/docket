@@ -270,6 +270,5 @@ final class Store {
         guard UserDefaults.standard.bool(forKey: "remindersSyncEnabled") else { return }
         let list = lists.first(where: { $0.id == item.listId })
         RemindersSync.shared.pushTask(item, calendarId: list?.remindersCalendarId)
-        saveTasks()
     }
 }
