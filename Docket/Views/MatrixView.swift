@@ -278,7 +278,7 @@ struct TaskDot: View {
                 .frame(width: 5, height: 5)
             Text(matrixWrapTitle ? item.title : String(item.title.prefix(maxChars)))
                 .font(.system(size: 9, weight: .medium))
-                .lineLimit(1)
+                .lineLimit(matrixWrapTitle ? 2 : 1)
         }
         .padding(.horizontal, 7)
         .padding(.vertical, 4)
