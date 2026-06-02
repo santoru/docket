@@ -100,7 +100,7 @@ struct MatrixView: View {
                     }
                     .frame(height: 140)
                     VStack(spacing: 1) {
-                        ForEach(Array("NOT IMP."), id: \.self) { c in
+                        ForEach(Array("NOT"), id: \.self) { c in
                             Text(String(c)).font(.system(size: 7, weight: .bold)).foregroundStyle(.secondary)
                         }
                     }
