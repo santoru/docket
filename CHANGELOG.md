@@ -2,6 +2,41 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.6.0] — 2026-06-03
+
+### 📊 Eisenhower Matrix
+- Visual 2×2 matrix view with free-positioned task pills
+- Drag tasks within quadrants to express relative priority
+- Drag tasks across quadrant boundaries to re-categorize
+- Drag unassigned tasks from bottom into quadrants
+- Quadrant picker in create/edit task views
+- Customizable quadrant colors (8 presets per quadrant)
+- Customizable quadrant labels (rename Do First/Schedule/etc)
+- Configurable label length and line count (1–5 lines)
+- Toggle axis labels (URGENT/IMPORTANT)
+- Toggle count badges per quadrant
+- Grid button in toolbar (hideable via Settings)
+
+### ✏️ Edit Task Improvements
+- × Cancel (restores original) / ✓ Confirm (saves changes) semantics
+- Natural language date input in edit view (same as create)
+- Divider below header (matches other views)
+
+### 🎛️ Settings
+- "Show in toolbar" section: hide/show Matrix and Completed buttons
+- Eisenhower Matrix settings section with full customization
+- System scrollbars (overlay during scroll, no space taken)
+
+### 🐛 Code Quality
+- All mutations properly persisted (matrix positions, sync IDs)
+- Replaced print() with os.Logger
+- Removed dead code (Quadrant.color/name)
+- [weak self] in async closures
+- Private saveLists(), public persist() API
+- Empty catch blocks now log errors
+
+---
+
 ## [1.5.0] — 2026-05-25
 
 ### 🔄 Apple Reminders Integration
@@ -164,6 +199,7 @@ All notable changes to Docket will be documented in this file.
 
 ---
 
+[1.6.0]: https://github.com/santoru/docket/releases/tag/v1.6.0
 [1.5.0]: https://github.com/santoru/docket/releases/tag/v1.5.0
 [1.4.0]: https://github.com/santoru/docket/releases/tag/v1.4.0
 [1.3.1]: https://github.com/santoru/docket/releases/tag/v1.3.1

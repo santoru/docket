@@ -119,6 +119,19 @@
 
 </td>
 </tr>
+<tr>
+<td>
+
+`📊 Eisenhower Matrix`
+- Visual 2×2 priority matrix
+- Free-position tasks by dragging
+- Drag between quadrants to re-categorize
+- Customizable colors, labels, and layout
+
+</td>
+<td>
+
+`✨ Delight`
 </table>
 
 ---
