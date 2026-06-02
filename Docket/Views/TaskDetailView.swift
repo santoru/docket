@@ -23,6 +23,7 @@ struct TaskDetailView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
+            Divider()
             ScrollView(.vertical) {
                 VStack(spacing: 20) {
                     // Title
@@ -163,10 +164,11 @@ struct TaskDetailView: View {
             Spacer()
             Text("Edit Task").font(.headline)
             Spacer()
-            Button { confirmEdit() } label: { Image(systemName: "checkmark").font(.system(size: 13, weight: .semibold)).foregroundStyle(.green).frame(width: 28, height: 28).background(Circle().fill(.quaternary.opacity(0.5))) }.buttonStyle(.plain)
+            Button { confirmEdit() } label: { Image(systemName: "checkmark").font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).frame(width: 28, height: 28).background(Circle().fill(.quaternary.opacity(0.5))) }.buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+
     }
 
     private func confirmEdit() {
