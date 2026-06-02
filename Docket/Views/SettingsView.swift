@@ -318,7 +318,7 @@ struct SettingsView: View {
 
                 RemindersSync.shared.startObserving()
                 saveSyncedIds()
-                store.saveLists()
+                store.persist()
                 RemindersSync.shared.syncAll()
             } else {
                 remindersSyncEnabled = false

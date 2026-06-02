@@ -108,6 +108,7 @@ final class RemindersSync {
             if let i = Store.shared.items.firstIndex(where: { $0.id == item.id }) {
                 Store.shared.items[i].reminderId = reminder.calendarItemIdentifier
                 Store.shared.items[i].lastSyncedAt = Date()
+                Store.shared.persist()
             }
         } catch {}
     }
@@ -179,6 +180,8 @@ final class RemindersSync {
         docketStore.items.removeAll { item in
             item.listId == list.id && item.reminderId != nil && !reminderIds.contains(item.reminderId!)
         }
+
+        docketStore.persist()
     }
 
     // MARK: - Observe Changes

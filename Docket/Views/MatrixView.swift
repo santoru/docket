@@ -187,7 +187,7 @@ struct MatrixView: View {
                        let i = store.items.firstIndex(where: { $0.id == uuid }) {
                         store.items[i].quadrant = quadrant
                         store.items[i].matrixX = 0.5
-                        store.items[i].matrixY = 0.5
+                        store.items[i].matrixY = 0.5; store.persist()
                     }
                 }
                 return true
@@ -337,7 +337,7 @@ struct TaskDot: View {
                             if let target = newQuadrant {
                                 store.items[i].quadrant = target
                                 store.items[i].matrixX = 0.5
-                                store.items[i].matrixY = 0.5
+                                store.items[i].matrixY = 0.5; store.persist()
                             }
                         } else {
                             // Stay in same quadrant, update position
@@ -345,7 +345,7 @@ struct TaskDot: View {
                                 position = CGPoint(x: newX * bounds.width, y: newY * bounds.height)
                             }
                             store.items[i].matrixX = newX
-                            store.items[i].matrixY = newY
+                            store.items[i].matrixY = newY; store.persist()
                         }
                     }
                 }
