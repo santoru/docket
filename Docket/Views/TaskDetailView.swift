@@ -23,7 +23,7 @@ struct TaskDetailView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            ScrollView(.vertical, showsIndicators: false) {
+            ScrollView(.vertical) {
                 VStack(spacing: 20) {
                     // Title
                     VStack(alignment: .leading, spacing: 4) {

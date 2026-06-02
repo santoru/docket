@@ -234,7 +234,7 @@ struct TaskListView: View {
     // MARK: - Custom Sort List
 
     private var customList: some View {
-        ScrollView(.vertical, showsIndicators: false) {
+        ScrollView(.vertical) {
             LazyVStack(spacing: 8) {
                 let tasks = filteredTasks
                 ForEach(Array(tasks.enumerated()), id: \.element.id) { index, item in
@@ -265,7 +265,7 @@ struct TaskListView: View {
     // MARK: - Grouped by Due Date List
 
     private var groupedList: some View {
-        ScrollView(.vertical, showsIndicators: false) {
+        ScrollView(.vertical) {
             LazyVStack(spacing: 12) {
                 ForEach(store.groupedByDueDate, id: \.title) { group in
                     VStack(alignment: .leading, spacing: 6) {

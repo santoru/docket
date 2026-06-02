@@ -31,7 +31,7 @@ struct CreateTaskView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            ScrollView(.vertical, showsIndicators: false) {
+            ScrollView(.vertical) {
                 VStack(spacing: 20) {
                     // Title - prominent, large
                     VStack(alignment: .leading, spacing: 4) {

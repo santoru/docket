@@ -28,7 +28,7 @@ struct CompletedTasksView: View {
                 }
                 Spacer()
             } else {
-                ScrollView(.vertical, showsIndicators: false) {
+                ScrollView(.vertical) {
                     LazyVStack(spacing: 8) {
                         ForEach(store.completedTasks) { item in
                             HStack(spacing: 12) {
