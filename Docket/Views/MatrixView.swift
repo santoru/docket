@@ -28,6 +28,7 @@ struct MatrixView: View {
     @AppStorage("matrixDelegateLabel") private var delegateLabel = "Delegate"
     @AppStorage("matrixEliminateLabel") private var eliminateLabel = "Eliminate"
     @AppStorage("matrixLabelLength") private var matrixLabelLength = 14
+    @AppStorage("matrixLineCount") private var matrixLineCount = 1
     @AppStorage("matrixShowAxes") private var matrixShowAxes = true
     @AppStorage("matrixShowBadges") private var matrixShowBadges = true
 
@@ -218,17 +219,40 @@ struct MatrixView: View {
 
     // MARK: - Anti-Collision
 
+    /// The expected on-screen size of a task pill, given the current settings
+    /// and the available quadrant width. Both `TaskDot` and the resolver use
+    /// these dimensions so positioning math stays in sync with what's drawn.
+    static func pillSize(maxChars: Int, lineCount: Int, in containerWidth: CGFloat) -> CGSize {
+        // Match the magic numbers used by `TaskDot`'s layout below.
+        let rawTextWidth = max(36, CGFloat(maxChars) * 5.6)
+        let textCap = max(20, containerWidth - 26 - 8)   // dot+spacing+padding+small margin
+        let textWidth = min(rawTextWidth, textCap)
+        let lineHeight: CGFloat = 13
+        return CGSize(
+            width: textWidth + 26,                       // text + dot(5) + spacing(5) + 2*hPad(8)
+            height: CGFloat(lineCount) * lineHeight + 9  // text height + 2*vPad(4.5)
+        )
+    }
+
     /// Compute on-screen positions for the given tasks. If a task's stored
     /// position would land on top of an already-placed one, spiral outward by
     /// small increments until it's clear of every previously placed pill.
+    /// Bounds are derived from the actual pill size so no pill overflows the
+    /// quadrant border.
     private func resolvePositions(for tasks: [TodoItem], in size: CGSize) -> [CGPoint] {
         guard size.width > 0, size.height > 0 else {
             return Array(repeating: .zero, count: tasks.count)
         }
 
-        // Inset bounds so pills don't push past the quadrant edges.
-        let xMin: CGFloat = 30, xMax = max(xMin + 1, size.width - 30)
-        let yMin: CGFloat = 24, yMax = max(yMin + 1, size.height - 14)
+        let pill = Self.pillSize(maxChars: matrixLabelLength, lineCount: matrixLineCount, in: size.width)
+        let pad: CGFloat = 4
+
+        // Inset bounds: pill *centre* must stay at least half a pill + pad
+        // away from each edge so the whole pill sits inside the box.
+        let xMin = pill.width / 2 + pad
+        let xMax = max(xMin + 1, size.width - pill.width / 2 - pad)
+        let yMin = pill.height / 2 + pad
+        let yMax = max(yMin + 1, size.height - pill.height / 2 - pad)
 
         // Minimum centre-to-centre distance between any two pills.
         let minDist: CGFloat = 38
@@ -353,11 +377,18 @@ struct TaskDot: View {
     @State private var isDragging = false
     @State private var isHovering = false
 
-    /// Approximate width budget for the title text, derived from the user's
-    /// preferred label length. Native truncation handles overflow.
+    /// Width budget for the title text. Capped to the available container so
+    /// the pill itself never exceeds the quadrant box.
     private var textMaxWidth: CGFloat {
-        // ~5.6pt per char at size 10 medium is a decent average.
-        max(36, CGFloat(maxChars) * 5.6)
+        let raw = max(36, CGFloat(maxChars) * 5.6)
+        let cap = max(20, bounds.width - 26 - 8)
+        return min(raw, cap)
+    }
+
+    /// Real on-screen size of this pill — used to clamp positions so the pill
+    /// stays fully inside the quadrant border.
+    private var pillSize: CGSize {
+        MatrixView.pillSize(maxChars: maxChars, lineCount: matrixLineCount, in: bounds.width)
     }
 
     var body: some View {
@@ -443,9 +474,18 @@ struct TaskDot: View {
                             store.persist()
                         }
                     } else {
-                        // Stayed in this quadrant — persist the new normalized position.
-                        let newX = clamp(finalX / bounds.width, 0.08, 0.92)
-                        let newY = clamp(finalY / bounds.height, 0.15, 0.9)
+                        // Stayed in this quadrant — persist the new normalized position,
+                        // clamped so the whole pill remains inside the quadrant border.
+                        let halfW = pillSize.width / 2
+                        let halfH = pillSize.height / 2
+                        let pad: CGFloat = 4
+                        let xMinFrac = (halfW + pad) / max(bounds.width, 1)
+                        let xMaxFrac = max(xMinFrac + 0.001, (bounds.width - halfW - pad) / max(bounds.width, 1))
+                        let yMinFrac = (halfH + pad) / max(bounds.height, 1)
+                        let yMaxFrac = max(yMinFrac + 0.001, (bounds.height - halfH - pad) / max(bounds.height, 1))
+
+                        let newX = clamp(finalX / bounds.width, xMinFrac, xMaxFrac)
+                        let newY = clamp(finalY / bounds.height, yMinFrac, yMaxFrac)
                         withAnimation(.spring(duration: 0.25)) {
                             position = CGPoint(x: newX * bounds.width, y: newY * bounds.height)
                         }

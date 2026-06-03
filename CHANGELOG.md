@@ -2,6 +2,14 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.7.2] — 2026-06-03
+
+### 🐛 Fixes
+- Matrix pills now stay fully inside the quadrant border. Previously the position clamp used a small fixed inset (~30pt) instead of the actual pill geometry, so half a pill (~52pt at default settings) could stick outside the box. Both the anti-collision resolver and the drag-end persister now compute clamps from the real pill width/height
+- Pill text width is also capped to the available container, so long label-length settings can no longer make a single pill wider than its quadrant
+
+---
+
 ## [1.7.1] — 2026-06-03
 
 ### ✨ Matrix Pill Marquee
