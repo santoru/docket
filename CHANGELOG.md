@@ -2,6 +2,11 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.6.1] — 2026-06-03
+
+### 🐛 Fixes
+- Scroll bars now use the auto-hiding overlay style instead of the persistent legacy scroller (shown when a mouse is attached)
+
 ## [1.6.0] — 2026-06-03
 
 ### 📊 Eisenhower Matrix

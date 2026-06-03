@@ -54,6 +54,7 @@ swiftc \
     "$SRC_DIR/Views/ConfettiView.swift" \
     "$SRC_DIR/Views/OnboardingView.swift" \
     "$SRC_DIR/Views/UndoToast.swift" \
+    "$SRC_DIR/Views/VScroll.swift" \
     "$SRC_DIR/Views/TaskListView.swift" \
     "$SRC_DIR/Views/CreateTaskView.swift" \
     "$SRC_DIR/Views/TaskDetailView.swift" \
@@ -80,9 +81,9 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
     <key>CFBundleIdentifier</key>
     <string>blog.insecurity.docket</string>
     <key>CFBundleVersion</key>
-    <string>1.6.0</string>
+    <string>1.6.1</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.6.0</string>
+    <string>1.6.1</string>
     <key>CFBundleExecutable</key>
     <string>Docket</string>
     <key>CFBundleIconFile</key>

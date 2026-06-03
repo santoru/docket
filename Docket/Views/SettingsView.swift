@@ -45,7 +45,7 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             header
             Divider()
-            ScrollView(.vertical) {
+            VScroll {
                 VStack(spacing: 16) {
                     reminderSection
                     launchSection
