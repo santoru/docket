@@ -2,6 +2,17 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.7.1] — 2026-06-03
+
+### ✨ Matrix Pill Marquee
+- Hover a truncated task pill in the Eisenhower Matrix to smoothly scroll the title and reveal the rest of the text
+- Linear, autoreversing animation at a constant 28pt/sec — long titles take proportionally longer
+- Brief 0.25s pause before the first slide, eases back to the resting `…` ellipsis on hover-out
+- Pills that already fit get no animation (overflow detected via a hidden measurer)
+- Single-line mode only; multi-line pills retain the native truncation behaviour
+
+---
+
 ## [1.7.0] — 2026-06-03
 
 ### 📊 Eisenhower Matrix Redesign

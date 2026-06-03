@@ -365,13 +365,26 @@ struct TaskDot: View {
             Circle()
                 .fill(color)
                 .frame(width: 5, height: 5)
-            Text(item.title)
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(.primary)
-                .lineLimit(matrixLineCount)
-                .truncationMode(.tail)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: textMaxWidth, alignment: .leading)
+            Group {
+                if matrixLineCount == 1 {
+                    // Single-line: use marquee that scrolls on hover when truncated.
+                    MarqueeText(
+                        text: item.title,
+                        font: .system(size: 10, weight: .medium),
+                        maxWidth: textMaxWidth,
+                        isHovering: isHovering
+                    )
+                } else {
+                    // Multi-line: native ellipsis truncation, no marquee.
+                    Text(item.title)
+                        .font(.system(size: 10, weight: .medium))
+                        .lineLimit(matrixLineCount)
+                        .truncationMode(.tail)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: textMaxWidth, alignment: .leading)
+                }
+            }
+            .foregroundStyle(.primary)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4.5)
@@ -458,5 +471,100 @@ struct TaskDot: View {
 
     private func clamp(_ value: Double, _ min: Double, _ max: Double) -> Double {
         Swift.min(Swift.max(value, min), max)
+    }
+}
+
+// MARK: - Marquee Text
+
+/// A single-line text view that:
+///  • Shows a `…` ellipsis when the natural text width exceeds `maxWidth`.
+///  • While `isHovering` is true *and* the text is truncated, smoothly scrolls
+///    horizontally so the user can read the full title without opening the task.
+///
+/// The marquee uses a linear, autoreversing repeat so the text glides left to
+/// expose the tail, then glides back. Hover-out cancels with a short ease-out
+/// back to the resting position.
+struct MarqueeText: View {
+    let text: String
+    let font: Font
+    let maxWidth: CGFloat
+    let isHovering: Bool
+
+    @State private var fullWidth: CGFloat = 0
+    @State private var offset: CGFloat = 0
+
+    /// True when the natural text width clearly exceeds the available frame.
+    private var overflows: Bool { fullWidth > maxWidth + 0.5 }
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            // Hidden measurer — reports the natural (unconstrained) text width.
+            Text(text)
+                .font(font)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
+                .hidden()
+                .background(
+                    GeometryReader { g in
+                        Color.clear.preference(key: MarqueeTextWidthKey.self, value: g.size.width)
+                    }
+                )
+
+            // Visible text — scrolls when hovering, ellipsis-truncates otherwise.
+            if isHovering && overflows {
+                Text(text)
+                    .font(font)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .offset(x: offset)
+            } else {
+                Text(text)
+                    .font(font)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+        }
+        .frame(width: maxWidth, alignment: .leading)
+        .clipped()
+        .onPreferenceChange(MarqueeTextWidthKey.self) { fullWidth = $0 }
+        .onChange(of: isHovering) { _, hovering in
+            updateMarquee(hovering: hovering)
+        }
+        .onChange(of: text) { _, _ in
+            // If the title changes mid-hover, restart the animation against the new width.
+            if isHovering { updateMarquee(hovering: true) }
+        }
+    }
+
+    private func updateMarquee(hovering: Bool) {
+        if hovering && overflows {
+            // Distance to slide so the tail (plus a tiny breathing pad) becomes visible.
+            let distance = fullWidth - maxWidth + 8
+            // Constant pixel-per-second speed → longer titles take proportionally longer.
+            let speed: Double = 28
+            let duration = max(1.6, Double(distance) / speed)
+
+            // Snap back to start instantly (no animation) before kicking off the loop.
+            offset = 0
+            withAnimation(
+                .linear(duration: duration)
+                    .delay(0.25)          // brief pause before the first slide
+                    .repeatForever(autoreverses: true)
+            ) {
+                offset = -distance
+            }
+        } else {
+            // Override the repeating animation with a finite ease-out back to 0.
+            withAnimation(.easeOut(duration: 0.18)) {
+                offset = 0
+            }
+        }
+    }
+}
+
+private struct MarqueeTextWidthKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
