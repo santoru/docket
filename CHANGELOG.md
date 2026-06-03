@@ -2,6 +2,28 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.7.0] — 2026-06-03
+
+### 📊 Eisenhower Matrix Redesign
+- Refined, more professional and minimal aesthetic — quieter tinted fills, hairline borders, continuous-corner shapes
+- Quadrant headers use small-caps tracked typography (`DO FIRST` / `SCHEDULE` / …) next to a tighter SF Symbol
+- Count badges restyled as minimal tinted capsules with monospaced digits
+- Axis labels (`URGENT` / `IMPORTANT` / …) refined with proper letter-spacing and tertiary foreground
+- Task pills converted from `Capsule` to `RoundedRectangle` with hairline coloured borders and a much subtler shadow
+- Soft hover effect on pills, focused/dragged pills lift to the top via `zIndex`
+
+### ✂️ Native Truncation on Pill Labels
+- Long titles now truncate with a real `…` ellipsis instead of being hard-cut by `String.prefix`
+- Width budget derived from the existing **Label length** setting; respects 1–5 line counts
+- Same treatment applied to the Unassigned strip
+
+### 🧲 Anti-Collision for Pill Positioning
+- New per-quadrant resolver: when two tasks are stored at (or dragged onto) the same point, the second pill spirals outward by a small delta until it clears every previously placed pill
+- Pills can no longer fully overlap inside a quadrant
+- Stable, deterministic layout across renders; the user's original drop point is still persisted — only the *visual* position is nudged when needed
+
+---
+
 ## [1.6.1] — 2026-06-03
 
 ### 🐛 Fixes
