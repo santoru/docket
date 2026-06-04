@@ -2,6 +2,18 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.7.7] — 2026-06-04
+
+### 🐛 Fixes
+- **Diagonal drags now land in the diagonal target.** A flick from `Do First` (top-left) toward `Eliminate` (bottom-right) crossed both the right and bottom edges, but the cross-over switch used ternary precedence and matched the right edge first, so the pill ended up in `Schedule`. Detection now checks both axes and recognises the four diagonal cases:
+  - `Do First` → `Eliminate` (right + bottom)
+  - `Schedule` → `Delegate` (left + bottom)
+  - `Delegate` → `Schedule` (right + top)
+  - `Eliminate` → `Do First` (left + top)
+- **Diagonal landings sit in the corner of the target closest to the source**, not in its centre — so the pill feels like it travelled diagonally across the boundary instead of teleporting.
+
+---
+
 ## [1.7.6] — 2026-06-04
 
 ### 🐛 Fixes

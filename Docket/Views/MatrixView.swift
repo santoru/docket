@@ -604,11 +604,32 @@ struct TaskDot: View {
                 return
             }
 
-            let target: Quadrant? = switch quadrant {
-            case .doFirst:   crossedRight ? .schedule  : crossedBottom ? .delegate  : nil
-            case .schedule:  crossedLeft  ? .doFirst   : crossedBottom ? .eliminate : nil
-            case .delegate:  crossedRight ? .eliminate : crossedTop    ? .doFirst   : nil
-            case .eliminate: crossedLeft  ? .delegate  : crossedTop    ? .schedule  : nil
+            let target: Quadrant?
+            switch quadrant {
+            case .doFirst:
+                // doFirst is top-left → diagonal exit (right + bottom) = eliminate.
+                target = if crossedRight && crossedBottom { .eliminate }
+                         else if crossedRight             { .schedule }
+                         else if crossedBottom            { .delegate }
+                         else                             { nil }
+            case .schedule:
+                // schedule is top-right → diagonal exit (left + bottom) = delegate.
+                target = if crossedLeft && crossedBottom  { .delegate }
+                         else if crossedLeft              { .doFirst }
+                         else if crossedBottom            { .eliminate }
+                         else                             { nil }
+            case .delegate:
+                // delegate is bottom-left → diagonal exit (right + top) = schedule.
+                target = if crossedRight && crossedTop    { .schedule }
+                         else if crossedRight             { .eliminate }
+                         else if crossedTop               { .doFirst }
+                         else                             { nil }
+            case .eliminate:
+                // eliminate is bottom-right → diagonal exit (left + top) = doFirst.
+                target = if crossedLeft && crossedTop     { .doFirst }
+                         else if crossedLeft              { .delegate }
+                         else if crossedTop               { .schedule }
+                         else                             { nil }
             }
 
             guard let target else {
@@ -657,26 +678,31 @@ struct TaskDot: View {
     }
 
     /// Compute the (matrixX, matrixY) the pill should land at when entering
-    /// `target` from the given exit-edge coordinates. Preserves the
-    /// perpendicular axis so the pill feels like it slid across the boundary.
+    /// `target` from the given exit-edge coordinates. For axis-aligned moves
+    /// the perpendicular axis is preserved (so the pill feels like it slid
+    /// across). For diagonal moves the pill lands in the corner of the
+    /// target closest to the source quadrant.
     private func entryPoint(into target: Quadrant, finalX: CGFloat, finalY: CGFloat) -> (Double, Double) {
         let xRatio = clamp(finalX / bounds.width, 0.15, 0.85)
         let yRatio = clamp(finalY / bounds.height, 0.15, 0.85)
 
-        // Determine the entry edge from source→target geometry.
         switch (quadrant, target) {
+        // Axis-aligned: preserve the perpendicular axis.
         case (.doFirst, .schedule), (.delegate, .eliminate):
-            // Exited right edge of source → enter left edge of target.
-            return (0.18, yRatio)
+            return (0.18, yRatio)                     // exited right → enter at left
         case (.schedule, .doFirst), (.eliminate, .delegate):
-            // Exited left → enter right.
-            return (0.82, yRatio)
+            return (0.82, yRatio)                     // exited left → enter at right
         case (.doFirst, .delegate), (.schedule, .eliminate):
-            // Exited bottom → enter top.
-            return (xRatio, 0.20)
+            return (xRatio, 0.20)                     // exited bottom → enter at top
         case (.delegate, .doFirst), (.eliminate, .schedule):
-            // Exited top → enter bottom.
-            return (xRatio, 0.80)
+            return (xRatio, 0.80)                     // exited top → enter at bottom
+
+        // Diagonals: drop into the corner of the target nearest the source.
+        case (.doFirst, .eliminate):  return (0.20, 0.20)   // top-left of eliminate
+        case (.schedule, .delegate):  return (0.80, 0.20)   // top-right of delegate
+        case (.delegate, .schedule):  return (0.20, 0.80)   // bottom-left of schedule
+        case (.eliminate, .doFirst):  return (0.80, 0.80)   // bottom-right of doFirst
+
         default:
             return (0.5, 0.5)
         }
