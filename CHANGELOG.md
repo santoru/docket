@@ -2,6 +2,28 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.7.3] — 2026-06-04
+
+### ✨ Matrix UX
+- **Drag a pill across boundaries with intent preserved.** Cross-quadrant drags now translate the exit-edge crossing into the target quadrant — vertical position is kept on left/right transitions and horizontal position on top/bottom transitions, instead of teleporting to the centre.
+- **Cross-quadrant moves animate.** Pills spring into their new spot rather than snapping.
+- **Drag a bottom-row pill out the bottom of the matrix to un-assign it.** Returns the task to the Unassigned strip without opening the detail view.
+- **Unassigned strip is now a drop target.** Drag a pill onto it from any quadrant to clear its assignment.
+- **Empty quadrants show a subtle "Drop tasks here" hint** in the quadrant tint.
+- **Marquee paused while dragging** — the title no longer scrolls under the cursor while you reposition a pill.
+
+### 🐛 Fixes
+- **Pills now re-seat when bounds or settings change.** `onChange(of: initialPosition)` springs each pill to its new computed spot when the window is resized or `Label length` / `Label lines` are adjusted in Settings — previously they stayed pinned to their old absolute coordinates.
+- **Anti-collision uses real rectangles.** Switched from a centre-to-centre 38pt distance check to bounding-box intersection (with a 2pt inflation pad), so multi-line pills can no longer visually touch.
+- **Tap-vs-drag disambiguation.** A drag with total max distance under 4pt is now treated as a tap, so wiggling the cursor while clicking no longer steals the gesture from the detail-view tap target.
+
+### 🧹 Cleanups
+- **`Store.mutate(id:_:)`** centralises the "find item → mutate → persist" pattern. All three matrix call sites now go through it instead of indexing into `store.items` directly.
+- **`matrixLineCount` has a single source of truth.** Removed the duplicate `@AppStorage` from `TaskDot` — it's now passed in from the parent.
+- **`initialPosition` is `CGPoint?`** instead of using `.zero` as a magic "not yet computed" sentinel.
+
+---
+
 ## [1.7.2] — 2026-06-03
 
 ### 🐛 Fixes

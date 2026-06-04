@@ -261,6 +261,17 @@ final class Store {
         saveLists()
     }
 
+    /// Atomically mutate a single item by id and persist. Centralises the
+    /// "find index → mutate → persist" pattern used by drag-driven views.
+    /// No-op if the id isn't found.
+    @discardableResult
+    func mutate(_ id: UUID, _ mutator: (inout TodoItem) -> Void) -> Bool {
+        guard let i = items.firstIndex(where: { $0.id == id }) else { return false }
+        mutator(&items[i])
+        saveTasks()
+        return true
+    }
+
     private func loadLabels() {
         guard let data = try? Data(contentsOf: labelsURL) else { return }
         labels = (try? JSONDecoder().decode([TaskLabel].self, from: data)) ?? []

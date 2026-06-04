@@ -8,11 +8,17 @@ import SwiftUI
 ///
 /// Design notes:
 ///  • Quadrants use ultra-subtle tinted fills + hairline borders for a quiet,
-///    professional feel — the colour is for *identity*, not for grabbing attention.
-///  • Pills truncate text natively via SwiftUI (`lineLimit` + `truncationMode`),
-///    so long titles get a real ellipsis instead of a hard `String.prefix` cut.
-///  • An anti-collision pass at the quadrant level offsets pills that would
-///    otherwise sit on top of each other, so dots can never fully overlap.
+///    professional feel — colour identifies, doesn't shout.
+///  • Pills truncate text natively via SwiftUI; on hover, long titles scroll
+///    horizontally so the full text becomes readable without opening the task.
+///  • Pills cannot fully overlap — a per-quadrant rect-overlap resolver
+///    spirals later pills outward until they no longer intersect.
+///  • Pills are clamped to stay fully inside the quadrant border, derived
+///    from the real pill geometry (label length × line count).
+///  • Cross-quadrant drags preserve the perpendicular axis so pills feel
+///    like they slid across the boundary.
+///  • Bottom-row pills can be dragged out of the matrix to remove their
+///    quadrant assignment (return to "Unassigned").
 struct MatrixView: View {
     @Binding var path: [NavDestination]
     var store = Store.shared
@@ -163,6 +169,15 @@ struct MatrixView: View {
                             .strokeBorder(color.opacity(0.18), lineWidth: 0.75)
                     )
 
+                // Empty-state hint — only shown when the quadrant has no pills.
+                if tasks.isEmpty {
+                    Text("Drop tasks here")
+                        .font(.system(size: 9.5, weight: .medium))
+                        .foregroundStyle(color.opacity(0.45))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .allowsHitTesting(false)
+                }
+
                 // Header (icon + small-caps label)
                 HStack(spacing: 5) {
                     Image(systemName: quadrant.icon)
@@ -182,19 +197,18 @@ struct MatrixView: View {
                         .foregroundStyle(color)
                         .padding(.horizontal, 5)
                         .padding(.vertical, 1.5)
-                        .background(
-                            Capsule().fill(color.opacity(0.14))
-                        )
+                        .background(Capsule().fill(color.opacity(0.14)))
                         .position(x: geo.size.width - 16, y: 13)
                 }
 
-                // Tasks — positions are resolved by the parent so they never fully overlap.
+                // Tasks — positions resolved by parent so they never fully overlap.
                 ForEach(Array(tasks.enumerated()), id: \.element.id) { idx, item in
                     TaskDot(
                         item: item,
                         quadrant: quadrant,
                         color: color,
                         maxChars: matrixLabelLength,
+                        lineCount: matrixLineCount,
                         bounds: geo.size,
                         initialPosition: resolved[idx],
                         onTap: { path.append(.detail(item)) }
@@ -203,12 +217,14 @@ struct MatrixView: View {
             }
             .dropDestination(for: String.self) { items, _ in
                 for idString in items {
-                    if let uuid = UUID(uuidString: idString),
-                       let i = store.items.firstIndex(where: { $0.id == uuid }) {
-                        store.items[i].quadrant = quadrant
-                        store.items[i].matrixX = 0.5
-                        store.items[i].matrixY = 0.5
-                        store.persist()
+                    if let uuid = UUID(uuidString: idString) {
+                        withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
+                            store.mutate(uuid) { item in
+                                item.quadrant = quadrant
+                                item.matrixX = 0.5
+                                item.matrixY = 0.5
+                            }
+                        }
                     }
                 }
                 return true
@@ -223,9 +239,8 @@ struct MatrixView: View {
     /// and the available quadrant width. Both `TaskDot` and the resolver use
     /// these dimensions so positioning math stays in sync with what's drawn.
     static func pillSize(maxChars: Int, lineCount: Int, in containerWidth: CGFloat) -> CGSize {
-        // Match the magic numbers used by `TaskDot`'s layout below.
         let rawTextWidth = max(36, CGFloat(maxChars) * 5.6)
-        let textCap = max(20, containerWidth - 26 - 8)   // dot+spacing+padding+small margin
+        let textCap = max(20, containerWidth - 26 - 8)
         let textWidth = min(rawTextWidth, textCap)
         let lineHeight: CGFloat = 13
         return CGSize(
@@ -234,9 +249,9 @@ struct MatrixView: View {
         )
     }
 
-    /// Compute on-screen positions for the given tasks. If a task's stored
-    /// position would land on top of an already-placed one, spiral outward by
-    /// small increments until it's clear of every previously placed pill.
+    /// Compute on-screen positions for the given tasks using rectangle-overlap
+    /// detection. Pills are spiralled outward by small, deterministic increments
+    /// until their bounding box no longer intersects any previously placed pill.
     /// Bounds are derived from the actual pill size so no pill overflows the
     /// quadrant border.
     private func resolvePositions(for tasks: [TodoItem], in size: CGSize) -> [CGPoint] {
@@ -246,19 +261,26 @@ struct MatrixView: View {
 
         let pill = Self.pillSize(maxChars: matrixLabelLength, lineCount: matrixLineCount, in: size.width)
         let pad: CGFloat = 4
-
-        // Inset bounds: pill *centre* must stay at least half a pill + pad
-        // away from each edge so the whole pill sits inside the box.
         let xMin = pill.width / 2 + pad
         let xMax = max(xMin + 1, size.width - pill.width / 2 - pad)
         let yMin = pill.height / 2 + pad
         let yMax = max(yMin + 1, size.height - pill.height / 2 - pad)
 
-        // Minimum centre-to-centre distance between any two pills.
-        let minDist: CGFloat = 38
+        // Inflate rects by 2pt before intersection-testing so pills never visually touch.
+        let inflate: CGFloat = 2
 
-        var placed: [CGPoint] = []
-        placed.reserveCapacity(tasks.count)
+        func rectAt(_ p: CGPoint) -> CGRect {
+            CGRect(
+                x: p.x - pill.width / 2 - inflate,
+                y: p.y - pill.height / 2 - inflate,
+                width: pill.width + inflate * 2,
+                height: pill.height + inflate * 2
+            )
+        }
+
+        var placed: [CGRect] = []
+        var positions: [CGPoint] = []
+        positions.reserveCapacity(tasks.count)
 
         for item in tasks {
             let baseX = (item.matrixX ?? 0.5) * size.width
@@ -267,9 +289,8 @@ struct MatrixView: View {
                                xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax)
 
             var attempt = 0
-            while attempt < 28 && placed.contains(where: { hypot(p.x - $0.x, p.y - $0.y) < minDist }) {
+            while attempt < 32 && placed.contains(where: { rectAt(p).intersects($0) }) {
                 attempt += 1
-                // Stable spiral: each subsequent attempt rotates ~110° and grows the radius.
                 let angle = Double(attempt) * 1.92
                 let radius = 14.0 + Double(attempt) * 5.0
                 p = clampPoint(
@@ -278,9 +299,11 @@ struct MatrixView: View {
                     xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax
                 )
             }
-            placed.append(p)
+
+            placed.append(rectAt(p))
+            positions.append(p)
         }
-        return placed
+        return positions
     }
 
     private func clampPoint(_ p: CGPoint, xMin: CGFloat, xMax: CGFloat, yMin: CGFloat, yMax: CGFloat) -> CGPoint {
@@ -343,6 +366,21 @@ struct MatrixView: View {
                     }
                 }
                 .padding(.vertical, 12)
+                // Drop here from a quadrant to clear its assignment.
+                .dropDestination(for: String.self) { items, _ in
+                    for idString in items {
+                        if let uuid = UUID(uuidString: idString) {
+                            withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
+                                store.mutate(uuid) { item in
+                                    item.quadrant = nil
+                                    item.matrixX = nil
+                                    item.matrixY = nil
+                                }
+                            }
+                        }
+                    }
+                    return true
+                }
             }
         }
     }
@@ -361,21 +399,24 @@ struct MatrixView: View {
 /// A draggable task pill rendered inside a quadrant. The pill seeds its
 /// position from the parent (which has already run the anti-collision pass),
 /// so two pills with identical stored coordinates will never sit exactly on
-/// top of each other.
+/// top of each other. The pill also re-seats itself when the parent recomputes
+/// positions (e.g., after a window resize or a setting change).
 struct TaskDot: View {
     let item: TodoItem
     let quadrant: Quadrant
     let color: Color
     let maxChars: Int
+    let lineCount: Int
     let bounds: CGSize
-    let initialPosition: CGPoint
+    /// `nil` = position not yet computed by the parent (use stored matrixX/Y).
+    let initialPosition: CGPoint?
     let onTap: () -> Void
 
-    @AppStorage("matrixLineCount") private var matrixLineCount = 1
     @State private var position: CGPoint = .zero
     @State private var dragOffset: CGSize = .zero
     @State private var isDragging = false
     @State private var isHovering = false
+    @State private var dragMaxDistance: CGFloat = 0
 
     /// Width budget for the title text. Capped to the available container so
     /// the pill itself never exceeds the quadrant box.
@@ -385,10 +426,9 @@ struct TaskDot: View {
         return min(raw, cap)
     }
 
-    /// Real on-screen size of this pill — used to clamp positions so the pill
-    /// stays fully inside the quadrant border.
+    /// Real on-screen size of this pill.
     private var pillSize: CGSize {
-        MatrixView.pillSize(maxChars: maxChars, lineCount: matrixLineCount, in: bounds.width)
+        MatrixView.pillSize(maxChars: maxChars, lineCount: lineCount, in: bounds.width)
     }
 
     var body: some View {
@@ -397,19 +437,19 @@ struct TaskDot: View {
                 .fill(color)
                 .frame(width: 5, height: 5)
             Group {
-                if matrixLineCount == 1 {
-                    // Single-line: use marquee that scrolls on hover when truncated.
+                if lineCount == 1 {
+                    // Single-line: marquee scrolls on hover when truncated.
+                    // Suppress while dragging so the title doesn't slide under the cursor.
                     MarqueeText(
                         text: item.title,
                         font: .system(size: 10, weight: .medium),
                         maxWidth: textMaxWidth,
-                        isHovering: isHovering
+                        isHovering: isHovering && !isDragging
                     )
                 } else {
-                    // Multi-line: native ellipsis truncation, no marquee.
                     Text(item.title)
                         .font(.system(size: 10, weight: .medium))
-                        .lineLimit(matrixLineCount)
+                        .lineLimit(lineCount)
                         .truncationMode(.tail)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: textMaxWidth, alignment: .leading)
@@ -438,78 +478,156 @@ struct TaskDot: View {
         .zIndex(isDragging ? 10 : (isHovering ? 5 : 0))
         .onHover { isHovering = $0 }
         .gesture(
-            DragGesture(coordinateSpace: .named("matrix"))
+            DragGesture(coordinateSpace: .local)
                 .onChanged { value in
                     isDragging = true
                     dragOffset = value.translation
+                    let dist = hypot(value.translation.width, value.translation.height)
+                    if dist > dragMaxDistance { dragMaxDistance = dist }
                 }
                 .onEnded { value in
+                    let totalDistance = dragMaxDistance
                     isDragging = false
                     dragOffset = .zero
+                    dragMaxDistance = 0
 
-                    let store = Store.shared
-                    guard let i = store.items.firstIndex(where: { $0.id == item.id }) else { return }
-
-                    let finalX = position.x + value.translation.width
-                    let finalY = position.y + value.translation.height
-
-                    if finalX < 0 || finalX > bounds.width || finalY < 0 || finalY > bounds.height {
-                        // Crossed boundary — determine target quadrant.
-                        let wentLeft = finalX < 0
-                        let wentRight = finalX > bounds.width
-                        let wentUp = finalY < 0
-                        let wentDown = finalY > bounds.height
-
-                        let newQuadrant: Quadrant? = switch quadrant {
-                        case .doFirst:   wentRight ? .schedule  : wentDown ? .delegate  : nil
-                        case .schedule:  wentLeft  ? .doFirst   : wentDown ? .eliminate : nil
-                        case .delegate:  wentRight ? .eliminate : wentUp   ? .doFirst   : nil
-                        case .eliminate: wentLeft  ? .delegate  : wentUp   ? .schedule  : nil
-                        }
-
-                        if let target = newQuadrant {
-                            store.items[i].quadrant = target
-                            store.items[i].matrixX = 0.5
-                            store.items[i].matrixY = 0.5
-                            store.persist()
-                        }
-                    } else {
-                        // Stayed in this quadrant — persist the new normalized position,
-                        // clamped so the whole pill remains inside the quadrant border.
-                        let halfW = pillSize.width / 2
-                        let halfH = pillSize.height / 2
-                        let pad: CGFloat = 4
-                        let xMinFrac = (halfW + pad) / max(bounds.width, 1)
-                        let xMaxFrac = max(xMinFrac + 0.001, (bounds.width - halfW - pad) / max(bounds.width, 1))
-                        let yMinFrac = (halfH + pad) / max(bounds.height, 1)
-                        let yMaxFrac = max(yMinFrac + 0.001, (bounds.height - halfH - pad) / max(bounds.height, 1))
-
-                        let newX = clamp(finalX / bounds.width, xMinFrac, xMaxFrac)
-                        let newY = clamp(finalY / bounds.height, yMinFrac, yMaxFrac)
-                        withAnimation(.spring(duration: 0.25)) {
-                            position = CGPoint(x: newX * bounds.width, y: newY * bounds.height)
-                        }
-                        store.items[i].matrixX = newX
-                        store.items[i].matrixY = newY
-                        store.persist()
+                    // Treat micro-movements as taps (avoids opening the detail
+                    // view when the user wiggles the cursor while clicking).
+                    if totalDistance < 4 {
+                        onTap()
+                        return
                     }
+
+                    handleDragEnd(value: value)
                 }
         )
-        .onTapGesture { onTap() }
-        .onAppear {
-            // Seed from the parent-resolved (collision-free) position.
-            position = initialPosition == .zero
-                ? CGPoint(
-                    x: (item.matrixX ?? 0.5) * bounds.width,
-                    y: (item.matrixY ?? 0.5) * bounds.height
-                )
-                : initialPosition
+        // Re-seat when the parent recomputes layout (resize, settings change,
+        // or a sibling pill moved and our resolved spot shifted).
+        .onChange(of: initialPosition) { _, new in
+            guard let new else { return }
+            withAnimation(.spring(duration: 0.25)) { position = new }
         }
+        .onAppear { seedPosition() }
         .animation(.spring(duration: 0.2), value: isDragging)
         .animation(.easeInOut(duration: 0.12), value: isHovering)
     }
 
+    // MARK: - Drag end
+
+    private func handleDragEnd(value: DragGesture.Value) {
+        let finalX = position.x + value.translation.width
+        let finalY = position.y + value.translation.height
+
+        let crossedLeft   = finalX < 0
+        let crossedRight  = finalX > bounds.width
+        let crossedTop    = finalY < 0
+        let crossedBottom = finalY > bounds.height
+
+        if crossedLeft || crossedRight || crossedTop || crossedBottom {
+            // Gone out of the source quadrant — figure out where to land.
+            // Bottom-row sources can drop "off the bottom" to return to Unassigned.
+            let isBottomRow = quadrant == .delegate || quadrant == .eliminate
+            let droppedFarBelow = crossedBottom && finalY > bounds.height + 50
+
+            if isBottomRow && droppedFarBelow {
+                withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
+                    Store.shared.mutate(item.id) { item in
+                        item.quadrant = nil
+                        item.matrixX = nil
+                        item.matrixY = nil
+                    }
+                }
+                return
+            }
+
+            // Otherwise, map to an adjacent quadrant.
+            let target: Quadrant? = switch quadrant {
+            case .doFirst:   crossedRight ? .schedule  : crossedBottom ? .delegate  : nil
+            case .schedule:  crossedLeft  ? .doFirst   : crossedBottom ? .eliminate : nil
+            case .delegate:  crossedRight ? .eliminate : crossedTop    ? .doFirst   : nil
+            case .eliminate: crossedLeft  ? .delegate  : crossedTop    ? .schedule  : nil
+            }
+
+            guard let target else { return } // diagonal exit → snap back
+
+            // Translate the exit-edge crossing into a sensible spot in the
+            // target quadrant: preserve the perpendicular axis, place the pill
+            // a short distance from the entry edge.
+            let (newX, newY) = entryPoint(into: target, finalX: finalX, finalY: finalY)
+            withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
+                Store.shared.mutate(item.id) { item in
+                    item.quadrant = target
+                    item.matrixX = newX
+                    item.matrixY = newY
+                }
+            }
+        } else {
+            // Stayed in this quadrant — persist the new normalized position,
+            // clamped so the whole pill remains inside the quadrant border.
+            let halfW = pillSize.width / 2
+            let halfH = pillSize.height / 2
+            let pad: CGFloat = 4
+            let xMinFrac = (halfW + pad) / max(bounds.width, 1)
+            let xMaxFrac = max(xMinFrac + 0.001, (bounds.width - halfW - pad) / max(bounds.width, 1))
+            let yMinFrac = (halfH + pad) / max(bounds.height, 1)
+            let yMaxFrac = max(yMinFrac + 0.001, (bounds.height - halfH - pad) / max(bounds.height, 1))
+
+            let newX = clamp(finalX / bounds.width, xMinFrac, xMaxFrac)
+            let newY = clamp(finalY / bounds.height, yMinFrac, yMaxFrac)
+            withAnimation(.spring(duration: 0.25)) {
+                position = CGPoint(x: newX * bounds.width, y: newY * bounds.height)
+            }
+            Store.shared.mutate(item.id) { item in
+                item.matrixX = newX
+                item.matrixY = newY
+            }
+        }
+    }
+
+    /// Compute the (matrixX, matrixY) the pill should land at when entering
+    /// `target` from the given exit-edge coordinates. Preserves the
+    /// perpendicular axis so the pill feels like it slid across the boundary.
+    private func entryPoint(into target: Quadrant, finalX: CGFloat, finalY: CGFloat) -> (Double, Double) {
+        let xRatio = clamp(finalX / bounds.width, 0.15, 0.85)
+        let yRatio = clamp(finalY / bounds.height, 0.15, 0.85)
+
+        // Determine the entry edge from source→target geometry.
+        switch (quadrant, target) {
+        case (.doFirst, .schedule), (.delegate, .eliminate):
+            // Exited right edge of source → enter left edge of target.
+            return (0.18, yRatio)
+        case (.schedule, .doFirst), (.eliminate, .delegate):
+            // Exited left → enter right.
+            return (0.82, yRatio)
+        case (.doFirst, .delegate), (.schedule, .eliminate):
+            // Exited bottom → enter top.
+            return (xRatio, 0.20)
+        case (.delegate, .doFirst), (.eliminate, .schedule):
+            // Exited top → enter bottom.
+            return (xRatio, 0.80)
+        default:
+            return (0.5, 0.5)
+        }
+    }
+
+    // MARK: - Position seeding
+
+    private func seedPosition() {
+        if let p = initialPosition {
+            position = p
+        } else {
+            position = CGPoint(
+                x: (item.matrixX ?? 0.5) * bounds.width,
+                y: (item.matrixY ?? 0.5) * bounds.height
+            )
+        }
+    }
+
     private func clamp(_ value: Double, _ min: Double, _ max: Double) -> Double {
+        Swift.min(Swift.max(value, min), max)
+    }
+
+    private func clamp(_ value: CGFloat, _ min: CGFloat, _ max: CGFloat) -> CGFloat {
         Swift.min(Swift.max(value, min), max)
     }
 }
@@ -520,10 +638,6 @@ struct TaskDot: View {
 ///  • Shows a `…` ellipsis when the natural text width exceeds `maxWidth`.
 ///  • While `isHovering` is true *and* the text is truncated, smoothly scrolls
 ///    horizontally so the user can read the full title without opening the task.
-///
-/// The marquee uses a linear, autoreversing repeat so the text glides left to
-/// expose the tail, then glides back. Hover-out cancels with a short ease-out
-/// back to the resting position.
 struct MarqueeText: View {
     let text: String
     let font: Font
@@ -533,7 +647,6 @@ struct MarqueeText: View {
     @State private var fullWidth: CGFloat = 0
     @State private var offset: CGFloat = 0
 
-    /// True when the natural text width clearly exceeds the available frame.
     private var overflows: Bool { fullWidth > maxWidth + 0.5 }
 
     var body: some View {
@@ -571,30 +684,24 @@ struct MarqueeText: View {
             updateMarquee(hovering: hovering)
         }
         .onChange(of: text) { _, _ in
-            // If the title changes mid-hover, restart the animation against the new width.
             if isHovering { updateMarquee(hovering: true) }
         }
     }
 
     private func updateMarquee(hovering: Bool) {
         if hovering && overflows {
-            // Distance to slide so the tail (plus a tiny breathing pad) becomes visible.
             let distance = fullWidth - maxWidth + 8
-            // Constant pixel-per-second speed → longer titles take proportionally longer.
             let speed: Double = 28
             let duration = max(1.6, Double(distance) / speed)
-
-            // Snap back to start instantly (no animation) before kicking off the loop.
             offset = 0
             withAnimation(
                 .linear(duration: duration)
-                    .delay(0.25)          // brief pause before the first slide
+                    .delay(0.25)
                     .repeatForever(autoreverses: true)
             ) {
                 offset = -distance
             }
         } else {
-            // Override the repeating animation with a finite ease-out back to 0.
             withAnimation(.easeOut(duration: 0.18)) {
                 offset = 0
             }
