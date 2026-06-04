@@ -326,7 +326,7 @@ struct MatrixView: View {
         let unassigned = store.activeTasks.filter { $0.quadrant == nil }
         // Show the section if (a) there are unassigned tasks parked there,
         // or (b) the user is currently dragging a quadrant pill — in which
-        // case we surface an empty drop zone as a visible affordance.
+        // case we surface the drop zone as a visible affordance.
         let shouldShow = !unassigned.isEmpty || isAnyPillDragging
 
         return Group {
@@ -347,7 +347,7 @@ struct MatrixView: View {
                     .padding(.horizontal, 16)
 
                     if unassigned.isEmpty {
-                        // Empty drop zone — only visible during a drag.
+                        // Empty hint — shown only while shouldShow, i.e. during drag.
                         HStack {
                             Spacer()
                             Text("Drop here to remove from the matrix")
@@ -356,19 +356,11 @@ struct MatrixView: View {
                             Spacer()
                         }
                         .frame(maxWidth: .infinity, minHeight: 36)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .strokeBorder(
-                                    .quaternary,
-                                    style: StrokeStyle(lineWidth: 0.75, dash: [3, 3])
-                                )
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                        .fill(.quaternary.opacity(0.18))
-                                )
-                        )
+                        .background(dropZoneBackground)
                         .padding(.horizontal, 16)
                     } else {
+                        // Pills, with the dashed drop zone fading in behind them
+                        // while a quadrant pill is being dragged.
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 6) {
                                 ForEach(unassigned) { item in
@@ -399,8 +391,12 @@ struct MatrixView: View {
                                     .draggable(item.id.uuidString)
                                 }
                             }
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
                         }
+                        .frame(minHeight: 36)
+                        .background(dropZoneBackground)
+                        .padding(.horizontal, 16)
                     }
                 }
                 .padding(.vertical, 12)
@@ -419,6 +415,22 @@ struct MatrixView: View {
                     return true
                 }
             }
+        }
+    }
+
+    /// Dashed-outline + tinted-fill background that fades in while a
+    /// quadrant pill is being dragged. Used by both the empty hint and the
+    /// populated pill strip so the drop affordance is consistent.
+    @ViewBuilder
+    private var dropZoneBackground: some View {
+        if isAnyPillDragging {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(.quaternary, style: StrokeStyle(lineWidth: 0.75, dash: [3, 3]))
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(.quaternary.opacity(0.18))
+                )
+                .transition(.opacity)
         }
     }
 

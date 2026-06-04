@@ -2,6 +2,14 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.7.10] — 2026-06-04
+
+### ✨ Matrix UX
+- **Drop zone background also fades in when items are already in Unassigned.** Previously the dashed-outline drop zone only appeared in the empty state. Now it surfaces behind the populated pill strip too, so the affordance is consistent regardless of whether any tasks are parked there.
+- Extracted `dropZoneBackground` as a shared view so both states use the same visual language.
+
+---
+
 ## [1.7.9] — 2026-06-04
 
 ### ✨ Matrix UX
