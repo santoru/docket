@@ -404,7 +404,7 @@ struct MatrixView: View {
                     }
                 }
                 .padding(.vertical, 12)
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                .transition(.opacity)
                 .dropDestination(for: String.self) { items, _ in
                     for idString in items {
                         if let uuid = UUID(uuidString: idString) {

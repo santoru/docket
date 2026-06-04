@@ -2,6 +2,13 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.7.9] — 2026-06-04
+
+### ✨ Matrix UX
+- **Unassigned drop zone fades in/out** instead of sliding from the top edge — calmer, less distracting transition.
+
+---
+
 ## [1.7.8] — 2026-06-04
 
 ### ✨ Matrix UX
