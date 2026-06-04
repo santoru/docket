@@ -2,6 +2,15 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.7.6] — 2026-06-04
+
+### 🐛 Fixes
+- **Cross-quadrant moves no longer "drop from the top".** When a pill was dragged into a different quadrant, the source `TaskDot` was destroyed and a new one was created in the target. The new view's `@State position` defaults to `.zero` (the top-left of the quadrant), and `onAppear`'s `seedPosition()` was running inside the still-active `withAnimation(.spring)` transaction wrapping the store mutate — so SwiftUI animated the pill in from `(0, 0)`.
+- Removed the `withAnimation` wrapper around the four cross-container mutations (cross-quadrant from `handleDragEnd`, drop-to-Unassigned from `handleDragEnd`, `quadrantBox.dropDestination`, `unassignedSection.dropDestination`). The move is now instant — the pill simply appears at its destination.
+- Hardened `onAppear` with `Transaction(animation: nil)` so any future caller that wraps a mutation in `withAnimation` still gets a clean entry.
+
+---
+
 ## [1.7.5] — 2026-06-04
 
 ### ✨ Matrix UX

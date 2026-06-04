@@ -218,12 +218,13 @@ struct MatrixView: View {
             .dropDestination(for: String.self) { items, _ in
                 for idString in items {
                     if let uuid = UUID(uuidString: idString) {
-                        withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
-                            store.mutate(uuid) { item in
-                                item.quadrant = quadrant
-                                item.matrixX = 0.5
-                                item.matrixY = 0.5
-                            }
+                        // No withAnimation — the target view is freshly created
+                        // and its seedPosition would otherwise animate from
+                        // .zero (the top-left corner) under an active transaction.
+                        store.mutate(uuid) { item in
+                            item.quadrant = quadrant
+                            item.matrixX = 0.5
+                            item.matrixY = 0.5
                         }
                     }
                 }
@@ -395,12 +396,11 @@ struct MatrixView: View {
         .dropDestination(for: String.self) { items, _ in
             for idString in items {
                 if let uuid = UUID(uuidString: idString) {
-                    withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
-                        store.mutate(uuid) { item in
-                            item.quadrant = nil
-                            item.matrixX = nil
-                            item.matrixY = nil
-                        }
+                    // No withAnimation — see note in quadrantBox.dropDestination.
+                    store.mutate(uuid) { item in
+                        item.quadrant = nil
+                        item.matrixX = nil
+                        item.matrixY = nil
                     }
                 }
             }
@@ -553,7 +553,17 @@ struct TaskDot: View {
             guard !isDragging, let new else { return }
             withAnimation(.smooth(duration: 0.25)) { position = new }
         }
-        .onAppear { seedPosition() }
+        .onAppear {
+            // Always seed the position outside any active animation transaction.
+            // When this TaskDot is freshly created (e.g. as a result of a
+            // cross-quadrant move), the parent's mutate may have been wrapped
+            // in withAnimation — without this guard, SwiftUI would animate
+            // `position` from its default .zero (top-left corner) to the
+            // resolved spot, which reads as the pill "dropping from the top".
+            withTransaction(Transaction(animation: nil)) {
+                seedPosition()
+            }
+        }
     }
 
     // MARK: - Drag end
@@ -581,12 +591,15 @@ struct TaskDot: View {
             let droppedFarBelow = crossedBottom && predictedY > bounds.height + 50
 
             if isBottomRow && droppedFarBelow {
-                withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
-                    Store.shared.mutate(item.id) { item in
-                        item.quadrant = nil
-                        item.matrixX = nil
-                        item.matrixY = nil
-                    }
+                // Cross-container move (this TaskDot is about to be destroyed
+                // and re-created in the unassigned strip). No withAnimation
+                // wrapper — otherwise the new view's onAppear seeds its
+                // position inside the active transaction and SwiftUI
+                // animates it in from .zero (the top-left corner).
+                Store.shared.mutate(item.id) { item in
+                    item.quadrant = nil
+                    item.matrixX = nil
+                    item.matrixY = nil
                 }
                 return
             }
@@ -605,12 +618,11 @@ struct TaskDot: View {
             }
 
             let (newX, newY) = entryPoint(into: target, finalX: predictedX, finalY: predictedY)
-            withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
-                Store.shared.mutate(item.id) { item in
-                    item.quadrant = target
-                    item.matrixX = newX
-                    item.matrixY = newY
-                }
+            // Cross-quadrant move — no withAnimation wrapper (see note above).
+            Store.shared.mutate(item.id) { item in
+                item.quadrant = target
+                item.matrixX = newX
+                item.matrixY = newY
             }
         } else {
             // Stayed inside — settle the pill to the actual cursor position
