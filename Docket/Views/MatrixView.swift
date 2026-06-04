@@ -38,6 +38,11 @@ struct MatrixView: View {
     @AppStorage("matrixShowAxes") private var matrixShowAxes = true
     @AppStorage("matrixShowBadges") private var matrixShowBadges = true
 
+    /// True while any quadrant pill is mid-drag. Drives the visibility of
+    /// the empty Unassigned drop zone so it only appears when there's
+    /// actually something to drop.
+    @State private var isAnyPillDragging = false
+
     private var accent: Color { ThemeManager.resolvedAccent(themeRaw: themeRaw, customHue: customHue) }
 
     private func quadrantColor(_ q: Quadrant) -> Color {
@@ -211,6 +216,7 @@ struct MatrixView: View {
                         lineCount: matrixLineCount,
                         bounds: geo.size,
                         initialPosition: resolved[idx],
+                        isAnyPillDragging: $isAnyPillDragging,
                         onTap: { path.append(.detail(item)) }
                     )
                 }
@@ -318,93 +324,101 @@ struct MatrixView: View {
 
     private var unassignedSection: some View {
         let unassigned = store.activeTasks.filter { $0.quadrant == nil }
-        return VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text("UNASSIGNED")
-                    .font(.system(size: 9, weight: .semibold))
-                    .tracking(1.2)
-                    .foregroundStyle(.tertiary)
-                Spacer()
-                if !unassigned.isEmpty {
-                    Text("\(unassigned.count)")
-                        .font(.system(size: 9, weight: .semibold).monospacedDigit())
-                        .foregroundStyle(.tertiary)
-                }
-            }
-            .padding(.horizontal, 16)
+        // Show the section if (a) there are unassigned tasks parked there,
+        // or (b) the user is currently dragging a quadrant pill — in which
+        // case we surface an empty drop zone as a visible affordance.
+        let shouldShow = !unassigned.isEmpty || isAnyPillDragging
 
-            if unassigned.isEmpty {
-                // Empty drop zone — clearly a target for clearing a quadrant assignment.
-                HStack {
-                    Spacer()
-                    Text("Drag a pill here to remove it from the matrix")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(.tertiary)
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, minHeight: 36)
-                .background(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(
-                            .quaternary,
-                            style: StrokeStyle(lineWidth: 0.75, dash: [3, 3])
-                        )
-                        .background(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(.quaternary.opacity(0.18))
-                        )
-                )
-                .padding(.horizontal, 16)
-            } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
-                        ForEach(unassigned) { item in
-                            Button { path.append(.detail(item)) } label: {
-                                HStack(spacing: 5) {
-                                    Circle()
-                                        .fill(priorityColor(item.priority))
-                                        .frame(width: 5, height: 5)
-                                    Text(item.title)
-                                        .font(.system(size: 11, weight: .medium))
-                                        .lineLimit(1)
-                                        .truncationMode(.tail)
-                                }
-                                .padding(.horizontal, 9)
-                                .padding(.vertical, 5)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                        .fill(.regularMaterial)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                        .strokeBorder(.quaternary, lineWidth: 0.5)
-                                )
-                                .foregroundStyle(.primary)
-                                .frame(maxWidth: 140)
-                            }
-                            .buttonStyle(.plain)
-                            .draggable(item.id.uuidString)
+        return Group {
+            if shouldShow {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text("UNASSIGNED")
+                            .font(.system(size: 9, weight: .semibold))
+                            .tracking(1.2)
+                            .foregroundStyle(.tertiary)
+                        Spacer()
+                        if !unassigned.isEmpty {
+                            Text("\(unassigned.count)")
+                                .font(.system(size: 9, weight: .semibold).monospacedDigit())
+                                .foregroundStyle(.tertiary)
                         }
                     }
                     .padding(.horizontal, 16)
-                }
-            }
-        }
-        .padding(.vertical, 12)
-        // Drop here from a quadrant to clear its assignment. Active in both
-        // empty and populated states.
-        .dropDestination(for: String.self) { items, _ in
-            for idString in items {
-                if let uuid = UUID(uuidString: idString) {
-                    // No withAnimation — see note in quadrantBox.dropDestination.
-                    store.mutate(uuid) { item in
-                        item.quadrant = nil
-                        item.matrixX = nil
-                        item.matrixY = nil
+
+                    if unassigned.isEmpty {
+                        // Empty drop zone — only visible during a drag.
+                        HStack {
+                            Spacer()
+                            Text("Drop here to remove from the matrix")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundStyle(.tertiary)
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 36)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .strokeBorder(
+                                    .quaternary,
+                                    style: StrokeStyle(lineWidth: 0.75, dash: [3, 3])
+                                )
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                        .fill(.quaternary.opacity(0.18))
+                                )
+                        )
+                        .padding(.horizontal, 16)
+                    } else {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 6) {
+                                ForEach(unassigned) { item in
+                                    Button { path.append(.detail(item)) } label: {
+                                        HStack(spacing: 5) {
+                                            Circle()
+                                                .fill(priorityColor(item.priority))
+                                                .frame(width: 5, height: 5)
+                                            Text(item.title)
+                                                .font(.system(size: 11, weight: .medium))
+                                                .lineLimit(1)
+                                                .truncationMode(.tail)
+                                        }
+                                        .padding(.horizontal, 9)
+                                        .padding(.vertical, 5)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                                .fill(.regularMaterial)
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                                .strokeBorder(.quaternary, lineWidth: 0.5)
+                                        )
+                                        .foregroundStyle(.primary)
+                                        .frame(maxWidth: 140)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .draggable(item.id.uuidString)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                        }
                     }
                 }
+                .padding(.vertical, 12)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+                .dropDestination(for: String.self) { items, _ in
+                    for idString in items {
+                        if let uuid = UUID(uuidString: idString) {
+                            // No withAnimation — see note in quadrantBox.dropDestination.
+                            store.mutate(uuid) { item in
+                                item.quadrant = nil
+                                item.matrixX = nil
+                                item.matrixY = nil
+                            }
+                        }
+                    }
+                    return true
+                }
             }
-            return true
         }
     }
 
@@ -433,6 +447,7 @@ struct TaskDot: View {
     let bounds: CGSize
     /// `nil` = position not yet computed by the parent (use stored matrixX/Y).
     let initialPosition: CGPoint?
+    @Binding var isAnyPillDragging: Bool
     let onTap: () -> Void
 
     /// Pill centre, in source-quadrant local coordinates.
@@ -519,6 +534,11 @@ struct TaskDot: View {
                     if !isDragging && dist >= 3 {
                         dragStartPosition = position
                         isDragging = true
+                        // Surface the drag globally so the matrix can reveal
+                        // the Unassigned drop zone.
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            isAnyPillDragging = true
+                        }
                     }
 
                     if isDragging, let start = dragStartPosition {
@@ -537,6 +557,9 @@ struct TaskDot: View {
                     if totalDistance < 4 {
                         isDragging = false
                         dragStartPosition = nil
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            isAnyPillDragging = false
+                        }
                         onTap()
                         return
                     }
@@ -544,6 +567,9 @@ struct TaskDot: View {
                     handleDragEnd(value: value)
                     isDragging = false
                     dragStartPosition = nil
+                    withAnimation(.easeInOut(duration: 0.18)) {
+                        isAnyPillDragging = false
+                    }
                 }
         )
         // Re-seat when the parent recomputes layout (resize, settings change,
@@ -586,16 +612,19 @@ struct TaskDot: View {
         let crossedBottom = predictedY > bounds.height
 
         if crossedLeft || crossedRight || crossedTop || crossedBottom {
-            // Bottom-row sources can drop "off the bottom" to return to Unassigned.
-            let isBottomRow = quadrant == .delegate || quadrant == .eliminate
-            let droppedFarBelow = crossedBottom && predictedY > bounds.height + 50
+            // First — did the predicted endpoint land below the entire grid?
+            // If so, this is a "drop on Unassigned" gesture, regardless of
+            // which row the source lives in. Top-row sources need to clear
+            // both rows + the inter-row spacing before we count it as
+            // "below the grid" (otherwise they'd just cross to the bottom row).
+            let isTopRow = quadrant == .doFirst || quadrant == .schedule
+            let interRowSpacing: CGFloat = 4
+            let belowGridThreshold: CGFloat = isTopRow
+                ? bounds.height * 2 + interRowSpacing + 30
+                : bounds.height + 30
+            let droppedBelowGrid = crossedBottom && predictedY > belowGridThreshold
 
-            if isBottomRow && droppedFarBelow {
-                // Cross-container move (this TaskDot is about to be destroyed
-                // and re-created in the unassigned strip). No withAnimation
-                // wrapper — otherwise the new view's onAppear seeds its
-                // position inside the active transaction and SwiftUI
-                // animates it in from .zero (the top-left corner).
+            if droppedBelowGrid {
                 Store.shared.mutate(item.id) { item in
                     item.quadrant = nil
                     item.matrixX = nil

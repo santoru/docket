@@ -2,6 +2,17 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.7.8] — 2026-06-04
+
+### ✨ Matrix UX
+- **Top-row → Unassigned now works.** Dragging a pill from `Do First` or `Schedule` past the bottom of the *whole* grid now drops it into Unassigned. Previously the cross-over check fired on the first crossed edge — going down past `bounds.height` already mapped to the bottom-row neighbour, so the pill never reached the "below grid" check. Threshold is now `2 × rowHeight + spacing + 30pt` for top-row sources, `rowHeight + 30pt` for bottom-row sources.
+- **Unassigned drop zone is now a contextual affordance.** When the strip is empty it stays hidden, exactly like before 1.7.5. As soon as the user picks up a quadrant pill, the empty drop zone fades + slides in from the top edge so the destination is clearly marked. It hides again when the drag ends.
+
+### 🧹 Cleanups
+- New `@State isAnyPillDragging` on `MatrixView`, bound into each `TaskDot` — surfaces the gesture state to the matrix without coupling individual pills together.
+
+---
+
 ## [1.7.7] — 2026-06-04
 
 ### 🐛 Fixes
