@@ -2,6 +2,14 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.7.5] — 2026-06-04
+
+### ✨ Matrix UX
+- **Unassigned area is always visible.** Now that quadrant pills can be dropped onto it to clear their assignment, the strip is shown even when no tasks live there. The empty state renders a dashed-outline drop zone with a "Drag a pill here to remove it from the matrix" hint, so the affordance is discoverable.
+- The drop destination is active in both empty and populated states.
+
+---
+
 ## [1.7.4] — 2026-06-04
 
 ### 🐛 Fixes

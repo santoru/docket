@@ -317,71 +317,94 @@ struct MatrixView: View {
 
     private var unassignedSection: some View {
         let unassigned = store.activeTasks.filter { $0.quadrant == nil }
-        return Group {
-            if !unassigned.isEmpty {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Text("UNASSIGNED")
-                            .font(.system(size: 9, weight: .semibold))
-                            .tracking(1.2)
-                            .foregroundStyle(.tertiary)
-                        Spacer()
-                        Text("\(unassigned.count)")
-                            .font(.system(size: 9, weight: .semibold).monospacedDigit())
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding(.horizontal, 16)
-
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 6) {
-                            ForEach(unassigned) { item in
-                                Button { path.append(.detail(item)) } label: {
-                                    HStack(spacing: 5) {
-                                        Circle()
-                                            .fill(priorityColor(item.priority))
-                                            .frame(width: 5, height: 5)
-                                        Text(item.title)
-                                            .font(.system(size: 11, weight: .medium))
-                                            .lineLimit(1)
-                                            .truncationMode(.tail)
-                                    }
-                                    .padding(.horizontal, 9)
-                                    .padding(.vertical, 5)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                            .fill(.regularMaterial)
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                            .strokeBorder(.quaternary, lineWidth: 0.5)
-                                    )
-                                    .foregroundStyle(.primary)
-                                    .frame(maxWidth: 140)
-                                }
-                                .buttonStyle(.plain)
-                                .draggable(item.id.uuidString)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                    }
-                }
-                .padding(.vertical, 12)
-                // Drop here from a quadrant to clear its assignment.
-                .dropDestination(for: String.self) { items, _ in
-                    for idString in items {
-                        if let uuid = UUID(uuidString: idString) {
-                            withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
-                                store.mutate(uuid) { item in
-                                    item.quadrant = nil
-                                    item.matrixX = nil
-                                    item.matrixY = nil
-                                }
-                            }
-                        }
-                    }
-                    return true
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("UNASSIGNED")
+                    .font(.system(size: 9, weight: .semibold))
+                    .tracking(1.2)
+                    .foregroundStyle(.tertiary)
+                Spacer()
+                if !unassigned.isEmpty {
+                    Text("\(unassigned.count)")
+                        .font(.system(size: 9, weight: .semibold).monospacedDigit())
+                        .foregroundStyle(.tertiary)
                 }
             }
+            .padding(.horizontal, 16)
+
+            if unassigned.isEmpty {
+                // Empty drop zone — clearly a target for clearing a quadrant assignment.
+                HStack {
+                    Spacer()
+                    Text("Drag a pill here to remove it from the matrix")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(.tertiary)
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, minHeight: 36)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(
+                            .quaternary,
+                            style: StrokeStyle(lineWidth: 0.75, dash: [3, 3])
+                        )
+                        .background(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(.quaternary.opacity(0.18))
+                        )
+                )
+                .padding(.horizontal, 16)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(unassigned) { item in
+                            Button { path.append(.detail(item)) } label: {
+                                HStack(spacing: 5) {
+                                    Circle()
+                                        .fill(priorityColor(item.priority))
+                                        .frame(width: 5, height: 5)
+                                    Text(item.title)
+                                        .font(.system(size: 11, weight: .medium))
+                                        .lineLimit(1)
+                                        .truncationMode(.tail)
+                                }
+                                .padding(.horizontal, 9)
+                                .padding(.vertical, 5)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                        .fill(.regularMaterial)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                        .strokeBorder(.quaternary, lineWidth: 0.5)
+                                )
+                                .foregroundStyle(.primary)
+                                .frame(maxWidth: 140)
+                            }
+                            .buttonStyle(.plain)
+                            .draggable(item.id.uuidString)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                }
+            }
+        }
+        .padding(.vertical, 12)
+        // Drop here from a quadrant to clear its assignment. Active in both
+        // empty and populated states.
+        .dropDestination(for: String.self) { items, _ in
+            for idString in items {
+                if let uuid = UUID(uuidString: idString) {
+                    withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
+                        store.mutate(uuid) { item in
+                            item.quadrant = nil
+                            item.matrixX = nil
+                            item.matrixY = nil
+                        }
+                    }
+                }
+            }
+            return true
         }
     }
 
