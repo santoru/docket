@@ -2,6 +2,17 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.7.4] — 2026-06-04
+
+### 🐛 Fixes
+- **Drag tracking is now precise.** The pill's `position` is updated directly during drag instead of via a separate `dragOffset`; the `.animation(_:value:)` modifier was reordered to sit *before* `.position(...)` in the chain so cursor-following updates aren't subjected to a spring. This eliminates the "drops from the top" feel where the pill appeared to snap back to its origin and then spring to the cursor.
+- **Quick flicks now cross quadrants reliably.** Cross-over detection uses `value.predictedEndTranslation` (which accounts for gesture momentum) instead of the raw release translation, so a fast flick that physically stops just shy of the boundary still lands in the intended target quadrant.
+- **In-quadrant settle uses `.smooth` instead of `.spring`** — critically damped easing, no overshoot, the pill simply eases into its resting place.
+- **Diagonal-exit drags now settle gracefully** instead of staying stuck at the cursor: if the predicted endpoint exits the source bounds but doesn't map to any neighbour, the pill is clamped back inside via `settleInside(...)`.
+- **Tap detection threshold raised to 3pt of motion before a drag begins**, so a still click can no longer trigger a brief scale-up flicker.
+
+---
+
 ## [1.7.3] — 2026-06-04
 
 ### ✨ Matrix UX

@@ -412,8 +412,10 @@ struct TaskDot: View {
     let initialPosition: CGPoint?
     let onTap: () -> Void
 
+    /// Pill centre, in source-quadrant local coordinates.
     @State private var position: CGPoint = .zero
-    @State private var dragOffset: CGSize = .zero
+    /// Pill centre at the moment the current drag started — anchor for translation deltas.
+    @State private var dragStartPosition: CGPoint?
     @State private var isDragging = false
     @State private var isHovering = false
     @State private var dragMaxDistance: CGFloat = 0
@@ -474,60 +476,86 @@ struct TaskDot: View {
             y: isDragging ? 3 : 0.5
         )
         .scaleEffect(isDragging ? 1.06 : (isHovering ? 1.02 : 1.0))
-        .position(x: position.x + dragOffset.width, y: position.y + dragOffset.height)
+        // Implicit animation scope MUST come before .position so cursor-following
+        // updates aren't subjected to a spring (which would feel like the pill is
+        // lagging or "falling" toward the cursor).
+        .animation(.spring(duration: 0.2), value: isDragging)
+        .animation(.easeInOut(duration: 0.12), value: isHovering)
+        .position(x: position.x, y: position.y)
         .zIndex(isDragging ? 10 : (isHovering ? 5 : 0))
         .onHover { isHovering = $0 }
         .gesture(
-            DragGesture(coordinateSpace: .local)
+            DragGesture(minimumDistance: 0, coordinateSpace: .local)
                 .onChanged { value in
-                    isDragging = true
-                    dragOffset = value.translation
                     let dist = hypot(value.translation.width, value.translation.height)
                     if dist > dragMaxDistance { dragMaxDistance = dist }
+
+                    // Only enter "drag mode" once the cursor has moved a few
+                    // points — keeps a still click from triggering a scale-up
+                    // flicker, and gives the tap-vs-drag check headroom.
+                    if !isDragging && dist >= 3 {
+                        dragStartPosition = position
+                        isDragging = true
+                    }
+
+                    if isDragging, let start = dragStartPosition {
+                        position = CGPoint(
+                            x: start.x + value.translation.width,
+                            y: start.y + value.translation.height
+                        )
+                    }
                 }
                 .onEnded { value in
                     let totalDistance = dragMaxDistance
-                    isDragging = false
-                    dragOffset = .zero
                     dragMaxDistance = 0
 
                     // Treat micro-movements as taps (avoids opening the detail
                     // view when the user wiggles the cursor while clicking).
                     if totalDistance < 4 {
+                        isDragging = false
+                        dragStartPosition = nil
                         onTap()
                         return
                     }
 
                     handleDragEnd(value: value)
+                    isDragging = false
+                    dragStartPosition = nil
                 }
         )
         // Re-seat when the parent recomputes layout (resize, settings change,
         // or a sibling pill moved and our resolved spot shifted).
+        // Skipped while dragging so the cursor-follow isn't fought.
         .onChange(of: initialPosition) { _, new in
-            guard let new else { return }
-            withAnimation(.spring(duration: 0.25)) { position = new }
+            guard !isDragging, let new else { return }
+            withAnimation(.smooth(duration: 0.25)) { position = new }
         }
         .onAppear { seedPosition() }
-        .animation(.spring(duration: 0.2), value: isDragging)
-        .animation(.easeInOut(duration: 0.12), value: isHovering)
     }
 
     // MARK: - Drag end
 
     private func handleDragEnd(value: DragGesture.Value) {
-        let finalX = position.x + value.translation.width
-        let finalY = position.y + value.translation.height
+        // Use predicted translation so a quick flick still carries through to
+        // the adjacent quadrant — the actual translation can stop just shy of
+        // the boundary if the user releases at peak velocity.
+        guard let start = dragStartPosition else { return }
+        let predicted = value.predictedEndTranslation
+        let actual = value.translation
 
-        let crossedLeft   = finalX < 0
-        let crossedRight  = finalX > bounds.width
-        let crossedTop    = finalY < 0
-        let crossedBottom = finalY > bounds.height
+        // Cross-over decision uses the predicted endpoint (intent-aware).
+        let predictedX = start.x + predicted.width
+        let predictedY = start.y + predicted.height
+
+        let crossedLeft   = predictedX < 0
+        let crossedRight  = predictedX > bounds.width
+        let crossedTop    = predictedY < 0
+        let crossedBottom = predictedY > bounds.height
 
         if crossedLeft || crossedRight || crossedTop || crossedBottom {
-            // Gone out of the source quadrant — figure out where to land.
             // Bottom-row sources can drop "off the bottom" to return to Unassigned.
             let isBottomRow = quadrant == .delegate || quadrant == .eliminate
-            let droppedFarBelow = crossedBottom && finalY > bounds.height + 50
+            let droppedFarBelow = crossedBottom && predictedY > bounds.height + 50
 
             if isBottomRow && droppedFarBelow {
                 withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
@@ -540,7 +568,6 @@ struct TaskDot: View {
                 return
             }
 
-            // Otherwise, map to an adjacent quadrant.
             let target: Quadrant? = switch quadrant {
             case .doFirst:   crossedRight ? .schedule  : crossedBottom ? .delegate  : nil
             case .schedule:  crossedLeft  ? .doFirst   : crossedBottom ? .eliminate : nil
@@ -548,12 +575,13 @@ struct TaskDot: View {
             case .eliminate: crossedLeft  ? .delegate  : crossedTop    ? .schedule  : nil
             }
 
-            guard let target else { return } // diagonal exit → snap back
+            guard let target else {
+                // Diagonal exit (no matching neighbour) — settle back inside.
+                settleInside(actualX: start.x + actual.width, actualY: start.y + actual.height)
+                return
+            }
 
-            // Translate the exit-edge crossing into a sensible spot in the
-            // target quadrant: preserve the perpendicular axis, place the pill
-            // a short distance from the entry edge.
-            let (newX, newY) = entryPoint(into: target, finalX: finalX, finalY: finalY)
+            let (newX, newY) = entryPoint(into: target, finalX: predictedX, finalY: predictedY)
             withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
                 Store.shared.mutate(item.id) { item in
                     item.quadrant = target
@@ -562,25 +590,34 @@ struct TaskDot: View {
                 }
             }
         } else {
-            // Stayed in this quadrant — persist the new normalized position,
-            // clamped so the whole pill remains inside the quadrant border.
-            let halfW = pillSize.width / 2
-            let halfH = pillSize.height / 2
-            let pad: CGFloat = 4
-            let xMinFrac = (halfW + pad) / max(bounds.width, 1)
-            let xMaxFrac = max(xMinFrac + 0.001, (bounds.width - halfW - pad) / max(bounds.width, 1))
-            let yMinFrac = (halfH + pad) / max(bounds.height, 1)
-            let yMaxFrac = max(yMinFrac + 0.001, (bounds.height - halfH - pad) / max(bounds.height, 1))
+            // Stayed inside — settle the pill to the actual cursor position
+            // (clamped to keep the whole pill within the quadrant border).
+            settleInside(actualX: start.x + actual.width, actualY: start.y + actual.height)
+        }
+    }
 
-            let newX = clamp(finalX / bounds.width, xMinFrac, xMaxFrac)
-            let newY = clamp(finalY / bounds.height, yMinFrac, yMaxFrac)
-            withAnimation(.spring(duration: 0.25)) {
-                position = CGPoint(x: newX * bounds.width, y: newY * bounds.height)
-            }
-            Store.shared.mutate(item.id) { item in
-                item.matrixX = newX
-                item.matrixY = newY
-            }
+    /// Persist a new in-quadrant position and animate the pill to it. Uses
+    /// `.smooth` (critically damped) so there's no spring overshoot — the
+    /// pill simply eases into its final resting place.
+    private func settleInside(actualX: CGFloat, actualY: CGFloat) {
+        let halfW = pillSize.width / 2
+        let halfH = pillSize.height / 2
+        let pad: CGFloat = 4
+        let xMinFrac = (halfW + pad) / max(bounds.width, 1)
+        let xMaxFrac = max(xMinFrac + 0.001, (bounds.width - halfW - pad) / max(bounds.width, 1))
+        let yMinFrac = (halfH + pad) / max(bounds.height, 1)
+        let yMaxFrac = max(yMinFrac + 0.001, (bounds.height - halfH - pad) / max(bounds.height, 1))
+
+        let newX = clamp(actualX / bounds.width, xMinFrac, xMaxFrac)
+        let newY = clamp(actualY / bounds.height, yMinFrac, yMaxFrac)
+        let target = CGPoint(x: newX * bounds.width, y: newY * bounds.height)
+
+        withAnimation(.smooth(duration: 0.22)) {
+            position = target
+        }
+        Store.shared.mutate(item.id) { item in
+            item.matrixX = newX
+            item.matrixY = newY
         }
     }
 
