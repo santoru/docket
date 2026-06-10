@@ -23,6 +23,7 @@ struct ContentView: View {
     @AppStorage("useGlass") private var useGlass = true
 
     @State private var showOnboarding = false
+    @State private var keyMonitor: Any?
 
     var body: some View {
         ZStack {
@@ -73,17 +74,28 @@ struct ContentView: View {
                     }
                 }
             }
-            // Local keyboard monitor for navigation
-            NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-                if event.modifierFlags.contains(.command) && event.charactersIgnoringModifiers == "n" {
-                    if path.last != .create { path.append(.create) }
-                    return nil
+            // Local keyboard monitor for navigation. Guard against stacking —
+            // the popover's hosting view re-runs onAppear every time it reopens,
+            // and each unguarded addLocalMonitorForEvents would accumulate,
+            // making ⌘N / Esc fire multiple times.
+            if keyMonitor == nil {
+                keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+                    if event.modifierFlags.contains(.command) && event.charactersIgnoringModifiers == "n" {
+                        if path.last != .create { path.append(.create) }
+                        return nil
+                    }
+                    if event.keyCode == 53 { // Escape
+                        if !path.isEmpty { path.removeLast() }
+                        return nil
+                    }
+                    return event
                 }
-                if event.keyCode == 53 { // Escape
-                    if !path.isEmpty { path.removeLast() }
-                    return nil
-                }
-                return event
+            }
+        }
+        .onDisappear {
+            if let monitor = keyMonitor {
+                NSEvent.removeMonitor(monitor)
+                keyMonitor = nil
             }
         }
     }

@@ -19,6 +19,7 @@ struct SettingsView: View {
     @AppStorage("notifSound") private var notifSound = "default"
     @AppStorage("badgeAllLists") private var badgeAllLists = false
     @AppStorage("multiLineTask") private var multiLineTask = false
+    @AppStorage("showConfetti") private var showConfetti = true
     @AppStorage("hotkeyEnabled") private var hotkeyEnabled = true
     @AppStorage("hotkeyKeyCode") private var hotkeyKeyCode = kVK_ANSI_D
     @AppStorage("hotkeyModifiers") private var hotkeyModifiers = Int(cmdKey | shiftKey)
@@ -198,6 +199,8 @@ struct SettingsView: View {
                 ThemedToggle(label: "Liquid Glass", isOn: $useGlass)
                 Divider()
                 ThemedToggle(label: "Multi-line tasks", isOn: $multiLineTask)
+                Divider()
+                ThemedToggle(label: "Completion confetti", isOn: $showConfetti)
             }
         }
     }
@@ -605,7 +608,7 @@ struct SettingsView: View {
                 panel.allowedContentTypes = [.json]
                 panel.nameFieldStringValue = "docket-export.json"
                 if panel.runModal() == .OK, let url = panel.url {
-                    let export = DocketExport(lists: store.lists, labels: store.labels, tasks: store.items)
+                    let export = DocketExport(schemaVersion: Store.currentSchemaVersion, lists: store.lists, labels: store.labels, tasks: store.items)
                     try? JSONEncoder().encode(export).write(to: url, options: .atomic)
                 }
             }
@@ -616,15 +619,33 @@ struct SettingsView: View {
                 if panel.runModal() == .OK, let url = panel.url,
                    let data = try? Data(contentsOf: url) {
                     if let export = try? JSONDecoder().decode(DocketExport.self, from: data) {
+                        // Add lists that don't already exist (matched by name).
                         for list in export.lists where !store.lists.contains(where: { $0.name == list.name }) {
                             store.lists.append(list)
                         }
                         for label in export.labels where !store.labels.contains(where: { $0.id == label.id }) {
                             store.labels.append(label)
                         }
+                        // Build maps to remap imported tasks onto surviving lists.
+                        let exportedListName = Dictionary(export.lists.map { ($0.id, $0.name) },
+                                                           uniquingKeysWith: { first, _ in first })
+                        let listIdByName = Dictionary(store.lists.map { ($0.name, $0.id) },
+                                                      uniquingKeysWith: { first, _ in first })
+                        let validListIds = Set(store.lists.map(\.id))
+                        let defaultId = store.lists.first(where: { $0.isDefault })?.id ?? store.lists[0].id
+
                         for item in export.tasks where !store.items.contains(where: { $0.id == item.id }) {
+                            var item = item
+                            if let lid = item.listId, !validListIds.contains(lid) {
+                                // The referenced list was de-duplicated away — remap by
+                                // name, falling back to the default list.
+                                item.listId = exportedListName[lid].flatMap { listIdByName[$0] } ?? defaultId
+                            } else if item.listId == nil {
+                                item.listId = defaultId
+                            }
                             store.items.append(item)
                         }
+                        store.persistAll()
                     } else if let tasks = try? JSONDecoder().decode([TodoItem].self, from: data) {
                         for item in tasks where !store.items.contains(where: { $0.id == item.id }) {
                             store.add(item)

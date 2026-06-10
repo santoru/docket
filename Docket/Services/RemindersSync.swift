@@ -18,6 +18,12 @@ final class RemindersSync {
 
     private var changeObserver: Any?
 
+    /// Serial queue for all EventKit writes so saves never block the main thread.
+    private let syncQueue = DispatchQueue(label: "blog.insecurity.docket.reminders-sync")
+    /// Timestamp of our most recent programmatic EventKit write. Used to ignore
+    /// the `.EKEventStoreChanged` notification that our own saves trigger.
+    private var lastSelfWrite: Date = .distantPast
+
     init() {
         checkAccess()
     }
@@ -62,6 +68,7 @@ final class RemindersSync {
         cal.source = store.defaultCalendarForNewReminders()?.source
         do {
             try store.saveCalendar(cal, commit: true)
+            lastSelfWrite = Date()
             return cal
         } catch { return nil }
     }
@@ -69,56 +76,62 @@ final class RemindersSync {
     // MARK: - Push (Docket → Reminders)
 
     func pushTask(_ item: TodoItem, calendarId: String?) {
-        guard isAuthorized, let calId = calendarId,
-              let calendar = store.calendar(withIdentifier: calId) else { return }
+        guard isAuthorized, let calId = calendarId else { return }
 
-        let reminder: EKReminder
-        if let rid = item.reminderId, let existing = store.calendarItem(withIdentifier: rid) as? EKReminder {
-            reminder = existing
-        } else {
-            reminder = EKReminder(eventStore: store)
-            reminder.calendar = calendar
-        }
+        syncQueue.async { [weak self] in
+            guard let self, let calendar = self.store.calendar(withIdentifier: calId) else { return }
 
-        reminder.title = item.title
-        reminder.notes = item.notes.isEmpty ? nil : item.notes
-        reminder.priority = priorityToEK(item.priority)
-        reminder.isCompleted = item.completedAt != nil
-        reminder.completionDate = item.completedAt
-
-        if let due = item.dueDate {
-            reminder.dueDateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: due)
-        } else {
-            reminder.dueDateComponents = nil
-        }
-
-        // Recurrence
-        reminder.recurrenceRules?.forEach { reminder.removeRecurrenceRule($0) }
-        if let rec = item.recurrence {
-            let freq: EKRecurrenceFrequency = switch rec.frequency {
-            case .daily: .daily
-            case .weekly: .weekly
-            case .monthly: .monthly
+            let reminder: EKReminder
+            if let rid = item.reminderId, let existing = self.store.calendarItem(withIdentifier: rid) as? EKReminder {
+                reminder = existing
+            } else {
+                reminder = EKReminder(eventStore: self.store)
+                reminder.calendar = calendar
             }
-            let rule = EKRecurrenceRule(recurrenceWith: freq, interval: rec.interval, end: rec.endDate.map { EKRecurrenceEnd(end: $0) })
-            reminder.addRecurrenceRule(rule)
-        }
 
-        do {
-            try store.save(reminder, commit: true)
-            // Update Docket item with reminder ID
-            if let i = Store.shared.items.firstIndex(where: { $0.id == item.id }) {
-                Store.shared.items[i].reminderId = reminder.calendarItemIdentifier
-                Store.shared.items[i].lastSyncedAt = Date()
-                Store.shared.persist()
+            reminder.title = item.title
+            reminder.notes = item.notes.isEmpty ? nil : item.notes
+            reminder.priority = self.priorityToEK(item.priority)
+            reminder.isCompleted = item.completedAt != nil
+            reminder.completionDate = item.completedAt
+
+            if let due = item.dueDate {
+                reminder.dueDateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: due)
+            } else {
+                reminder.dueDateComponents = nil
             }
-        } catch { logger.error("Save reminder failed: \(error.localizedDescription)") }
+
+            // Recurrence is managed entirely by Docket — it spawns the next
+            // instance itself when a recurring task is completed. Pushing an
+            // EKRecurrenceRule here would make Apple Reminders generate its *own*
+            // occurrences too, producing duplicates. So we strip any existing
+            // rule and never add one.
+            reminder.recurrenceRules?.forEach { reminder.removeRecurrenceRule($0) }
+
+            do {
+                try self.store.save(reminder, commit: true)
+                self.lastSelfWrite = Date()
+                let newId = reminder.calendarItemIdentifier
+                DispatchQueue.main.async {
+                    // Update Docket item with reminder ID
+                    if let i = Store.shared.items.firstIndex(where: { $0.id == item.id }) {
+                        Store.shared.items[i].reminderId = newId
+                        Store.shared.items[i].lastSyncedAt = Date()
+                        Store.shared.persist()
+                    }
+                }
+            } catch { self.logger.error("Save reminder failed: \(error.localizedDescription)") }
+        }
     }
 
     func deleteReminder(for item: TodoItem) {
-        guard isAuthorized, let rid = item.reminderId,
-              let reminder = store.calendarItem(withIdentifier: rid) as? EKReminder else { return }
-        try? store.remove(reminder, commit: true)
+        guard isAuthorized, let rid = item.reminderId else { return }
+        syncQueue.async { [weak self] in
+            guard let self,
+                  let reminder = self.store.calendarItem(withIdentifier: rid) as? EKReminder else { return }
+            try? self.store.remove(reminder, commit: true)
+            self.lastSelfWrite = Date()
+        }
     }
 
     // MARK: - Pull (Reminders → Docket)
@@ -192,8 +205,13 @@ final class RemindersSync {
         changeObserver = NotificationCenter.default.addObserver(
             forName: .EKEventStoreChanged, object: store, queue: .main
         ) { [weak self] _ in
+            guard let self else { return }
+            // Ignore change notifications produced by our own recent writes —
+            // otherwise every push triggers a full pull, which can feed back
+            // into another push (an infinite sync loop).
+            if Date().timeIntervalSince(self.lastSelfWrite) < 1.5 { return }
             let syncedLists = Store.shared.lists.filter { $0.remindersCalendarId != nil }
-            self?.pullChanges(for: syncedLists)
+            self.pullChanges(for: syncedLists)
         }
     }
 

@@ -178,7 +178,11 @@ struct TaskDetailView: View {
     }
 
     private func cancelEdit() {
-        if let original = originalItem {
+        // Only restore if the user actually changed something. The store still
+        // holds the original during editing, so an unchanged cancel needs no
+        // write (which would otherwise reschedule notifications and re-push to
+        // Reminders for nothing).
+        if let original = originalItem, original != item {
             Store.shared.update(original)
         }
         path.removeLast()

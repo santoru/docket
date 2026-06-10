@@ -2,7 +2,7 @@
 // Docket — macOS Menu Bar Task Manager
 // Created by @santoru
 
-import Foundation
+import SwiftUI
 
 // MARK: - Priority
 
@@ -16,6 +16,16 @@ enum Priority: Int, Codable, CaseIterable, Identifiable {
         case .low: "Low"
         case .medium: "Medium"
         case .high: "High"
+        }
+    }
+
+    /// Pastel color used consistently across task cards, the priority picker,
+    /// and the matrix pills. Centralized here so the three call sites can't drift.
+    var color: Color {
+        switch self {
+        case .low:    Color(red: 0.45, green: 0.72, blue: 0.95)
+        case .medium: Color(red: 0.95, green: 0.75, blue: 0.40)
+        case .high:   Color(red: 0.95, green: 0.50, blue: 0.55)
         }
     }
 }

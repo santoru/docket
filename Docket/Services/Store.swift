@@ -4,11 +4,19 @@
 
 import Foundation
 import SwiftUI
+import os
 
 /// Persistent task store backed by JSON files in Application Support.
 @Observable
 final class Store {
     static let shared = Store()
+
+    /// Current on-disk data schema version. Bump when the persisted shape
+    /// changes and add a corresponding migration step in `migrateIfNeeded()`.
+    static let currentSchemaVersion = 1
+
+    @ObservationIgnored private let logger = Logger(subsystem: "blog.insecurity.docket", category: "store")
+
     var items: [TodoItem] = []
     var lists: [TaskList] = []
     var labels: [TaskLabel] = []
@@ -31,17 +39,41 @@ final class Store {
         loadLists()
         loadLabels()
         loadTasks()
-        // Assign orphan tasks (no listId) to default list
-        let defaultId = lists.first(where: { $0.isDefault })?.id ?? lists.first!.id
-        for i in items.indices where items[i].listId == nil {
-            items[i].listId = defaultId
+        // Invariant: there is always at least one list, and exactly one default.
+        if lists.isEmpty {
+            lists = [TaskList(name: "Default", isDefault: true)]
+            saveLists()
         }
+        let defaultId = lists.first(where: { $0.isDefault })?.id ?? lists[0].id
+        // Reassign any task pointing at a nil or non-existent list.
+        reassignOrphans()
         activeListId = UUID(uuidString: UserDefaults.standard.string(forKey: "activeListId") ?? "") ?? defaultId
+        migrateIfNeeded()
+    }
+
+    // MARK: - Schema Migration
+
+    /// Runs any pending data migrations and records the current schema version.
+    /// Currently a no-op scaffold (we're at v1); future schema changes add
+    /// sequential migration steps here.
+    private func migrateIfNeeded() {
+        let stored = UserDefaults.standard.object(forKey: "dataSchemaVersion") as? Int ?? 0
+        guard stored < Store.currentSchemaVersion else { return }
+        // switch stored {
+        // case 0: migrateV0toV1(); fallthrough
+        // default: break
+        // }
+        UserDefaults.standard.set(Store.currentSchemaVersion, forKey: "dataSchemaVersion")
+        logger.info("Migrated data schema \(stored) → \(Store.currentSchemaVersion)")
     }
 
     // MARK: - Computed Views
 
-    var activeList: TaskList { lists.first(where: { $0.id == activeListId }) ?? lists[0] }
+    var activeList: TaskList {
+        lists.first(where: { $0.id == activeListId })
+            ?? lists.first
+            ?? TaskList(name: "Default", isDefault: true)
+    }
 
     var activeTasks: [TodoItem] {
         var tasks = items.filter { !$0.isCompleted && $0.listId == activeListId }
@@ -141,13 +173,16 @@ final class Store {
 
     func deleteList(_ list: TaskList) {
         guard !list.isDefault else { return }
-        let defaultId = lists.first(where: { $0.isDefault })!.id
+        guard let defaultId = lists.first(where: { $0.isDefault })?.id else { return }
         // Move tasks to default
         for i in items.indices where items[i].listId == list.id {
             items[i].listId = defaultId
         }
         lists.removeAll { $0.id == list.id }
-        if activeListId == list.id { switchList(lists[0]) }
+        if activeListId == list.id,
+           let fallback = lists.first(where: { $0.isDefault }) ?? lists.first {
+            switchList(fallback)
+        }
         saveLists()
         saveTasks()
     }
@@ -178,7 +213,10 @@ final class Store {
             next.completedAt = nil
             next.dueDate = nextDate
             next.reminderId = nil
-            next.sortOrder = (activeTasks.map(\.sortOrder).max() ?? -1) + 1
+            // Order the new instance at the end of *its own* list (which may
+            // differ from the currently active list), not the active list.
+            let siblings = items.filter { !$0.isCompleted && $0.listId == next.listId }
+            next.sortOrder = (siblings.map(\.sortOrder).max() ?? -1) + 1
             items.append(next)
             NotificationManager.shared.scheduleReminder(for: next)
             syncPush(next)
@@ -233,32 +271,76 @@ final class Store {
     // MARK: - Persistence
 
     private func loadTasks() {
-        guard let data = try? Data(contentsOf: tasksURL) else { return }
-        items = (try? JSONDecoder().decode([TodoItem].self, from: data)) ?? []
+        guard FileManager.default.fileExists(atPath: tasksURL.path) else { return }
+        do {
+            let data = try Data(contentsOf: tasksURL)
+            items = try JSONDecoder().decode([TodoItem].self, from: data)
+        } catch {
+            logger.error("Failed to load tasks: \(error.localizedDescription)")
+        }
     }
 
     private func saveTasks() {
-        try? JSONEncoder().encode(items).write(to: tasksURL, options: .atomic)
+        do {
+            try JSONEncoder().encode(items).write(to: tasksURL, options: .atomic)
+        } catch {
+            logger.error("Failed to save tasks: \(error.localizedDescription)")
+        }
     }
 
     private func loadLists() {
-        if let data = try? Data(contentsOf: listsURL),
-           let decoded = try? JSONDecoder().decode([TaskList].self, from: data), !decoded.isEmpty {
-            lists = decoded
-        } else {
+        guard FileManager.default.fileExists(atPath: listsURL.path) else {
             lists = [TaskList(name: "Default", isDefault: true)]
             saveLists()
+            return
+        }
+        do {
+            let data = try Data(contentsOf: listsURL)
+            let decoded = try JSONDecoder().decode([TaskList].self, from: data)
+            if !decoded.isEmpty { lists = decoded }
+        } catch {
+            // Don't clobber the file — init() will recreate a default list if
+            // this left `lists` empty, and the next successful save will persist.
+            logger.error("Failed to load lists: \(error.localizedDescription)")
         }
     }
 
     private func saveLists() {
-        try? JSONEncoder().encode(lists).write(to: listsURL, options: .atomic)
+        do {
+            try JSONEncoder().encode(lists).write(to: listsURL, options: .atomic)
+        } catch {
+            logger.error("Failed to save lists: \(error.localizedDescription)")
+        }
     }
 
     /// Persist all data (tasks + lists). Call after direct item mutations.
     func persist() {
         saveTasks()
         saveLists()
+    }
+
+    /// Persist tasks, lists, and labels together. Use after bulk mutations
+    /// such as import where all three collections may have changed.
+    func persistAll() {
+        saveTasks()
+        saveLists()
+        saveLabels()
+    }
+
+    /// Re-run the orphan-assignment pass: any task whose listId is nil or
+    /// points to a list that no longer exists is moved to the default list.
+    /// Mirrors the logic in `init()` but is safe to call at runtime (e.g.
+    /// after an import). Returns true if any task was changed.
+    @discardableResult
+    func reassignOrphans() -> Bool {
+        let validIds = Set(lists.map(\.id))
+        let defaultId = lists.first(where: { $0.isDefault })?.id ?? lists[0].id
+        var changed = false
+        for i in items.indices where items[i].listId == nil || !validIds.contains(items[i].listId!) {
+            items[i].listId = defaultId
+            changed = true
+        }
+        return changed
     }
 
     /// Atomically mutate a single item by id and persist. Centralises the
@@ -273,12 +355,21 @@ final class Store {
     }
 
     private func loadLabels() {
-        guard let data = try? Data(contentsOf: labelsURL) else { return }
-        labels = (try? JSONDecoder().decode([TaskLabel].self, from: data)) ?? []
+        guard FileManager.default.fileExists(atPath: labelsURL.path) else { return }
+        do {
+            let data = try Data(contentsOf: labelsURL)
+            labels = try JSONDecoder().decode([TaskLabel].self, from: data)
+        } catch {
+            logger.error("Failed to load labels: \(error.localizedDescription)")
+        }
     }
 
     private func saveLabels() {
-        try? JSONEncoder().encode(labels).write(to: labelsURL, options: .atomic)
+        do {
+            try JSONEncoder().encode(labels).write(to: labelsURL, options: .atomic)
+        } catch {
+            logger.error("Failed to save labels: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Reminders Sync

@@ -23,6 +23,8 @@ struct TaskList: Identifiable, Codable, Hashable {
 
 /// Export format containing all lists, labels, and tasks.
 struct DocketExport: Codable {
+    /// Optional so older exports (without the field) still import cleanly.
+    var schemaVersion: Int?
     let lists: [TaskList]
     let labels: [TaskLabel]
     let tasks: [TodoItem]

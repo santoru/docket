@@ -15,13 +15,7 @@ struct TaskRowView: View {
     @AppStorage("multiLineTask") private var multiLineTask = false
     @State private var isHovered = false
 
-    private var priorityColor: Color {
-        switch item.priority {
-        case .high: Color(red: 0.95, green: 0.50, blue: 0.55)
-        case .medium: Color(red: 0.95, green: 0.75, blue: 0.40)
-        case .low: Color(red: 0.45, green: 0.72, blue: 0.95)
-        }
-    }
+    private var priorityColor: Color { item.priority.color }
 
     var body: some View {
         HStack(spacing: 12) {

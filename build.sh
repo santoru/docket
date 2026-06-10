@@ -32,6 +32,7 @@ swiftc \
     "$SRC_DIR/Models/TaskLabel.swift" \
     "$SRC_DIR/Models/Recurrence.swift" \
     "$SRC_DIR/Models/Quadrant.swift" \
+    "$SRC_DIR/Models/MatrixLayout.swift" \
     "$SRC_DIR/Models/AppTheme.swift" \
     "$SRC_DIR/Models/SortMode.swift" \
     "$SRC_DIR/Models/Strings.swift" \
@@ -81,9 +82,9 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
     <key>CFBundleIdentifier</key>
     <string>blog.insecurity.docket</string>
     <key>CFBundleVersion</key>
-    <string>1.7.10</string>
+    <string>1.8.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.7.10</string>
+    <string>1.8.0</string>
     <key>CFBundleExecutable</key>
     <string>Docket</string>
     <key>CFBundleIconFile</key>

@@ -26,6 +26,7 @@ struct TaskListView: View {
     private enum UndoAction { case complete, delete }
     @AppStorage("showMatrixButton") private var showMatrixButton = true
     @AppStorage("showCompletedButton") private var showCompletedButton = true
+    @AppStorage("showConfetti") private var confettiEnabled = true
 
     private var accent: Color { ThemeManager.resolvedAccent(themeRaw: themeRaw, customHue: customHue) }
     private var sortMode: SortMode { SortMode(rawValue: sortModeRaw) ?? .custom }
@@ -94,16 +95,17 @@ struct TaskListView: View {
             }
             Spacer()
             headerButton(icon: showSortBar ? "checkmark.circle" : "arrow.up.arrow.down",
+                         label: showSortBar ? "Done sorting" : "Sort and reorder",
                          color: showSortBar ? .green : accent) {
                 withAnimation(.spring(duration: 0.25)) { showSortBar.toggle() }
             }
-            headerButton(icon: "magnifyingglass", color: accent) {
+            headerButton(icon: "magnifyingglass", label: "Search", color: accent) {
                 withAnimation(.spring(duration: 0.25)) { showSearch.toggle(); if !showSearch { searchText = "" } }
             }
-            if showMatrixButton { headerButton(icon: "square.grid.2x2", color: accent) { path.append(.matrix) } }
-            if showCompletedButton { headerButton(icon: "tray.full", color: accent) { path.append(.completed) } }
-            headerButton(icon: "gear", color: accent) { path.append(.settings) }
-            headerButton(icon: "plus", color: .green) { path.append(.create) }
+            if showMatrixButton { headerButton(icon: "square.grid.2x2", label: "Eisenhower Matrix", color: accent) { path.append(.matrix) } }
+            if showCompletedButton { headerButton(icon: "tray.full", label: "Completed tasks", color: accent) { path.append(.completed) } }
+            headerButton(icon: "gear", label: "Settings", color: accent) { path.append(.settings) }
+            headerButton(icon: "plus", label: "New task", color: .green) { path.append(.create) }
         }
         .padding(.horizontal, 16)
         .padding(.top, 16)
@@ -111,7 +113,7 @@ struct TaskListView: View {
     }
 
     @ViewBuilder
-    private func headerButton(icon: String, color: Color, action: @escaping () -> Void) -> some View {
+    private func headerButton(icon: String, label: String, color: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.body).foregroundStyle(color)
@@ -119,7 +121,7 @@ struct TaskListView: View {
                 .background(color.opacity(0.15), in: Circle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(icon)
+        .accessibilityLabel(label)
     }
 
     // MARK: - Sort Bar
@@ -208,6 +210,8 @@ struct TaskListView: View {
     private var taskContent: some View {
         if store.activeTasks.isEmpty {
             emptyState
+        } else if !searchText.isEmpty && filteredTasks.isEmpty {
+            noResultsState
         } else if sortMode == .byDueDate && searchText.isEmpty {
             groupedList
         } else {
@@ -231,6 +235,21 @@ struct TaskListView: View {
         }
     }
 
+    private var noResultsState: some View {
+        VStack {
+            Spacer()
+            VStack(spacing: 10) {
+                Image(systemName: "magnifyingglass").font(.system(size: 36)).foregroundStyle(.tertiary)
+                Text(L10n.noResults).font(.body).foregroundStyle(.secondary)
+                Text("No tasks match \u{201C}\(searchText)\u{201D}")
+                    .font(.caption).foregroundStyle(.tertiary)
+                    .lineLimit(1).truncationMode(.middle)
+            }
+            .padding(.horizontal, 24)
+            Spacer()
+        }
+    }
+
     // MARK: - Custom Sort List
 
     private var customList: some View {
@@ -240,7 +259,7 @@ struct TaskListView: View {
                 ForEach(Array(tasks.enumerated()), id: \.element.id) { index, item in
                     SwipeableTaskRow(
                         item: item,
-                        editMode: showSortBar && sortMode == .custom,
+                        editMode: showSortBar && sortMode == .custom && searchText.isEmpty,
                         onComplete: { completeItem(item) },
                         onDelete: { deleteItem(item) },
                         onTap: { path.append(.detail(item)) },
@@ -310,7 +329,7 @@ struct TaskListView: View {
     // MARK: - Actions
 
     private func completeItem(_ item: TodoItem) {
-        showConfetti = true
+        if confettiEnabled { showConfetti = true }
         undoItem = item
         undoAction = .complete
         undoMessage = L10n.taskCompleted

@@ -86,8 +86,9 @@ struct DateParser {
             return applyTime(timeStr, to: base) ?? base
         }
 
-        // Try Apple's DataDetector as fallback
-        return detectDate(from: input)
+        // Try Apple's DataDetector as fallback (use the normalized text so
+        // behavior is consistent with the rest of the parser).
+        return detectDate(from: text)
     }
 
     // MARK: - Helpers

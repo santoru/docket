@@ -8,14 +8,6 @@ import SwiftUI
 struct PriorityPickerView: View {
     @Binding var priority: Priority
 
-    private func color(for p: Priority) -> Color {
-        switch p {
-        case .low: Color(red: 0.45, green: 0.72, blue: 0.95)
-        case .medium: Color(red: 0.95, green: 0.75, blue: 0.40)
-        case .high: Color(red: 0.95, green: 0.50, blue: 0.55)
-        }
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Priority").font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
@@ -27,7 +19,7 @@ struct PriorityPickerView: View {
                             .padding(.horizontal, 14)
                             .padding(.vertical, 7)
                             .background(
-                                Capsule().fill(priority == p ? color(for: p) : .clear)
+                                Capsule().fill(priority == p ? p.color : .clear)
                             )
                             .foregroundStyle(priority == p ? .white : .secondary)
                             .overlay(Capsule().stroke(priority == p ? Color.clear : Color.gray.opacity(0.3), lineWidth: 1))

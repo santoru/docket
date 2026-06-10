@@ -24,6 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var popover: NSPopover!
     private var eventMonitor: Any?
     private var hotkeyRef: EventHotKeyRef?
+    private var hotkeyHandlerInstalled = false
     private var badgeTimer: Timer?
     private var lastHotkeyTime: Date = .distantPast
 
@@ -171,11 +172,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let status = RegisterEventHotKey(code, mods, hotKeyID, GetApplicationEventTarget(), 0, &ref)
         if status == noErr { hotkeyRef = ref }
 
+        // Install the dispatch handler exactly once. RegisterEventHotKey above
+        // can be called repeatedly (when the user changes the shortcut), but
+        // InstallEventHandler must NOT be — each call adds another handler that
+        // is never removed, causing handleHotkey() to fire multiple times per
+        // keypress.
+        guard !hotkeyHandlerInstalled else { return }
         var eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
         InstallEventHandler(GetApplicationEventTarget(), { _, _, _ -> OSStatus in
             AppDelegate.shared?.handleHotkey()
             return noErr
         }, 1, &eventType, nil, nil)
+        hotkeyHandlerInstalled = true
     }
 
     private func unregisterHotkey() {
