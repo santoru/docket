@@ -2,6 +2,49 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.10.0] — 2026-06-10
+
+### ✨ Drag to Reorder
+- **Long-press a task and drag to reorder it.** After a brief hold (0.18s) the card grows in place to signal it's grabbed, then floats under the cursor while the other tasks part to make room; release to drop. Replaces the old ▲/▼ reorder arrows.
+- **Works in every sort mode.** In *By Due Date* or *By Priority*, starting a drag adopts the currently-visible order as your Custom order and switches to Custom (with a brief "Switched to Custom order" toast) so the drag continues seamlessly.
+- **Edge auto-scroll** — drag near the top/bottom of a long list to scroll while dragging.
+- A quick click still opens the task; a horizontal swipe still completes/deletes.
+- VoiceOver **Move up / Move down** actions as an accessible fallback.
+
+### ✨ Sorting
+- New **By Priority** sort mode (High / Medium / Low groups), alongside Custom and By Due Date.
+
+### 🧹 Under the hood
+- The lifted card is a floating overlay that tracks the cursor (pure translation); the real row stays as an invisible placeholder so rows part live around the insertion point.
+- The task list uses an eager `VStack` so every row is measured correctly even when scrolled.
+
+---
+
+## [1.9.0] — 2026-06-10
+
+### ✨ Settings
+- **Reorganized Settings into five labeled groups** — General, Appearance, Notifications, Organize, Sync & Data — with consistent card titles. Appearance controls are consolidated into one **Display** card, and Export / Import / Clear are merged into a single **Data** card. No stored preferences changed.
+
+---
+
+## [1.8.0] — 2026-06-10
+
+### 🐛 Fixes
+- **Import now persists** and remaps orphaned task lists — imported backups no longer vanish on relaunch.
+- **Recurring tasks no longer duplicate** when Reminders sync is on (Docket owns recurrence; no `EKRecurrenceRule` is pushed).
+- The global hotkey handler is installed once instead of stacking across shortcut changes.
+- The local key monitor is removed on close instead of accumulating across popover reopens.
+- Reorder controls hidden while searching; added a **No results** state.
+- Reminders sync moved off the main thread and no longer self-triggers a sync loop.
+
+### ✨ Improvements
+- Data **schema versioning** + migration scaffold; `os.Logger` on all persistence with surfaced failures.
+- Hardened `Color(hex:)`, centralized priority colors, human accessibility labels on toolbar buttons.
+- Added a dependency-free unit test suite (`./run-tests.sh`).
+- **Completion confetti toggle** in Settings.
+
+---
+
 ## [1.7.10] — 2026-06-04
 
 ### ✨ Matrix UX

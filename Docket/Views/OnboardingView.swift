@@ -20,7 +20,7 @@ struct OnboardingView: View {
 
     private let tips: [(icon: String, title: String, desc: String)] = [
         ("hand.draw", "Swipe", "Right to complete, left to delete"),
-        ("arrow.up.arrow.down", "Sort", "Custom order, by due date, or by label"),
+        ("arrow.up.arrow.down", "Reorder", "Press and hold a task, then drag it"),
         ("keyboard", "Shortcut", "⌘⇧D opens Docket from anywhere"),
         ("calendar", "Smart Dates", "Type \"tomorrow 3pm\" for due dates"),
         ("tag", "Labels", "Color-coded labels to organize tasks"),

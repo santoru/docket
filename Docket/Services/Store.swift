@@ -122,6 +122,23 @@ final class Store {
         return groups
     }
 
+    /// Tasks grouped by priority (High / Medium / Low) for "By Priority" sort mode.
+    var groupedByPriority: [(title: String, color: String, tasks: [TodoItem])] {
+        var active = items.filter { !$0.isCompleted && $0.listId == activeListId }
+        if let labelId = activeLabelFilter {
+            active = active.filter { $0.labelIds.contains(labelId) }
+        }
+        func bucket(_ p: Priority) -> [TodoItem] {
+            active.filter { $0.priority == p }.sorted { $0.sortOrder < $1.sortOrder }
+        }
+        var groups: [(title: String, color: String, tasks: [TodoItem])] = []
+        let high = bucket(.high), medium = bucket(.medium), low = bucket(.low)
+        if !high.isEmpty { groups.append(("High", "red", high)) }
+        if !medium.isEmpty { groups.append(("Medium", "orange", medium)) }
+        if !low.isEmpty { groups.append(("Low", "blue", low)) }
+        return groups
+    }
+
     // MARK: - List Management
 
     func switchList(_ list: TaskList) {
@@ -257,6 +274,18 @@ final class Store {
         active.move(fromOffsets: source, toOffset: destination)
         for (idx, task) in active.enumerated() {
             if let i = items.firstIndex(where: { $0.id == task.id }) {
+                items[i].sortOrder = idx
+            }
+        }
+        saveTasks()
+    }
+
+    /// Persist an explicit order for the given task ids (the visible custom-sorted
+    /// set). Each id's `sortOrder` becomes its position in the array. Used by the
+    /// drag-to-reorder gesture.
+    func applyManualOrder(_ orderedIds: [UUID]) {
+        for (idx, id) in orderedIds.enumerated() {
+            if let i = items.firstIndex(where: { $0.id == id }) {
                 items[i].sortOrder = idx
             }
         }

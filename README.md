@@ -35,7 +35,7 @@
 - Create, edit, complete, delete
 - Priority levels (pastel color-coded)
 - Swipe right → complete, left → delete
-- Reorder with ↕ mode (▲/▼ arrows)
+- Long-press & drag to reorder
 - Undo toast on complete/delete (3s)
 
 </td>
@@ -79,7 +79,7 @@
 `📋 Organization`
 - Multiple lists (create/rename/delete)
 - Labels with color + icon (per list)
-- Sort: custom order or by due date
+- Sort: custom order, by due date, or by priority
 - Filter by label in sort bar
 - Grouped: Overdue / Today / Upcoming
 - Search with real-time filtering
@@ -235,7 +235,7 @@ Docket/
 │   ├── TaskLabel.swift             # Label model with color + icon
 │   ├── ReminderOffset.swift        # Notification timing options
 │   ├── AppTheme.swift              # 9 themes + custom + ThemeManager
-│   ├── SortMode.swift              # Custom vs By Due Date
+│   ├── SortMode.swift              # Custom, By Due Date, By Priority
 │   └── Strings.swift               # L10n localization strings
 ├── Services/
 │   ├── Store.swift                 # JSON persistence, CRUD, lists, labels, reorder
@@ -247,7 +247,7 @@ Docket/
     ├── ContentView.swift           # Router, theme, onboarding, keyboard nav
     ├── TaskListView.swift          # Main list, sort bar, label filter, undo toast
     ├── TaskRowView.swift           # Task card with priority bar + labels
-    ├── SwipeableTaskRow.swift      # Swipe gestures + reorder arrows
+    ├── SwipeableTaskRow.swift      # Swipe gestures + long-press drag reorder
     ├── ConfettiView.swift          # Completion celebration
     ├── UndoToast.swift             # Undo notification toast
     ├── CalendarPickerView.swift    # Custom themed calendar

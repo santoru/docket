@@ -8,4 +8,5 @@ import Foundation
 enum SortMode: Int {
     case custom = 0
     case byDueDate = 1
+    case byPriority = 2
 }
