@@ -17,13 +17,6 @@ struct RowFrameKey: PreferenceKey {
     }
 }
 
-/// Reports the scroll viewport's frame in global space so autoscroll edge
-/// detection works in screen coordinates (independent of AppKit flipped-ness).
-struct ViewportFrameKey: PreferenceKey {
-    static let defaultValue: CGRect = .zero
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) { value = nextValue() }
-}
-
 /// Resolves the enclosing NSScrollView so the reorder coordinator can drive
 /// edge auto-scrolling during a drag (SwiftUI offers no offset control on
 /// macOS 14, so we manipulate the AppKit clip view directly).
@@ -69,6 +62,8 @@ struct TaskListView: View {
     @State private var dragTranslationY: CGFloat = 0
     @State private var liveOrder: [TodoItem]?
     @State private var rowFrames: [UUID: CGRect] = [:]
+    @State private var dragStartFrame: CGRect?
+    @State private var liftScale: CGFloat = 1.0
     @State private var showModeToast = false
 
     // Autoscroll (drives the AppKit clip view while dragging near an edge)
@@ -76,7 +71,9 @@ struct TaskListView: View {
     @State private var autoscrollDir: Int = 0          // -1 up, 0 idle, +1 down
     @State private var autoscrollTimer: Timer?
     @State private var autoscrollAccumulated: CGFloat = 0
-    @State private var viewportGlobalFrame: CGRect = .zero
+
+    /// Edge auto-scroll while dragging near the top/bottom of the list.
+    private let autoscrollEnabled = true
 
     private var accent: Color { ThemeManager.resolvedAccent(themeRaw: themeRaw, customHue: customHue) }
     private var sortMode: SortMode { SortMode(rawValue: sortModeRaw) ?? .custom }
@@ -105,17 +102,6 @@ struct TaskListView: View {
     /// translation + any distance auto-scrolled while held near an edge.
     private var fingerContentY: CGFloat {
         (dragStartCenterY ?? 0) + dragTranslationY + autoscrollAccumulated
-    }
-
-    /// Vertical offset that keeps the lifted row under the cursor. Falls back to
-    /// pure translation if frames aren't available yet, so it can never fling the
-    /// card off-screen.
-    private var liftOffset: CGFloat {
-        guard let id = draggingId else { return 0 }
-        guard let startY = dragStartCenterY, let slotY = rowFrames[id]?.midY else {
-            return dragTranslationY + autoscrollAccumulated
-        }
-        return (startY + dragTranslationY + autoscrollAccumulated) - slotY
     }
 
     var body: some View {
@@ -378,7 +364,7 @@ struct TaskListView: View {
 
     private var unifiedList: some View {
         VScroll {
-            LazyVStack(spacing: 8) {
+            VStack(spacing: 8) {
                 ForEach(listRows) { row in
                     switch row.kind {
                     case .header(let title, let color):
@@ -390,17 +376,34 @@ struct TaskListView: View {
             }
             .padding(.horizontal, 12)
             .padding(.top, 4)
+            .padding(.bottom, 12)
             .coordinateSpace(name: TaskListCoordinateSpace.name)
             .background(ScrollViewAccessor { scrollView = $0 })
             .onPreferenceChange(RowFrameKey.self) { rowFrames = $0 }
             .animation(.spring(duration: 0.28), value: draggingId)
+            .overlay(alignment: .topLeading) { floatingCard }
         }
-        .background(
-            GeometryReader { g in
-                Color.clear.preference(key: ViewportFrameKey.self, value: g.frame(in: .global))
-            }
-        )
-        .onPreferenceChange(ViewportFrameKey.self) { viewportGlobalFrame = $0 }
+    }
+
+    /// The lifted card, drawn as a floating copy that tracks the cursor with pure
+    /// translation (instant follow). The real row stays in the list as an
+    /// invisible placeholder so the other rows part around the insertion point.
+    @ViewBuilder
+    private var floatingCard: some View {
+        if let id = draggingId,
+           let item = (liveOrder ?? filteredTasks).first(where: { $0.id == id }),
+           let f = dragStartFrame {
+            TaskRowView(item: item, onComplete: {})
+                .frame(width: f.width, height: f.height)
+                .scaleEffect(liftScale)
+                .shadow(color: .black.opacity(0.18), radius: 8, y: 4)
+                .offset(x: f.minX, y: f.minY + dragTranslationY + autoscrollAccumulated)
+                .allowsHitTesting(false)
+                .onAppear {
+                    // Grow smoothly into the lifted size instead of popping in.
+                    withAnimation(.spring(duration: 0.22, bounce: 0.35)) { liftScale = 1.03 }
+                }
+        }
     }
 
     @ViewBuilder
@@ -414,7 +417,7 @@ struct TaskListView: View {
             onDelete: { deleteItem(item) },
             onTap: { path.append(.detail(item)) },
             onReorderBegin: { beginReorder(item) },
-            onReorderChange: { ty, gy in updateReorder(translationY: ty, globalY: gy) },
+            onReorderChange: { updateReorder(translationY: $0) },
             onReorderEnd: { endReorder() }
         )
         .background(
@@ -425,11 +428,9 @@ struct TaskListView: View {
                 )
             }
         )
-        .offset(y: lifted ? liftOffset : 0)
-        .scaleEffect(lifted ? 1.03 : 1.0)
-        .shadow(color: .black.opacity(lifted ? 0.18 : 0),
-                radius: lifted ? 8 : 0, y: lifted ? 4 : 0)
-        .zIndex(lifted ? 1 : 0)
+        // While lifted, this row is an invisible placeholder holding the gap (and
+        // the gesture); the floating overlay draws the actual card at the cursor.
+        .opacity(lifted ? 0 : 1)
         .accessibilityActions {
             if reorderEnabled && sortMode == .custom {
                 Button("Move up") { moveByAccessibility(item, by: -1) }
@@ -470,9 +471,11 @@ struct TaskListView: View {
         }
         draggingId = item.id
         dragStartCenterY = rowFrames[item.id]?.midY
+        dragStartFrame = rowFrames[item.id]
         dragTranslationY = 0
+        autoscrollAccumulated = 0
         liveOrder = displayedCustomTasks
-        startAutoscrollTimer()
+        if autoscrollEnabled { startAutoscrollTimer() }
     }
 
     private func showModeToastBriefly() {
@@ -482,18 +485,19 @@ struct TaskListView: View {
         }
     }
 
-    private func updateReorder(translationY: CGFloat, globalY: CGFloat) {
-        guard draggingId != nil else { return }
+    private func updateReorder(translationY: CGFloat) {
+        guard let id = draggingId else { return }
+        if dragStartCenterY == nil { dragStartCenterY = rowFrames[id]?.midY }
         dragTranslationY = translationY
         applyReorderTarget()
-        updateAutoscrollZone(globalY: globalY)
+        if autoscrollEnabled { updateAutoscrollZone() }
     }
 
-    /// Move the dragged item to the insertion index implied by `fingerContentY`.
+    /// Move the dragged item to the insertion index implied by `fingerContentY`,
+    /// so the other rows part to make room as the card is dragged over them.
     private func applyReorderTarget() {
         guard let id = draggingId, var order = liveOrder else { return }
         let y = fingerContentY
-        // Insertion index = number of other rows whose midpoint sits above the finger.
         var target = 0
         for t in order where t.id != id {
             if let f = rowFrames[t.id], f.midY < y { target += 1 }
@@ -508,11 +512,14 @@ struct TaskListView: View {
 
     private func endReorder() {
         stopAutoscroll()
+        guard draggingId != nil else { return }   // idempotent — watchdog may also call this
         if let order = liveOrder {
             store.applyManualOrder(order.map(\.id))
         }
         withAnimation(.spring(duration: 0.25)) { draggingId = nil }
         dragStartCenterY = nil
+        dragStartFrame = nil
+        liftScale = 1.0
         dragTranslationY = 0
         autoscrollAccumulated = 0
         liveOrder = nil
@@ -520,13 +527,18 @@ struct TaskListView: View {
 
     // MARK: - Autoscroll
 
-    /// Decide whether the finger is in the top/bottom edge band of the visible
-    /// scroll area, in global screen coordinates (robust to AppKit flipped-ness).
-    private func updateAutoscrollZone(globalY: CGFloat) {
-        guard scrollView != nil, viewportGlobalFrame.height > 0 else { autoscrollDir = 0; return }
-        let band: CGFloat = 44
-        if globalY < viewportGlobalFrame.minY + band { autoscrollDir = -1 }
-        else if globalY > viewportGlobalFrame.maxY - band { autoscrollDir = 1 }
+    /// Decide whether the cursor is in the top/bottom edge band of the visible
+    /// scroll area. Compares the cursor's content-space position against the
+    /// scroll view's visible rect — both in the document's coordinate space, so
+    /// it stays correct no matter how far the list is scrolled.
+    private func updateAutoscrollZone() {
+        guard let sv = scrollView else { autoscrollDir = 0; return }
+        let visible = sv.contentView.documentVisibleRect
+        guard visible.height > 0 else { autoscrollDir = 0; return }
+        let band: CGFloat = 50
+        let y = fingerContentY
+        if y < visible.minY + band { autoscrollDir = -1 }
+        else if y > visible.maxY - band { autoscrollDir = 1 }
         else { autoscrollDir = 0 }
     }
 

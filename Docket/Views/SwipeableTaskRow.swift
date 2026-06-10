@@ -21,10 +21,23 @@ struct SwipeableTaskRow: View {
     let onDelete: () -> Void
     let onTap: () -> Void
     var onReorderBegin: () -> Void = {}
-    var onReorderChange: (_ translationY: CGFloat, _ globalY: CGFloat) -> Void = { _, _ in }
+    var onReorderChange: (_ translationY: CGFloat) -> Void = { _ in }
     var onReorderEnd: () -> Void = {}
 
     @State private var offset: CGFloat = 0
+    /// Auto-resets to false whenever the reorder gesture ends or is cancelled —
+    /// our reliable signal to clean up (the sequenced gesture's own .onEnded does
+    /// NOT fire when the press is released without a drag, which left the card
+    /// stuck in the lifted state).
+    @GestureState private var reorderActive = false
+    /// Becomes true only once the finger moves after the hold — so the lift/grow
+    /// is tied to actual dragging, not merely holding the press.
+    @State private var reorderBegun = false
+    /// Visual "grab" feedback during a held press. Driven by a manual timer so
+    /// it's independent of the gesture's own (unreliable) recognition timing,
+    /// and purely cosmetic so it never affects tap/swipe/drag behavior.
+    @State private var pressed = false
+    @State private var pressTimer: Timer?
 
     var body: some View {
         ZStack {
@@ -50,15 +63,50 @@ struct SwipeableTaskRow: View {
             }
 
             TaskRowView(item: item, onComplete: onComplete)
+                .scaleEffect(pressed && !isLifted ? 1.03 : 1.0)
                 .offset(x: offset)
                 .contentShape(Rectangle())
-                .onTapGesture { onTap() }
                 .gesture(isLifted ? nil : swipeGesture)
         }
-        // Standard-priority so the inner tap/swipe win for quick gestures; the
-        // long-press only engages when the press is held still (no child gesture
-        // recognizes first). Disabled (subviews only) when reorder isn't allowed.
-        .gesture(reorderGesture, including: reorderEnabled ? .all : .subviews)
+        // A quick click opens the task — high priority so it wins over the
+        // long-press for fast clicks.
+        .highPriorityGesture(TapGesture().onEnded { onTap() })
+        // Simultaneous so it doesn't steal the event stream from the tap/swipe.
+        // The 0.5s long-press time-gate separates a reorder (held) from a quick
+        // tap or a fast horizontal swipe.
+        .simultaneousGesture(reorderGesture, including: reorderEnabled ? .all : .subviews)
+        .onChange(of: reorderActive) { _, active in
+            if active {
+                startPressFeedback()
+            } else {
+                // Gesture ended/cancelled in any way → ensure cleanup runs even if
+                // the sequenced gesture's .onEnded didn't fire.
+                cancelPressFeedback()
+                reorderBegun = false
+                onReorderEnd()
+            }
+        }
+    }
+
+    // MARK: - Press Feedback
+
+    /// After a short hold, grow the row in place to signal it's grabbed. The
+    /// timer is cancelled by any release/move that ends the press first (a quick
+    /// click or a swipe), so those never grow. Uses .common run-loop mode so it
+    /// fires while the mouse button is held (event tracking).
+    private func startPressFeedback() {
+        pressTimer?.invalidate()
+        let t = Timer(timeInterval: 0.18, repeats: false) { _ in
+            withAnimation(.spring(duration: 0.22, bounce: 0.35)) { pressed = true }
+        }
+        RunLoop.main.add(t, forMode: .common)
+        pressTimer = t
+    }
+
+    private func cancelPressFeedback() {
+        pressTimer?.invalidate()
+        pressTimer = nil
+        if pressed { withAnimation(.easeOut(duration: 0.15)) { pressed = false } }
     }
 
     // MARK: - Swipe Gesture
@@ -89,18 +137,24 @@ struct SwipeableTaskRow: View {
     // MARK: - Reorder Gesture (long-press → drag)
 
     private var reorderGesture: some Gesture {
-        LongPressGesture(minimumDuration: 0.3, maximumDistance: 10)
+        LongPressGesture(minimumDuration: 0.18, maximumDistance: 10)
             .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .global))
+            .updating($reorderActive) { _, state, _ in state = true }
             .onChanged { value in
-                switch value {
-                case .first(true):
-                    onReorderBegin()
-                case .second(true, let drag?):
-                    onReorderChange(drag.translation.height, drag.location.y)
-                default:
-                    break
+                // Lift only once the finger actually MOVES after the hold, so a
+                // press-and-release (even a slow one) stays a click and never grows.
+                if case .second(true, let drag?) = value {
+                    if !reorderBegun {
+                        guard abs(drag.translation.height) > 4 || abs(drag.translation.width) > 4 else { return }
+                        reorderBegun = true
+                        onReorderBegin()
+                    }
+                    onReorderChange(drag.translation.height)
                 }
             }
-            .onEnded { _ in onReorderEnd() }
+            .onEnded { _ in
+                reorderBegun = false
+                onReorderEnd()
+            }
     }
 }
