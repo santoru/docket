@@ -121,7 +121,6 @@ struct SettingsView: View {
     private var reminderSection: some View {
         card {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Notifications").font(.body.weight(.medium))
                 HStack {
                     Text("Default reminder").font(.subheadline)
                     Spacer()
@@ -197,7 +196,6 @@ struct SettingsView: View {
     private var generalSection: some View {
         card {
             VStack(alignment: .leading, spacing: 10) {
-                Text("General").font(.body.weight(.medium))
                 ThemedToggle(label: "Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, on in
                         if on { try? SMAppService.mainApp.register() }
