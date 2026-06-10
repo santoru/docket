@@ -2,6 +2,17 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.11.0] — 2026-06-10
+
+### 🌍 Localization
+- **Docket now speaks English and Italian.** Every user-facing string — task list, create/edit, settings, the Eisenhower matrix, onboarding, pickers, the menu-bar menu, alerts, and notifications — is fully localized and follows your system language.
+- All strings route through a single `L10n` catalog backed by `en` / `it` `Localizable.strings` tables; the app declares `CFBundleLocalizations` for English and Italian.
+- Not translated by design: your own list/label/task names, macOS system sound names, keyboard-shortcut symbols, the editable matrix quadrant labels, and the (English-only) smart-date keywords.
+
+To preview a language without changing your system setting: `open Docket.app --args -AppleLanguages '(it)'`.
+
+---
+
 ## [1.10.0] — 2026-06-10
 
 ### ✨ Drag to Reorder
