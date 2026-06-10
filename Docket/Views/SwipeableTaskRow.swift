@@ -21,7 +21,7 @@ struct SwipeableTaskRow: View {
     let onDelete: () -> Void
     let onTap: () -> Void
     var onReorderBegin: () -> Void = {}
-    var onReorderChange: (CGFloat) -> Void = { _ in }
+    var onReorderChange: (_ translationY: CGFloat, _ globalY: CGFloat) -> Void = { _, _ in }
     var onReorderEnd: () -> Void = {}
 
     @State private var offset: CGFloat = 0
@@ -55,9 +55,10 @@ struct SwipeableTaskRow: View {
                 .onTapGesture { onTap() }
                 .gesture(isLifted ? nil : swipeGesture)
         }
-        // Reorder takes priority when enabled; disabled (so taps/swipes pass to
-        // the inner view) otherwise.
-        .highPriorityGesture(reorderGesture, including: reorderEnabled ? .all : .subviews)
+        // Standard-priority so the inner tap/swipe win for quick gestures; the
+        // long-press only engages when the press is held still (no child gesture
+        // recognizes first). Disabled (subviews only) when reorder isn't allowed.
+        .gesture(reorderGesture, including: reorderEnabled ? .all : .subviews)
     }
 
     // MARK: - Swipe Gesture
@@ -89,13 +90,13 @@ struct SwipeableTaskRow: View {
 
     private var reorderGesture: some Gesture {
         LongPressGesture(minimumDuration: 0.3, maximumDistance: 10)
-            .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .named(TaskListCoordinateSpace.name)))
+            .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .global))
             .onChanged { value in
                 switch value {
                 case .first(true):
                     onReorderBegin()
                 case .second(true, let drag?):
-                    onReorderChange(drag.translation.height)
+                    onReorderChange(drag.translation.height, drag.location.y)
                 default:
                     break
                 }

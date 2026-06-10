@@ -17,6 +17,13 @@ struct RowFrameKey: PreferenceKey {
     }
 }
 
+/// Reports the scroll viewport's frame in global space so autoscroll edge
+/// detection works in screen coordinates (independent of AppKit flipped-ness).
+struct ViewportFrameKey: PreferenceKey {
+    static let defaultValue: CGRect = .zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) { value = nextValue() }
+}
+
 /// Resolves the enclosing NSScrollView so the reorder coordinator can drive
 /// edge auto-scrolling during a drag (SwiftUI offers no offset control on
 /// macOS 14, so we manipulate the AppKit clip view directly).
@@ -69,6 +76,7 @@ struct TaskListView: View {
     @State private var autoscrollDir: Int = 0          // -1 up, 0 idle, +1 down
     @State private var autoscrollTimer: Timer?
     @State private var autoscrollAccumulated: CGFloat = 0
+    @State private var viewportGlobalFrame: CGRect = .zero
 
     private var accent: Color { ThemeManager.resolvedAccent(themeRaw: themeRaw, customHue: customHue) }
     private var sortMode: SortMode { SortMode(rawValue: sortModeRaw) ?? .custom }
@@ -99,11 +107,15 @@ struct TaskListView: View {
         (dragStartCenterY ?? 0) + dragTranslationY + autoscrollAccumulated
     }
 
-    /// Vertical offset that keeps the lifted row under the cursor.
+    /// Vertical offset that keeps the lifted row under the cursor. Falls back to
+    /// pure translation if frames aren't available yet, so it can never fling the
+    /// card off-screen.
     private var liftOffset: CGFloat {
         guard let id = draggingId else { return 0 }
-        let slotY = rowFrames[id]?.midY ?? dragStartCenterY ?? 0
-        return fingerContentY - slotY
+        guard let startY = dragStartCenterY, let slotY = rowFrames[id]?.midY else {
+            return dragTranslationY + autoscrollAccumulated
+        }
+        return (startY + dragTranslationY + autoscrollAccumulated) - slotY
     }
 
     var body: some View {
@@ -383,6 +395,12 @@ struct TaskListView: View {
             .onPreferenceChange(RowFrameKey.self) { rowFrames = $0 }
             .animation(.spring(duration: 0.28), value: draggingId)
         }
+        .background(
+            GeometryReader { g in
+                Color.clear.preference(key: ViewportFrameKey.self, value: g.frame(in: .global))
+            }
+        )
+        .onPreferenceChange(ViewportFrameKey.self) { viewportGlobalFrame = $0 }
     }
 
     @ViewBuilder
@@ -396,7 +414,7 @@ struct TaskListView: View {
             onDelete: { deleteItem(item) },
             onTap: { path.append(.detail(item)) },
             onReorderBegin: { beginReorder(item) },
-            onReorderChange: { updateReorder(translationY: $0) },
+            onReorderChange: { ty, gy in updateReorder(translationY: ty, globalY: gy) },
             onReorderEnd: { endReorder() }
         )
         .background(
@@ -464,11 +482,11 @@ struct TaskListView: View {
         }
     }
 
-    private func updateReorder(translationY: CGFloat) {
+    private func updateReorder(translationY: CGFloat, globalY: CGFloat) {
         guard draggingId != nil else { return }
         dragTranslationY = translationY
         applyReorderTarget()
-        updateAutoscrollZone()
+        updateAutoscrollZone(globalY: globalY)
     }
 
     /// Move the dragged item to the insertion index implied by `fingerContentY`.
@@ -503,16 +521,12 @@ struct TaskListView: View {
     // MARK: - Autoscroll
 
     /// Decide whether the finger is in the top/bottom edge band of the visible
-    /// scroll area and set the autoscroll direction accordingly.
-    private func updateAutoscrollZone() {
-        guard let sv = scrollView else { autoscrollDir = 0; return }
-        let clip = sv.contentView
+    /// scroll area, in global screen coordinates (robust to AppKit flipped-ness).
+    private func updateAutoscrollZone(globalY: CGFloat) {
+        guard scrollView != nil, viewportGlobalFrame.height > 0 else { autoscrollDir = 0; return }
         let band: CGFloat = 44
-        let top = clip.bounds.origin.y
-        let bottom = top + clip.bounds.height
-        let y = fingerContentY
-        if y - top < band { autoscrollDir = -1 }
-        else if bottom - y < band { autoscrollDir = 1 }
+        if globalY < viewportGlobalFrame.minY + band { autoscrollDir = -1 }
+        else if globalY > viewportGlobalFrame.maxY - band { autoscrollDir = 1 }
         else { autoscrollDir = 0 }
     }
 
@@ -528,15 +542,19 @@ struct TaskListView: View {
     private func stepAutoscroll() {
         guard autoscrollDir != 0, let sv = scrollView else { return }
         let clip = sv.contentView
+        let flipped = sv.documentView?.isFlipped ?? true
         let speed: CGFloat = 9
         let maxY = max(0, (sv.documentView?.frame.height ?? 0) - clip.bounds.height)
         let current = clip.bounds.origin.y
-        let proposed = min(max(0, current + CGFloat(autoscrollDir) * speed), maxY)
+        // Map intent (-1 up / +1 down) to clip-space direction (depends on flip).
+        let clipDir: CGFloat = (flipped ? 1 : -1) * CGFloat(autoscrollDir)
+        let proposed = min(max(0, current + clipDir * speed), maxY)
         let delta = proposed - current
         guard abs(delta) > 0.01 else { return }
         clip.scroll(to: NSPoint(x: clip.bounds.origin.x, y: proposed))
         sv.reflectScrolledClipView(clip)
-        autoscrollAccumulated += delta   // keep the finger tracking the same screen point
+        // Content-space finger advances in the intent direction by the amount scrolled.
+        autoscrollAccumulated += CGFloat(autoscrollDir) * abs(delta)
         applyReorderTarget()
     }
 
