@@ -47,18 +47,26 @@ struct SettingsView: View {
             header
             Divider()
             VScroll {
-                VStack(spacing: 16) {
-                    reminderSection
-                    launchSection
+                VStack(spacing: 12) {
+                    groupHeader("GENERAL", first: true)
+                    generalSection
                     hotkeySection
-                    remindersSection
+
+                    groupHeader("APPEARANCE")
+                    themeSection
+                    displaySection
+                    matrixSection
+
+                    groupHeader("NOTIFICATIONS")
+                    reminderSection
+
+                    groupHeader("ORGANIZE")
                     listsSection
                     labelsSection
-                    matrixSection
-                    visibilitySection
-                    themeSection
-                    exportImportSection
-                    clearSection
+
+                    groupHeader("SYNC & DATA")
+                    remindersSection
+                    dataSection
 
                     VStack(spacing: 4) {
                         Text("Docket v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0")")
@@ -66,7 +74,7 @@ struct SettingsView: View {
                         Link("github.com/santoru/docket", destination: URL(string: "https://github.com/santoru/docket")!)
                             .font(.caption).foregroundStyle(.secondary)
                     }
-                    .padding(.top, 4)
+                    .padding(.top, 12)
                 }
                 .padding(20)
             }
@@ -113,7 +121,6 @@ struct SettingsView: View {
     private var reminderSection: some View {
         card {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Notifications").font(.body.weight(.medium))
                 HStack {
                     Text("Default reminder").font(.subheadline)
                     Spacer()
@@ -186,21 +193,16 @@ struct SettingsView: View {
         }
     }
 
-    private var launchSection: some View {
+    private var generalSection: some View {
         card {
             VStack(alignment: .leading, spacing: 10) {
-                Text("General").font(.body.weight(.medium))
                 ThemedToggle(label: "Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, on in
                         if on { try? SMAppService.mainApp.register() }
                         else { SMAppService.mainApp.unregister { _ in } }
                     }
                 Divider()
-                ThemedToggle(label: "Liquid Glass", isOn: $useGlass)
-                Divider()
                 ThemedToggle(label: "Multi-line tasks", isOn: $multiLineTask)
-                Divider()
-                ThemedToggle(label: "Completion confetti", isOn: $showConfetti)
             }
         }
     }
@@ -246,6 +248,7 @@ struct SettingsView: View {
     private var remindersSection: some View {
         card {
             VStack(alignment: .leading, spacing: 10) {
+                Text("Reminders Sync").font(.body.weight(.medium))
                 ThemedToggle(label: "Sync with Reminders", isOn: $remindersSyncEnabled)
                     .onChange(of: remindersSyncEnabled) { _, on in
                         if on { enableSync() } else { disableSync() }
@@ -588,70 +591,71 @@ struct SettingsView: View {
 
     @State private var showClearConfirm = false
 
-    private var clearSection: some View {
-        VStack(spacing: 8) {
-            actionButton(
-                label: "Clear completed",
-                icon: "trash",
-                color: .red,
-                badge: "\(store.completedTasks.count)"
-            ) { showClearConfirm = true }
-            .disabled(store.completedTasks.isEmpty)
-            .opacity(store.completedTasks.isEmpty ? 0.5 : 1)
-        }
-    }
-
-    private var exportImportSection: some View {
-        HStack(spacing: 8) {
-            actionButton(label: "Export", icon: "arrow.up.doc", color: accent) {
-                let panel = NSSavePanel()
-                panel.allowedContentTypes = [.json]
-                panel.nameFieldStringValue = "docket-export.json"
-                if panel.runModal() == .OK, let url = panel.url {
-                    let export = DocketExport(schemaVersion: Store.currentSchemaVersion, lists: store.lists, labels: store.labels, tasks: store.items)
-                    try? JSONEncoder().encode(export).write(to: url, options: .atomic)
-                }
-            }
-            actionButton(label: "Import", icon: "arrow.down.doc", color: accent) {
-                let panel = NSOpenPanel()
-                panel.allowedContentTypes = [.json]
-                panel.allowsMultipleSelection = false
-                if panel.runModal() == .OK, let url = panel.url,
-                   let data = try? Data(contentsOf: url) {
-                    if let export = try? JSONDecoder().decode(DocketExport.self, from: data) {
-                        // Add lists that don't already exist (matched by name).
-                        for list in export.lists where !store.lists.contains(where: { $0.name == list.name }) {
-                            store.lists.append(list)
+    private var dataSection: some View {
+        card {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Data").font(.body.weight(.medium))
+                HStack(spacing: 8) {
+                    actionButton(label: "Export", icon: "arrow.up.doc", color: accent) {
+                        let panel = NSSavePanel()
+                        panel.allowedContentTypes = [.json]
+                        panel.nameFieldStringValue = "docket-export.json"
+                        if panel.runModal() == .OK, let url = panel.url {
+                            let export = DocketExport(schemaVersion: Store.currentSchemaVersion, lists: store.lists, labels: store.labels, tasks: store.items)
+                            try? JSONEncoder().encode(export).write(to: url, options: .atomic)
                         }
-                        for label in export.labels where !store.labels.contains(where: { $0.id == label.id }) {
-                            store.labels.append(label)
-                        }
-                        // Build maps to remap imported tasks onto surviving lists.
-                        let exportedListName = Dictionary(export.lists.map { ($0.id, $0.name) },
-                                                           uniquingKeysWith: { first, _ in first })
-                        let listIdByName = Dictionary(store.lists.map { ($0.name, $0.id) },
-                                                      uniquingKeysWith: { first, _ in first })
-                        let validListIds = Set(store.lists.map(\.id))
-                        let defaultId = store.lists.first(where: { $0.isDefault })?.id ?? store.lists[0].id
+                    }
+                    actionButton(label: "Import", icon: "arrow.down.doc", color: accent) {
+                        let panel = NSOpenPanel()
+                        panel.allowedContentTypes = [.json]
+                        panel.allowsMultipleSelection = false
+                        if panel.runModal() == .OK, let url = panel.url,
+                           let data = try? Data(contentsOf: url) {
+                            if let export = try? JSONDecoder().decode(DocketExport.self, from: data) {
+                                // Add lists that don't already exist (matched by name).
+                                for list in export.lists where !store.lists.contains(where: { $0.name == list.name }) {
+                                    store.lists.append(list)
+                                }
+                                for label in export.labels where !store.labels.contains(where: { $0.id == label.id }) {
+                                    store.labels.append(label)
+                                }
+                                // Build maps to remap imported tasks onto surviving lists.
+                                let exportedListName = Dictionary(export.lists.map { ($0.id, $0.name) },
+                                                                   uniquingKeysWith: { first, _ in first })
+                                let listIdByName = Dictionary(store.lists.map { ($0.name, $0.id) },
+                                                              uniquingKeysWith: { first, _ in first })
+                                let validListIds = Set(store.lists.map(\.id))
+                                let defaultId = store.lists.first(where: { $0.isDefault })?.id ?? store.lists[0].id
 
-                        for item in export.tasks where !store.items.contains(where: { $0.id == item.id }) {
-                            var item = item
-                            if let lid = item.listId, !validListIds.contains(lid) {
-                                // The referenced list was de-duplicated away — remap by
-                                // name, falling back to the default list.
-                                item.listId = exportedListName[lid].flatMap { listIdByName[$0] } ?? defaultId
-                            } else if item.listId == nil {
-                                item.listId = defaultId
+                                for item in export.tasks where !store.items.contains(where: { $0.id == item.id }) {
+                                    var item = item
+                                    if let lid = item.listId, !validListIds.contains(lid) {
+                                        // The referenced list was de-duplicated away — remap by
+                                        // name, falling back to the default list.
+                                        item.listId = exportedListName[lid].flatMap { listIdByName[$0] } ?? defaultId
+                                    } else if item.listId == nil {
+                                        item.listId = defaultId
+                                    }
+                                    store.items.append(item)
+                                }
+                                store.persistAll()
+                            } else if let tasks = try? JSONDecoder().decode([TodoItem].self, from: data) {
+                                for item in tasks where !store.items.contains(where: { $0.id == item.id }) {
+                                    store.add(item)
+                                }
                             }
-                            store.items.append(item)
-                        }
-                        store.persistAll()
-                    } else if let tasks = try? JSONDecoder().decode([TodoItem].self, from: data) {
-                        for item in tasks where !store.items.contains(where: { $0.id == item.id }) {
-                            store.add(item)
                         }
                     }
                 }
+                Divider()
+                actionButton(
+                    label: "Clear completed",
+                    icon: "trash",
+                    color: .red,
+                    badge: "\(store.completedTasks.count)"
+                ) { showClearConfirm = true }
+                .disabled(store.completedTasks.isEmpty)
+                .opacity(store.completedTasks.isEmpty ? 0.5 : 1)
             }
         }
     }
@@ -776,10 +780,15 @@ struct SettingsView: View {
     @AppStorage("showCompletedButton") private var showCompletedButton = true
     @AppStorage("matrixLineCount") private var matrixLineCount = 1
 
-    private var visibilitySection: some View {
+    private var displaySection: some View {
         card {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Show in toolbar").font(.body.weight(.medium))
+                Text("Display").font(.body.weight(.medium))
+                ThemedToggle(label: "Liquid Glass", isOn: $useGlass)
+                Divider()
+                ThemedToggle(label: "Completion confetti", isOn: $showConfetti)
+                Divider()
+                Text("Show in toolbar").font(.caption).foregroundStyle(.secondary)
                 ThemedToggle(label: "Matrix button", isOn: $showMatrixButton)
                 ThemedToggle(label: "Completed button", isOn: $showCompletedButton)
             }
@@ -855,6 +864,20 @@ struct SettingsView: View {
         hotkeyKeyCode = code
         hotkeyModifiers = mods
         AppDelegate.shared?.registerHotkey()
+    }
+
+    /// Small all-caps header that visually groups the cards beneath it.
+    @ViewBuilder
+    private func groupHeader(_ text: String, first: Bool = false) -> some View {
+        HStack {
+            Text(text)
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(1.2)
+                .foregroundStyle(.tertiary)
+            Spacer()
+        }
+        .padding(.horizontal, 4)
+        .padding(.top, first ? 0 : 12)
     }
 
     @ViewBuilder
