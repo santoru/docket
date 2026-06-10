@@ -79,7 +79,7 @@
 `📋 Organization`
 - Multiple lists (create/rename/delete)
 - Labels with color + icon (per list)
-- Sort: custom order or by due date
+- Sort: custom order, by due date, or by priority
 - Filter by label in sort bar
 - Grouped: Overdue / Today / Upcoming
 - Search with real-time filtering
@@ -235,7 +235,7 @@ Docket/
 │   ├── TaskLabel.swift             # Label model with color + icon
 │   ├── ReminderOffset.swift        # Notification timing options
 │   ├── AppTheme.swift              # 9 themes + custom + ThemeManager
-│   ├── SortMode.swift              # Custom vs By Due Date
+│   ├── SortMode.swift              # Custom, By Due Date, By Priority
 │   └── Strings.swift               # L10n localization strings
 ├── Services/
 │   ├── Store.swift                 # JSON persistence, CRUD, lists, labels, reorder

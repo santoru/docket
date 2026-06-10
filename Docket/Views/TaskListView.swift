@@ -3,6 +3,7 @@
 // Created by @santoru
 
 import SwiftUI
+import AppKit
 
 /// Shared coordinate-space name for the reorderable task list.
 enum TaskListCoordinateSpace { static let name = "taskList" }
@@ -13,6 +14,21 @@ struct RowFrameKey: PreferenceKey {
     static let defaultValue: [UUID: CGRect] = [:]
     static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
         value.merge(nextValue()) { _, new in new }
+    }
+}
+
+/// Resolves the enclosing NSScrollView so the reorder coordinator can drive
+/// edge auto-scrolling during a drag (SwiftUI offers no offset control on
+/// macOS 14, so we manipulate the AppKit clip view directly).
+struct ScrollViewAccessor: NSViewRepresentable {
+    var onResolve: (NSScrollView) -> Void
+    func makeNSView(context: Context) -> NSView {
+        let v = NSView()
+        DispatchQueue.main.async { if let sv = v.enclosingScrollView { onResolve(sv) } }
+        return v
+    }
+    func updateNSView(_ nsView: NSView, context: Context) {
+        DispatchQueue.main.async { if let sv = nsView.enclosingScrollView { onResolve(sv) } }
     }
 }
 
@@ -48,6 +64,12 @@ struct TaskListView: View {
     @State private var rowFrames: [UUID: CGRect] = [:]
     @State private var showModeToast = false
 
+    // Autoscroll (drives the AppKit clip view while dragging near an edge)
+    @State private var scrollView: NSScrollView?
+    @State private var autoscrollDir: Int = 0          // -1 up, 0 idle, +1 down
+    @State private var autoscrollTimer: Timer?
+    @State private var autoscrollAccumulated: CGFloat = 0
+
     private var accent: Color { ThemeManager.resolvedAccent(themeRaw: themeRaw, customHue: customHue) }
     private var sortMode: SortMode { SortMode(rawValue: sortModeRaw) ?? .custom }
 
@@ -71,12 +93,17 @@ struct TaskListView: View {
         liveOrder ?? filteredTasks
     }
 
+    /// Finger position in the list's content space: gesture start + drag
+    /// translation + any distance auto-scrolled while held near an edge.
+    private var fingerContentY: CGFloat {
+        (dragStartCenterY ?? 0) + dragTranslationY + autoscrollAccumulated
+    }
+
     /// Vertical offset that keeps the lifted row under the cursor.
     private var liftOffset: CGFloat {
-        guard let id = draggingId, let startY = dragStartCenterY else { return 0 }
-        let fingerY = startY + dragTranslationY
-        let slotY = rowFrames[id]?.midY ?? startY
-        return fingerY - slotY
+        guard let id = draggingId else { return 0 }
+        let slotY = rowFrames[id]?.midY ?? dragStartCenterY ?? 0
+        return fingerContentY - slotY
     }
 
     var body: some View {
@@ -183,6 +210,7 @@ struct TaskListView: View {
             HStack(spacing: 8) {
                 sortPill("Custom", mode: .custom)
                 sortPill("By Due Date", mode: .byDueDate)
+                sortPill("By Priority", mode: .byPriority)
                 Spacer()
             }
             if !store.labelsForActiveList.isEmpty {
@@ -312,12 +340,21 @@ struct TaskListView: View {
         let kind: Kind
     }
 
+    /// The section grouping for the current non-custom sort mode (nil in Custom).
+    private var currentGroups: [(title: String, color: String, tasks: [TodoItem])]? {
+        switch sortMode {
+        case .byDueDate: return store.groupedByDueDate
+        case .byPriority: return store.groupedByPriority
+        case .custom: return nil
+        }
+    }
+
     private var listRows: [ListRow] {
         // While dragging we are always in Custom (the drag switched us there),
         // so render the flat custom order with no section headers.
-        if sortMode == .byDueDate && searchText.isEmpty && draggingId == nil {
+        if let groups = currentGroups, searchText.isEmpty, draggingId == nil {
             var rows: [ListRow] = []
-            for group in store.groupedByDueDate {
+            for group in groups {
                 rows.append(ListRow(id: "header-\(group.title)", kind: .header(title: group.title, color: group.color)))
                 rows.append(contentsOf: group.tasks.map { ListRow(id: $0.id.uuidString, kind: .task($0)) })
             }
@@ -342,6 +379,7 @@ struct TaskListView: View {
             .padding(.horizontal, 12)
             .padding(.top, 4)
             .coordinateSpace(name: TaskListCoordinateSpace.name)
+            .background(ScrollViewAccessor { scrollView = $0 })
             .onPreferenceChange(RowFrameKey.self) { rowFrames = $0 }
             .animation(.spring(duration: 0.28), value: draggingId)
         }
@@ -404,10 +442,10 @@ struct TaskListView: View {
 
     private func beginReorder(_ item: TodoItem) {
         guard reorderEnabled else { return }
-        if sortMode == .byDueDate {
-            // Adopt the currently-visible due-date order as the explicit custom
+        if sortMode != .custom {
+            // Adopt the currently-visible grouped order as the explicit custom
             // order, then switch to Custom so the drag continues in a flat list.
-            let flat = store.groupedByDueDate.flatMap { $0.tasks }
+            let flat = (currentGroups ?? []).flatMap { $0.tasks }
             store.applyManualOrder(flat.map(\.id))
             sortModeRaw = SortMode.custom.rawValue
             showModeToastBriefly()
@@ -416,6 +454,7 @@ struct TaskListView: View {
         dragStartCenterY = rowFrames[item.id]?.midY
         dragTranslationY = 0
         liveOrder = displayedCustomTasks
+        startAutoscrollTimer()
     }
 
     private func showModeToastBriefly() {
@@ -426,13 +465,20 @@ struct TaskListView: View {
     }
 
     private func updateReorder(translationY: CGFloat) {
-        guard let id = draggingId, let startY = dragStartCenterY, var order = liveOrder else { return }
+        guard draggingId != nil else { return }
         dragTranslationY = translationY
-        let fingerY = startY + translationY
+        applyReorderTarget()
+        updateAutoscrollZone()
+    }
+
+    /// Move the dragged item to the insertion index implied by `fingerContentY`.
+    private func applyReorderTarget() {
+        guard let id = draggingId, var order = liveOrder else { return }
+        let y = fingerContentY
         // Insertion index = number of other rows whose midpoint sits above the finger.
         var target = 0
         for t in order where t.id != id {
-            if let f = rowFrames[t.id], f.midY < fingerY { target += 1 }
+            if let f = rowFrames[t.id], f.midY < y { target += 1 }
         }
         guard let current = order.firstIndex(where: { $0.id == id }) else { return }
         if current != target {
@@ -443,13 +489,61 @@ struct TaskListView: View {
     }
 
     private func endReorder() {
+        stopAutoscroll()
         if let order = liveOrder {
             store.applyManualOrder(order.map(\.id))
         }
         withAnimation(.spring(duration: 0.25)) { draggingId = nil }
         dragStartCenterY = nil
         dragTranslationY = 0
+        autoscrollAccumulated = 0
         liveOrder = nil
+    }
+
+    // MARK: - Autoscroll
+
+    /// Decide whether the finger is in the top/bottom edge band of the visible
+    /// scroll area and set the autoscroll direction accordingly.
+    private func updateAutoscrollZone() {
+        guard let sv = scrollView else { autoscrollDir = 0; return }
+        let clip = sv.contentView
+        let band: CGFloat = 44
+        let top = clip.bounds.origin.y
+        let bottom = top + clip.bounds.height
+        let y = fingerContentY
+        if y - top < band { autoscrollDir = -1 }
+        else if bottom - y < band { autoscrollDir = 1 }
+        else { autoscrollDir = 0 }
+    }
+
+    private func startAutoscrollTimer() {
+        autoscrollTimer?.invalidate()
+        autoscrollAccumulated = 0
+        // .common mode so the timer keeps firing during gesture event tracking.
+        let t = Timer(timeInterval: 1.0 / 60.0, repeats: true) { _ in stepAutoscroll() }
+        RunLoop.main.add(t, forMode: .common)
+        autoscrollTimer = t
+    }
+
+    private func stepAutoscroll() {
+        guard autoscrollDir != 0, let sv = scrollView else { return }
+        let clip = sv.contentView
+        let speed: CGFloat = 9
+        let maxY = max(0, (sv.documentView?.frame.height ?? 0) - clip.bounds.height)
+        let current = clip.bounds.origin.y
+        let proposed = min(max(0, current + CGFloat(autoscrollDir) * speed), maxY)
+        let delta = proposed - current
+        guard abs(delta) > 0.01 else { return }
+        clip.scroll(to: NSPoint(x: clip.bounds.origin.x, y: proposed))
+        sv.reflectScrolledClipView(clip)
+        autoscrollAccumulated += delta   // keep the finger tracking the same screen point
+        applyReorderTarget()
+    }
+
+    private func stopAutoscroll() {
+        autoscrollTimer?.invalidate()
+        autoscrollTimer = nil
+        autoscrollDir = 0
     }
 
     /// VoiceOver / keyboard fallback for reordering without a drag.

@@ -122,6 +122,23 @@ final class Store {
         return groups
     }
 
+    /// Tasks grouped by priority (High / Medium / Low) for "By Priority" sort mode.
+    var groupedByPriority: [(title: String, color: String, tasks: [TodoItem])] {
+        var active = items.filter { !$0.isCompleted && $0.listId == activeListId }
+        if let labelId = activeLabelFilter {
+            active = active.filter { $0.labelIds.contains(labelId) }
+        }
+        func bucket(_ p: Priority) -> [TodoItem] {
+            active.filter { $0.priority == p }.sorted { $0.sortOrder < $1.sortOrder }
+        }
+        var groups: [(title: String, color: String, tasks: [TodoItem])] = []
+        let high = bucket(.high), medium = bucket(.medium), low = bucket(.low)
+        if !high.isEmpty { groups.append(("High", "red", high)) }
+        if !medium.isEmpty { groups.append(("Medium", "orange", medium)) }
+        if !low.isEmpty { groups.append(("Low", "blue", low)) }
+        return groups
+    }
+
     // MARK: - List Management
 
     func switchList(_ list: TaskList) {
