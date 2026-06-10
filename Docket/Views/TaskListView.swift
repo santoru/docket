@@ -4,6 +4,18 @@
 
 import SwiftUI
 
+/// Shared coordinate-space name for the reorderable task list.
+enum TaskListCoordinateSpace { static let name = "taskList" }
+
+/// Reports each task row's frame (in the list's coordinate space) so the
+/// drag-reorder coordinator can compute insertion indices for variable-height rows.
+struct RowFrameKey: PreferenceKey {
+    static let defaultValue: [UUID: CGRect] = [:]
+    static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
+        value.merge(nextValue()) { _, new in new }
+    }
+}
+
 /// Main view showing active tasks with search, sort modes, and swipe actions.
 struct TaskListView: View {
     @Binding var path: [NavDestination]
@@ -28,6 +40,13 @@ struct TaskListView: View {
     @AppStorage("showCompletedButton") private var showCompletedButton = true
     @AppStorage("showConfetti") private var confettiEnabled = true
 
+    // Drag-to-reorder state
+    @State private var draggingId: UUID?
+    @State private var dragStartCenterY: CGFloat?
+    @State private var dragTranslationY: CGFloat = 0
+    @State private var liveOrder: [TodoItem]?
+    @State private var rowFrames: [UUID: CGRect] = [:]
+
     private var accent: Color { ThemeManager.resolvedAccent(themeRaw: themeRaw, customHue: customHue) }
     private var sortMode: SortMode { SortMode(rawValue: sortModeRaw) ?? .custom }
 
@@ -37,6 +56,26 @@ struct TaskListView: View {
             $0.title.localizedCaseInsensitiveContains(searchText) ||
             $0.notes.localizedCaseInsensitiveContains(searchText)
         }
+    }
+
+    /// Reorder is allowed only on the full, unfiltered active list — disabled
+    /// while searching or filtering by label (the visible set is partial).
+    private var reorderEnabled: Bool {
+        searchText.isEmpty && store.activeLabelFilter == nil
+    }
+
+    /// Tasks shown in custom mode: the live drag order while reordering,
+    /// otherwise the stored/filtered order.
+    private var displayedCustomTasks: [TodoItem] {
+        liveOrder ?? filteredTasks
+    }
+
+    /// Vertical offset that keeps the lifted row under the cursor.
+    private var liftOffset: CGFloat {
+        guard let id = draggingId, let startY = dragStartCenterY else { return 0 }
+        let fingerY = startY + dragTranslationY
+        let slotY = rowFrames[id]?.midY ?? startY
+        return fingerY - slotY
     }
 
     var body: some View {
@@ -95,7 +134,7 @@ struct TaskListView: View {
             }
             Spacer()
             headerButton(icon: showSortBar ? "checkmark.circle" : "arrow.up.arrow.down",
-                         label: showSortBar ? "Done sorting" : "Sort and reorder",
+                         label: showSortBar ? "Hide sort options" : "Sort options",
                          color: showSortBar ? .green : accent) {
                 withAnimation(.spring(duration: 0.25)) { showSortBar.toggle() }
             }
@@ -255,29 +294,45 @@ struct TaskListView: View {
     private var customList: some View {
         VScroll {
             LazyVStack(spacing: 8) {
-                let tasks = filteredTasks
-                ForEach(Array(tasks.enumerated()), id: \.element.id) { index, item in
+                ForEach(displayedCustomTasks) { item in
+                    let lifted = draggingId == item.id
                     SwipeableTaskRow(
                         item: item,
-                        editMode: showSortBar && sortMode == .custom && searchText.isEmpty,
+                        reorderEnabled: reorderEnabled,
+                        isLifted: lifted,
                         onComplete: { completeItem(item) },
                         onDelete: { deleteItem(item) },
                         onTap: { path.append(.detail(item)) },
-                        onMoveUp: index > 0 ? {
-                            withAnimation(.spring(duration: 0.25)) {
-                                store.move(from: IndexSet(integer: index), to: index - 1)
-                            }
-                        } : nil,
-                        onMoveDown: index < tasks.count - 1 ? {
-                            withAnimation(.spring(duration: 0.25)) {
-                                store.move(from: IndexSet(integer: index), to: index + 2)
-                            }
-                        } : nil
+                        onReorderBegin: { beginReorder(item) },
+                        onReorderChange: { updateReorder(translationY: $0) },
+                        onReorderEnd: { endReorder() }
                     )
+                    .background(
+                        GeometryReader { geo in
+                            Color.clear.preference(
+                                key: RowFrameKey.self,
+                                value: [item.id: geo.frame(in: .named(TaskListCoordinateSpace.name))]
+                            )
+                        }
+                    )
+                    .offset(y: lifted ? liftOffset : 0)
+                    .scaleEffect(lifted ? 1.03 : 1.0)
+                    .shadow(color: .black.opacity(lifted ? 0.18 : 0),
+                            radius: lifted ? 8 : 0, y: lifted ? 4 : 0)
+                    .zIndex(lifted ? 1 : 0)
+                    .accessibilityActions {
+                        if reorderEnabled {
+                            Button("Move up") { moveByAccessibility(item, by: -1) }
+                            Button("Move down") { moveByAccessibility(item, by: 1) }
+                        }
+                    }
                 }
             }
             .padding(.horizontal, 12)
             .padding(.top, 4)
+            .coordinateSpace(name: TaskListCoordinateSpace.name)
+            .onPreferenceChange(RowFrameKey.self) { rowFrames = $0 }
+            .animation(.spring(duration: 0.28), value: draggingId)
         }
     }
 
@@ -292,12 +347,9 @@ struct TaskListView: View {
                         ForEach(group.tasks) { item in
                             SwipeableTaskRow(
                                 item: item,
-                                editMode: false,
                                 onComplete: { completeItem(item) },
                                 onDelete: { deleteItem(item) },
-                                onTap: { path.append(.detail(item)) },
-                                onMoveUp: nil,
-                                onMoveDown: nil
+                                onTap: { path.append(.detail(item)) }
                             )
                         }
                     }
@@ -324,6 +376,55 @@ struct TaskListView: View {
         case "blue": .blue
         default: .gray
         }
+    }
+
+    // MARK: - Reorder
+
+    private func beginReorder(_ item: TodoItem) {
+        guard reorderEnabled else { return }
+        draggingId = item.id
+        dragStartCenterY = rowFrames[item.id]?.midY
+        dragTranslationY = 0
+        liveOrder = displayedCustomTasks
+    }
+
+    private func updateReorder(translationY: CGFloat) {
+        guard let id = draggingId, let startY = dragStartCenterY, var order = liveOrder else { return }
+        dragTranslationY = translationY
+        let fingerY = startY + translationY
+        // Insertion index = number of other rows whose midpoint sits above the finger.
+        var target = 0
+        for t in order where t.id != id {
+            if let f = rowFrames[t.id], f.midY < fingerY { target += 1 }
+        }
+        guard let current = order.firstIndex(where: { $0.id == id }) else { return }
+        if current != target {
+            let moved = order.remove(at: current)
+            order.insert(moved, at: min(target, order.count))
+            withAnimation(.spring(duration: 0.25)) { liveOrder = order }
+        }
+    }
+
+    private func endReorder() {
+        if let order = liveOrder {
+            store.applyManualOrder(order.map(\.id))
+        }
+        withAnimation(.spring(duration: 0.25)) { draggingId = nil }
+        dragStartCenterY = nil
+        dragTranslationY = 0
+        liveOrder = nil
+    }
+
+    /// VoiceOver / keyboard fallback for reordering without a drag.
+    private func moveByAccessibility(_ item: TodoItem, by delta: Int) {
+        let tasks = filteredTasks
+        guard let idx = tasks.firstIndex(where: { $0.id == item.id }) else { return }
+        let target = idx + delta
+        guard target >= 0, target < tasks.count else { return }
+        var order = tasks
+        let moved = order.remove(at: idx)
+        order.insert(moved, at: target)
+        withAnimation(.spring(duration: 0.25)) { store.applyManualOrder(order.map(\.id)) }
     }
 
     // MARK: - Actions

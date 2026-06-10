@@ -263,6 +263,18 @@ final class Store {
         saveTasks()
     }
 
+    /// Persist an explicit order for the given task ids (the visible custom-sorted
+    /// set). Each id's `sortOrder` becomes its position in the array. Used by the
+    /// drag-to-reorder gesture.
+    func applyManualOrder(_ orderedIds: [UUID]) {
+        for (idx, id) in orderedIds.enumerated() {
+            if let i = items.firstIndex(where: { $0.id == id }) {
+                items[i].sortOrder = idx
+            }
+        }
+        saveTasks()
+    }
+
     func clearCompleted() {
         items.removeAll { $0.isCompleted && $0.listId == activeListId }
         saveTasks()
