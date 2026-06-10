@@ -46,6 +46,7 @@ struct TaskListView: View {
     @State private var dragTranslationY: CGFloat = 0
     @State private var liveOrder: [TodoItem]?
     @State private var rowFrames: [UUID: CGRect] = [:]
+    @State private var showModeToast = false
 
     private var accent: Color { ThemeManager.resolvedAccent(themeRaw: themeRaw, customHue: customHue) }
     private var sortMode: SortMode { SortMode(rawValue: sortModeRaw) ?? .custom }
@@ -85,6 +86,18 @@ struct TaskListView: View {
                 if showSortBar { sortBar }
                 if showSearch { searchBar }
                 taskContent
+            }
+            .overlay(alignment: .top) {
+                if showModeToast {
+                    Text("Switched to Custom order")
+                        .font(.caption.weight(.medium))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(Capsule().fill(.regularMaterial))
+                        .shadow(color: .black.opacity(0.12), radius: 4, y: 2)
+                        .padding(.top, 8)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
             }
             ConfettiOverlay(isActive: $showConfetti)
             UndoToast(message: undoMessage, trigger: undoTrigger, onUndo: performUndo, isVisible: $showUndo)
@@ -251,10 +264,8 @@ struct TaskListView: View {
             emptyState
         } else if !searchText.isEmpty && filteredTasks.isEmpty {
             noResultsState
-        } else if sortMode == .byDueDate && searchText.isEmpty {
-            groupedList
         } else {
-            customList
+            unifiedList
         }
     }
 
@@ -289,42 +300,42 @@ struct TaskListView: View {
         }
     }
 
-    // MARK: - Custom Sort List
+    // MARK: - Unified List
 
-    private var customList: some View {
+    /// A flat list item: either a due-date section header or a task. Keeping
+    /// everything in one LazyVStack (rather than separate grouped/custom views)
+    /// means a row's identity — and any in-flight reorder gesture — survives
+    /// when a drag switches the sort from By Due Date to Custom.
+    private struct ListRow: Identifiable {
+        enum Kind { case header(title: String, color: String); case task(TodoItem) }
+        let id: String
+        let kind: Kind
+    }
+
+    private var listRows: [ListRow] {
+        // While dragging we are always in Custom (the drag switched us there),
+        // so render the flat custom order with no section headers.
+        if sortMode == .byDueDate && searchText.isEmpty && draggingId == nil {
+            var rows: [ListRow] = []
+            for group in store.groupedByDueDate {
+                rows.append(ListRow(id: "header-\(group.title)", kind: .header(title: group.title, color: group.color)))
+                rows.append(contentsOf: group.tasks.map { ListRow(id: $0.id.uuidString, kind: .task($0)) })
+            }
+            return rows
+        } else {
+            return displayedCustomTasks.map { ListRow(id: $0.id.uuidString, kind: .task($0)) }
+        }
+    }
+
+    private var unifiedList: some View {
         VScroll {
             LazyVStack(spacing: 8) {
-                ForEach(displayedCustomTasks) { item in
-                    let lifted = draggingId == item.id
-                    SwipeableTaskRow(
-                        item: item,
-                        reorderEnabled: reorderEnabled,
-                        isLifted: lifted,
-                        onComplete: { completeItem(item) },
-                        onDelete: { deleteItem(item) },
-                        onTap: { path.append(.detail(item)) },
-                        onReorderBegin: { beginReorder(item) },
-                        onReorderChange: { updateReorder(translationY: $0) },
-                        onReorderEnd: { endReorder() }
-                    )
-                    .background(
-                        GeometryReader { geo in
-                            Color.clear.preference(
-                                key: RowFrameKey.self,
-                                value: [item.id: geo.frame(in: .named(TaskListCoordinateSpace.name))]
-                            )
-                        }
-                    )
-                    .offset(y: lifted ? liftOffset : 0)
-                    .scaleEffect(lifted ? 1.03 : 1.0)
-                    .shadow(color: .black.opacity(lifted ? 0.18 : 0),
-                            radius: lifted ? 8 : 0, y: lifted ? 4 : 0)
-                    .zIndex(lifted ? 1 : 0)
-                    .accessibilityActions {
-                        if reorderEnabled {
-                            Button("Move up") { moveByAccessibility(item, by: -1) }
-                            Button("Move down") { moveByAccessibility(item, by: 1) }
-                        }
+                ForEach(listRows) { row in
+                    switch row.kind {
+                    case .header(let title, let color):
+                        sectionHeader(title: title, color: sectionColor(color))
+                    case .task(let item):
+                        taskRow(item)
                     }
                 }
             }
@@ -336,27 +347,38 @@ struct TaskListView: View {
         }
     }
 
-    // MARK: - Grouped by Due Date List
-
-    private var groupedList: some View {
-        VScroll {
-            LazyVStack(spacing: 12) {
-                ForEach(store.groupedByDueDate, id: \.title) { group in
-                    VStack(alignment: .leading, spacing: 6) {
-                        sectionHeader(title: group.title, color: sectionColor(group.color))
-                        ForEach(group.tasks) { item in
-                            SwipeableTaskRow(
-                                item: item,
-                                onComplete: { completeItem(item) },
-                                onDelete: { deleteItem(item) },
-                                onTap: { path.append(.detail(item)) }
-                            )
-                        }
-                    }
-                }
+    @ViewBuilder
+    private func taskRow(_ item: TodoItem) -> some View {
+        let lifted = draggingId == item.id
+        SwipeableTaskRow(
+            item: item,
+            reorderEnabled: reorderEnabled,
+            isLifted: lifted,
+            onComplete: { completeItem(item) },
+            onDelete: { deleteItem(item) },
+            onTap: { path.append(.detail(item)) },
+            onReorderBegin: { beginReorder(item) },
+            onReorderChange: { updateReorder(translationY: $0) },
+            onReorderEnd: { endReorder() }
+        )
+        .background(
+            GeometryReader { geo in
+                Color.clear.preference(
+                    key: RowFrameKey.self,
+                    value: [item.id: geo.frame(in: .named(TaskListCoordinateSpace.name))]
+                )
             }
-            .padding(.horizontal, 12)
-            .padding(.top, 4)
+        )
+        .offset(y: lifted ? liftOffset : 0)
+        .scaleEffect(lifted ? 1.03 : 1.0)
+        .shadow(color: .black.opacity(lifted ? 0.18 : 0),
+                radius: lifted ? 8 : 0, y: lifted ? 4 : 0)
+        .zIndex(lifted ? 1 : 0)
+        .accessibilityActions {
+            if reorderEnabled && sortMode == .custom {
+                Button("Move up") { moveByAccessibility(item, by: -1) }
+                Button("Move down") { moveByAccessibility(item, by: 1) }
+            }
         }
     }
 
@@ -382,10 +404,25 @@ struct TaskListView: View {
 
     private func beginReorder(_ item: TodoItem) {
         guard reorderEnabled else { return }
+        if sortMode == .byDueDate {
+            // Adopt the currently-visible due-date order as the explicit custom
+            // order, then switch to Custom so the drag continues in a flat list.
+            let flat = store.groupedByDueDate.flatMap { $0.tasks }
+            store.applyManualOrder(flat.map(\.id))
+            sortModeRaw = SortMode.custom.rawValue
+            showModeToastBriefly()
+        }
         draggingId = item.id
         dragStartCenterY = rowFrames[item.id]?.midY
         dragTranslationY = 0
         liveOrder = displayedCustomTasks
+    }
+
+    private func showModeToastBriefly() {
+        withAnimation(.spring(duration: 0.25)) { showModeToast = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            withAnimation(.easeOut(duration: 0.2)) { showModeToast = false }
+        }
     }
 
     private func updateReorder(translationY: CGFloat) {

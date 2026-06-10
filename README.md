@@ -35,7 +35,7 @@
 - Create, edit, complete, delete
 - Priority levels (pastel color-coded)
 - Swipe right → complete, left → delete
-- Reorder with ↕ mode (▲/▼ arrows)
+- Long-press & drag to reorder
 - Undo toast on complete/delete (3s)
 
 </td>
@@ -247,7 +247,7 @@ Docket/
     ├── ContentView.swift           # Router, theme, onboarding, keyboard nav
     ├── TaskListView.swift          # Main list, sort bar, label filter, undo toast
     ├── TaskRowView.swift           # Task card with priority bar + labels
-    ├── SwipeableTaskRow.swift      # Swipe gestures + reorder arrows
+    ├── SwipeableTaskRow.swift      # Swipe gestures + long-press drag reorder
     ├── ConfettiView.swift          # Completion celebration
     ├── UndoToast.swift             # Undo notification toast
     ├── CalendarPickerView.swift    # Custom themed calendar
