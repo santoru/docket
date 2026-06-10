@@ -11,9 +11,9 @@ struct LabelPickerView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Labels").font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
+            Text(L10n.labels).font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
             if store.labelsForActiveList.isEmpty {
-                Text("No labels yet").font(.subheadline).foregroundStyle(.tertiary)
+                Text(L10n.noLabels).font(.subheadline).foregroundStyle(.tertiary)
             } else {
                 FlowLayout(spacing: 6) {
                     ForEach(store.labelsForActiveList) { label in

@@ -53,7 +53,7 @@ struct TaskRowView: View {
                 HStack(spacing: 2) {
                     Image(systemName: "arrow.trianglehead.2.counterclockwise")
                         .font(.system(size: 8))
-                    Text(rec.interval == 1 ? rec.frequency.displayName : "Every \(rec.interval) \(rec.frequency.unit)s")
+                    Text(rec.interval == 1 ? rec.frequency.displayName : L10n.everyInterval(rec.interval, rec.frequency.unitPlural))
                         .font(.system(size: 9))
                 }
                 .foregroundStyle(.tertiary)
@@ -65,7 +65,7 @@ struct TaskRowView: View {
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Complete \(item.title)")
+            .accessibilityLabel(L10n.completeTask(item.title))
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

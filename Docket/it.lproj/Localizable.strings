@@ -1,0 +1,204 @@
+/* Docket — Italiano */
+
+/* General */
+"app.name" = "Docket";
+"action.save" = "Salva";
+"action.cancel" = "Annulla";
+"action.done" = "Fatto";
+"action.back" = "Indietro";
+"action.delete" = "Elimina";
+"action.deleteTask" = "Elimina attività";
+"action.restore" = "Ripristina";
+
+/* Task List */
+"list.empty" = "Tutto fatto!";
+"list.addFirst" = "Aggiungi la tua prima attività";
+"list.noResults" = "Nessun risultato";
+"list.noResultsDetail" = "Nessuna attività corrisponde a “%@”";
+"list.search" = "Cerca attività...";
+"list.taskCount" = "%d attività";
+"list.oneTask" = "1 attività";
+"list.switchedToCustom" = "Passato all’ordine personalizzato";
+
+/* Sort & Groups */
+"sort.custom" = "Personalizzato";
+"sort.byDueDate" = "Per scadenza";
+"sort.byPriority" = "Per priorità";
+"group.overdue" = "In ritardo";
+"group.today" = "Oggi";
+"group.upcoming" = "In arrivo";
+"group.noDate" = "Senza data";
+"priority.high" = "Alta";
+"priority.medium" = "Media";
+"priority.low" = "Bassa";
+
+/* Create / Edit */
+"create.title" = "Nuova attività";
+"edit.title" = "Modifica attività";
+"create.add" = "Aggiungi attività";
+"field.title" = "Cosa c’è da fare?";
+"field.titleEdit" = "Titolo";
+"field.notes" = "Aggiungi note...";
+"field.priority" = "Priorità";
+"field.labels" = "Etichette";
+"field.noLabels" = "Nessuna etichetta";
+"field.matrix" = "Matrice";
+"field.dueDate" = "Scadenza";
+"field.remindMe" = "Ricordamelo";
+"field.time" = "Ora";
+"field.repeat" = "Ripeti";
+"field.every" = "Ogni";
+"field.smartDate" = "tomorrow 3pm, next friday...";
+"field.list" = "Lista";
+"field.created" = "Creata";
+"field.name" = "Nome";
+
+/* Completed */
+"completed.title" = "Completate";
+"completed.empty" = "Ancora niente qui";
+
+/* Settings — group headers */
+"settings.group.general" = "GENERALI";
+"settings.group.appearance" = "ASPETTO";
+"settings.group.notifications" = "NOTIFICHE";
+"settings.group.organize" = "ORGANIZZA";
+"settings.group.syncData" = "SINC. E DATI";
+
+/* Settings — rows */
+"settings.title" = "Impostazioni";
+"settings.launchAtLogin" = "Avvia all’accesso";
+"settings.multiLine" = "Attività multi-riga";
+"settings.keyboard" = "Tastiera";
+"settings.globalShortcut" = "Scorciatoia globale";
+"settings.shortcut" = "Scorciatoia";
+"settings.theme" = "Tema";
+"settings.color" = "Colore";
+"settings.intensity" = "Intensità";
+"settings.display" = "Visualizzazione";
+"settings.liquidGlass" = "Liquid Glass";
+"settings.confetti" = "Coriandoli al completamento";
+"settings.showInToolbar" = "Mostra nella barra";
+"settings.matrixButton" = "Pulsante matrice";
+"settings.completedButton" = "Pulsante completate";
+"settings.defaultReminder" = "Promemoria predefinito";
+"settings.sound" = "Suono";
+"settings.sound.default" = "Predefinito";
+"settings.sound.none" = "Nessuno";
+"settings.badgeCounts" = "Conteggio badge";
+"settings.currentList" = "Lista corrente";
+"settings.allLists" = "Tutte le liste";
+"settings.remindersSync" = "Sinc. Promemoria";
+"settings.syncWithReminders" = "Sincronizza con Promemoria";
+"settings.noRemindersAccess" = "Nessun accesso a Promemoria";
+"settings.listsToSync" = "Liste da sincronizzare";
+"settings.syncNow" = "Sincronizza ora";
+"settings.lastSync" = "Ultima sinc.:";
+"settings.lists" = "Liste";
+"lists.new" = "Nuova lista";
+"labels.new" = "Nuova etichetta";
+"settings.data" = "Dati";
+"settings.export" = "Esporta";
+"settings.import" = "Importa";
+"settings.clearCompleted" = "Cancella completate";
+"settings.eisenhower" = "Matrice di Eisenhower";
+"settings.labelLength" = "Lunghezza etichetta";
+"settings.labelLines" = "Righe etichetta";
+"settings.showAxisLabels" = "Mostra etichette assi";
+"settings.showCountBadges" = "Mostra badge conteggio";
+"settings.chars" = "%d caratteri";
+
+/* Alerts */
+"alert.deleteList.title" = "Elimina lista";
+"alert.deleteList.messageOne" = "“%@” contiene %d attività. Verrà spostata nella lista predefinita.";
+"alert.deleteList.messageMany" = "“%@” contiene %d attività. Verranno spostate nella lista predefinita.";
+"alert.clearCompleted.title" = "Cancella completate";
+"alert.clearCompleted.message" = "Questa azione eliminerà definitivamente tutte le attività completate.";
+"alert.clearN" = "Cancella %d attività";
+
+/* Undo */
+"undo.completed" = "Attività completata";
+"undo.deleted" = "Attività eliminata";
+"undo.action" = "Annulla";
+
+/* Swipe / Reorder / Accessibility */
+"swipe.done" = "Fatto";
+"swipe.delete" = "Elimina";
+"a11y.moveUp" = "Sposta su";
+"a11y.moveDown" = "Sposta giù";
+"a11y.complete" = "Completa %@";
+"a11y.sortOptions" = "Opzioni di ordinamento";
+"a11y.hideSortOptions" = "Nascondi opzioni di ordinamento";
+"a11y.search" = "Cerca";
+"a11y.completedTasks" = "Attività completate";
+"a11y.newTask" = "Nuova attività";
+
+/* Matrix */
+"matrix.urgent" = "URGENTE";
+"matrix.notUrgent" = "NON URGENTE";
+"matrix.important" = "IMPORTANTE";
+"matrix.not" = "NON";
+"matrix.unassigned" = "NON ASSEGNATE";
+"matrix.dropHere" = "Trascina qui le attività";
+"matrix.dropToRemove" = "Trascina qui per rimuovere dalla matrice";
+
+/* Onboarding */
+"onboarding.welcome" = "Benvenuto in Docket";
+"onboarding.subtitle" = "Le tue attività, a un clic di distanza";
+"onboarding.getStarted" = "Inizia";
+"onboarding.tip.swipe" = "Scorri";
+"onboarding.tip.swipeDesc" = "Destra per completare, sinistra per eliminare";
+"onboarding.tip.reorder" = "Riordina";
+"onboarding.tip.reorderDesc" = "Tieni premuta un’attività, poi trascinala";
+"onboarding.tip.shortcut" = "Scorciatoia";
+"onboarding.tip.shortcutDesc" = "⌘⇧D apre Docket da ovunque";
+"onboarding.tip.smartDates" = "Date intelligenti";
+"onboarding.tip.smartDatesDesc" = "Scrivi “tomorrow 3pm” per le scadenze";
+"onboarding.tip.labels" = "Etichette";
+"onboarding.tip.labelsDesc" = "Etichette colorate per organizzare le attività";
+"onboarding.tip.lists" = "Liste";
+"onboarding.tip.listsDesc" = "Progetti separati nelle Impostazioni";
+
+/* Models — reminders */
+"reminder.none" = "Nessun promemoria";
+"reminder.atTime" = "All’ora di scadenza";
+"reminder.5min" = "5 minuti prima";
+"reminder.10min" = "10 minuti prima";
+"reminder.30min" = "30 minuti prima";
+"reminder.1hour" = "1 ora prima";
+"reminder.1day" = "1 giorno prima";
+
+/* Models — recurrence */
+"freq.daily" = "Ogni giorno";
+"freq.weekly" = "Ogni settimana";
+"freq.monthly" = "Ogni mese";
+"unit.day" = "giorno";
+"unit.week" = "settimana";
+"unit.month" = "mese";
+"unit.days" = "giorni";
+"unit.weeks" = "settimane";
+"unit.months" = "mesi";
+"recurrence.everyN" = "Ogni %d %@";
+
+/* Models — themes */
+"theme.white" = "Bianco";
+"theme.lavender" = "Lavanda";
+"theme.rose" = "Rosa";
+"theme.peach" = "Pesca";
+"theme.lemon" = "Limone";
+"theme.mint" = "Menta";
+"theme.sky" = "Cielo";
+"theme.periwinkle" = "Pervinca";
+"theme.night" = "Notte";
+"theme.custom" = "Personalizzato";
+
+/* Menu Bar & Notifications */
+"menu.overdue" = "⚠️ %d in ritardo";
+"menu.dueToday" = "%d in scadenza oggi";
+"menu.quit" = "Esci da Docket";
+"notif.dueNow" = "%@ — scade ora";
+"notif.reminder" = "%@ — %@";
+
+/* Due Date Formatting */
+"due.today" = "Oggi %@";
+"due.tomorrow" = "Domani %@";
+"due.yesterday" = "Ieri %@";

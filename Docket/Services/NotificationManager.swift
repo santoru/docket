@@ -37,10 +37,10 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         guard fireDate > Date() else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = "Docket"
+        content.title = L10n.appName
         content.body = item.reminderOffset == .atTime
-            ? "\(item.title) — due now"
-            : "\(item.title) — due in \(item.reminderOffset.displayName.replacingOccurrences(of: " before", with: ""))"
+            ? L10n.notifDueNow(item.title)
+            : L10n.notifReminder(item.title, item.reminderOffset.displayName)
 
         let soundPref = UserDefaults.standard.string(forKey: "notifSound") ?? "default"
         switch soundPref {

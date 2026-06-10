@@ -10,7 +10,7 @@ struct PriorityPickerView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Priority").font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
+            Text(L10n.priority).font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
             HStack(spacing: 8) {
                 ForEach(Priority.allCases) { p in
                     Button { withAnimation(.easeInOut(duration: 0.15)) { priority = p } } label: {

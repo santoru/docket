@@ -28,16 +28,16 @@ enum AppTheme: Int, CaseIterable, Identifiable {
 
     var name: String {
         switch self {
-        case .white: "White"
-        case .lavender: "Lavender"
-        case .rose: "Rose"
-        case .peach: "Peach"
-        case .lemon: "Lemon"
-        case .mint: "Mint"
-        case .sky: "Sky"
-        case .periwinkle: "Periwinkle"
-        case .midnight: "Night"
-        case .custom: "Custom"
+        case .white: L10n.themeWhite
+        case .lavender: L10n.themeLavender
+        case .rose: L10n.themeRose
+        case .peach: L10n.themePeach
+        case .lemon: L10n.themeLemon
+        case .mint: L10n.themeMint
+        case .sky: L10n.themeSky
+        case .periwinkle: L10n.themePeriwinkle
+        case .midnight: L10n.themeNight
+        case .custom: L10n.themeCustom
         }
     }
 

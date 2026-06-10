@@ -18,13 +18,13 @@ enum ReminderOffset: Int, Codable, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .none: "No reminder"
-        case .atTime: "At due time"
-        case .fiveMinutes: "5 minutes before"
-        case .tenMinutes: "10 minutes before"
-        case .thirtyMinutes: "30 minutes before"
-        case .oneHour: "1 hour before"
-        case .oneDay: "1 day before"
+        case .none: L10n.reminderNone
+        case .atTime: L10n.reminderAtTime
+        case .fiveMinutes: L10n.reminder5
+        case .tenMinutes: L10n.reminder10
+        case .thirtyMinutes: L10n.reminder30
+        case .oneHour: L10n.reminder1Hour
+        case .oneDay: L10n.reminder1Day
         }
     }
 

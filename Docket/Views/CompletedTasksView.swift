@@ -24,7 +24,7 @@ struct CompletedTasksView: View {
                 Spacer()
                 VStack(spacing: 8) {
                     Image(systemName: "tray").font(.system(size: 36)).foregroundStyle(.tertiary)
-                    Text("Nothing here yet").font(.body).foregroundStyle(.secondary)
+                    Text(L10n.nothingHere).font(.body).foregroundStyle(.secondary)
                 }
                 Spacer()
             } else {
@@ -67,7 +67,7 @@ struct CompletedTasksView: View {
                 Image(systemName: "chevron.left").font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).frame(width: 28, height: 28).background(Circle().fill(.quaternary.opacity(0.5)))
             }.buttonStyle(.plain)
             Spacer()
-            Text("Completed").font(.headline)
+            Text(L10n.completed).font(.headline)
             Text("(\(store.completedTasks.count))").font(.caption).foregroundStyle(.secondary)
             Spacer()
             Button { path.removeLast() } label: { Image(systemName: "checkmark").font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).frame(width: 28, height: 28).background(Circle().fill(.quaternary.opacity(0.5))) }.buttonStyle(.plain)

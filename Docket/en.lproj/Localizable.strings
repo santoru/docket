@@ -1,0 +1,204 @@
+/* Docket — English (base) localization */
+
+/* General */
+"app.name" = "Docket";
+"action.save" = "Save";
+"action.cancel" = "Cancel";
+"action.done" = "Done";
+"action.back" = "Back";
+"action.delete" = "Delete";
+"action.deleteTask" = "Delete Task";
+"action.restore" = "Restore";
+
+/* Task List */
+"list.empty" = "All clear!";
+"list.addFirst" = "Add your first task";
+"list.noResults" = "No results";
+"list.noResultsDetail" = "No tasks match “%@”";
+"list.search" = "Search tasks...";
+"list.taskCount" = "%d tasks";
+"list.oneTask" = "1 task";
+"list.switchedToCustom" = "Switched to Custom order";
+
+/* Sort & Groups */
+"sort.custom" = "Custom";
+"sort.byDueDate" = "By Due Date";
+"sort.byPriority" = "By Priority";
+"group.overdue" = "Overdue";
+"group.today" = "Today";
+"group.upcoming" = "Upcoming";
+"group.noDate" = "No date";
+"priority.high" = "High";
+"priority.medium" = "Medium";
+"priority.low" = "Low";
+
+/* Create / Edit */
+"create.title" = "New Task";
+"edit.title" = "Edit Task";
+"create.add" = "Add Task";
+"field.title" = "What needs to be done?";
+"field.titleEdit" = "Title";
+"field.notes" = "Add notes...";
+"field.priority" = "Priority";
+"field.labels" = "Labels";
+"field.noLabels" = "No labels yet";
+"field.matrix" = "Matrix";
+"field.dueDate" = "Due date";
+"field.remindMe" = "Remind me";
+"field.time" = "Time";
+"field.repeat" = "Repeat";
+"field.every" = "Every";
+"field.smartDate" = "tomorrow 3pm, next friday...";
+"field.list" = "List";
+"field.created" = "Created";
+"field.name" = "Name";
+
+/* Completed */
+"completed.title" = "Completed";
+"completed.empty" = "Nothing here yet";
+
+/* Settings — group headers */
+"settings.group.general" = "GENERAL";
+"settings.group.appearance" = "APPEARANCE";
+"settings.group.notifications" = "NOTIFICATIONS";
+"settings.group.organize" = "ORGANIZE";
+"settings.group.syncData" = "SYNC & DATA";
+
+/* Settings — rows */
+"settings.title" = "Settings";
+"settings.launchAtLogin" = "Launch at login";
+"settings.multiLine" = "Multi-line tasks";
+"settings.keyboard" = "Keyboard";
+"settings.globalShortcut" = "Global shortcut";
+"settings.shortcut" = "Shortcut";
+"settings.theme" = "Theme";
+"settings.color" = "Color";
+"settings.intensity" = "Intensity";
+"settings.display" = "Display";
+"settings.liquidGlass" = "Liquid Glass";
+"settings.confetti" = "Completion confetti";
+"settings.showInToolbar" = "Show in toolbar";
+"settings.matrixButton" = "Matrix button";
+"settings.completedButton" = "Completed button";
+"settings.defaultReminder" = "Default reminder";
+"settings.sound" = "Sound";
+"settings.sound.default" = "Default";
+"settings.sound.none" = "None";
+"settings.badgeCounts" = "Badge counts";
+"settings.currentList" = "Current list";
+"settings.allLists" = "All lists";
+"settings.remindersSync" = "Reminders Sync";
+"settings.syncWithReminders" = "Sync with Reminders";
+"settings.noRemindersAccess" = "No access to Reminders";
+"settings.listsToSync" = "Lists to sync";
+"settings.syncNow" = "Sync Now";
+"settings.lastSync" = "Last sync:";
+"settings.lists" = "Lists";
+"lists.new" = "New List";
+"labels.new" = "New Label";
+"settings.data" = "Data";
+"settings.export" = "Export";
+"settings.import" = "Import";
+"settings.clearCompleted" = "Clear completed";
+"settings.eisenhower" = "Eisenhower Matrix";
+"settings.labelLength" = "Label length";
+"settings.labelLines" = "Label lines";
+"settings.showAxisLabels" = "Show axis labels";
+"settings.showCountBadges" = "Show count badges";
+"settings.chars" = "%d chars";
+
+/* Alerts */
+"alert.deleteList.title" = "Delete List";
+"alert.deleteList.messageOne" = "“%@” has %d task. It will be moved to the default list.";
+"alert.deleteList.messageMany" = "“%@” has %d tasks. They will be moved to the default list.";
+"alert.clearCompleted.title" = "Clear Completed";
+"alert.clearCompleted.message" = "This will permanently delete all completed tasks.";
+"alert.clearN" = "Clear %d tasks";
+
+/* Undo */
+"undo.completed" = "Task completed";
+"undo.deleted" = "Task deleted";
+"undo.action" = "Undo";
+
+/* Swipe / Reorder / Accessibility */
+"swipe.done" = "Done";
+"swipe.delete" = "Delete";
+"a11y.moveUp" = "Move up";
+"a11y.moveDown" = "Move down";
+"a11y.complete" = "Complete %@";
+"a11y.sortOptions" = "Sort options";
+"a11y.hideSortOptions" = "Hide sort options";
+"a11y.search" = "Search";
+"a11y.completedTasks" = "Completed tasks";
+"a11y.newTask" = "New task";
+
+/* Matrix */
+"matrix.urgent" = "URGENT";
+"matrix.notUrgent" = "NOT URGENT";
+"matrix.important" = "IMPORTANT";
+"matrix.not" = "NOT";
+"matrix.unassigned" = "UNASSIGNED";
+"matrix.dropHere" = "Drop tasks here";
+"matrix.dropToRemove" = "Drop here to remove from the matrix";
+
+/* Onboarding */
+"onboarding.welcome" = "Welcome to Docket";
+"onboarding.subtitle" = "Your tasks, one click away";
+"onboarding.getStarted" = "Get Started";
+"onboarding.tip.swipe" = "Swipe";
+"onboarding.tip.swipeDesc" = "Right to complete, left to delete";
+"onboarding.tip.reorder" = "Reorder";
+"onboarding.tip.reorderDesc" = "Press and hold a task, then drag it";
+"onboarding.tip.shortcut" = "Shortcut";
+"onboarding.tip.shortcutDesc" = "⌘⇧D opens Docket from anywhere";
+"onboarding.tip.smartDates" = "Smart Dates";
+"onboarding.tip.smartDatesDesc" = "Type “tomorrow 3pm” for due dates";
+"onboarding.tip.labels" = "Labels";
+"onboarding.tip.labelsDesc" = "Color-coded labels to organize tasks";
+"onboarding.tip.lists" = "Lists";
+"onboarding.tip.listsDesc" = "Separate projects in Settings";
+
+/* Models — reminders */
+"reminder.none" = "No reminder";
+"reminder.atTime" = "At due time";
+"reminder.5min" = "5 minutes before";
+"reminder.10min" = "10 minutes before";
+"reminder.30min" = "30 minutes before";
+"reminder.1hour" = "1 hour before";
+"reminder.1day" = "1 day before";
+
+/* Models — recurrence */
+"freq.daily" = "Daily";
+"freq.weekly" = "Weekly";
+"freq.monthly" = "Monthly";
+"unit.day" = "day";
+"unit.week" = "week";
+"unit.month" = "month";
+"unit.days" = "days";
+"unit.weeks" = "weeks";
+"unit.months" = "months";
+"recurrence.everyN" = "Every %d %@";
+
+/* Models — themes */
+"theme.white" = "White";
+"theme.lavender" = "Lavender";
+"theme.rose" = "Rose";
+"theme.peach" = "Peach";
+"theme.lemon" = "Lemon";
+"theme.mint" = "Mint";
+"theme.sky" = "Sky";
+"theme.periwinkle" = "Periwinkle";
+"theme.night" = "Night";
+"theme.custom" = "Custom";
+
+/* Menu Bar & Notifications */
+"menu.overdue" = "⚠️ %d Overdue";
+"menu.dueToday" = "%d due today";
+"menu.quit" = "Quit Docket";
+"notif.dueNow" = "%@ — due now";
+"notif.reminder" = "%@ — %@";
+
+/* Due Date Formatting */
+"due.today" = "Today %@";
+"due.tomorrow" = "Tomorrow %@";
+"due.yesterday" = "Yesterday %@";

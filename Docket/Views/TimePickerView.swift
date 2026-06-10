@@ -18,7 +18,7 @@ struct TimePickerView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Text("Time").font(.body.weight(.medium))
+            Text(L10n.time).font(.body.weight(.medium))
             Spacer()
             HStack(spacing: 4) {
                 timeMenu(value: hour, format: "%02d") { setHour($0) } items: {

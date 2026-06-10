@@ -28,14 +28,14 @@ struct TaskDetailView: View {
                 VStack(spacing: 20) {
                     // Title
                     VStack(alignment: .leading, spacing: 4) {
-                        TextField("Title", text: $item.title)
+                        TextField(L10n.titleFieldPlaceholder, text: $item.title)
                             .textFieldStyle(.plain)
                             .font(.title3.weight(.medium))
                         Rectangle().fill(accent.opacity(0.15)).frame(height: 1.5)
                     }
 
                     // Notes
-                    TextField("Add notes...", text: $item.notes, axis: .vertical)
+                    TextField(L10n.notesPlaceholder, text: $item.notes, axis: .vertical)
                         .textFieldStyle(.plain)
                         .font(.body)
                         .foregroundStyle(.secondary)
@@ -51,14 +51,14 @@ struct TaskDetailView: View {
 
                     // Due date
                     VStack(alignment: .leading, spacing: 10) {
-                        ThemedToggle(label: "Due date", isOn: $hasDueDate, animated: true)
+                        ThemedToggle(label: L10n.dueDate, isOn: $hasDueDate, animated: true)
                         if hasDueDate {
                             // Natural language input
                             HStack(spacing: 8) {
                                 Image(systemName: "sparkles")
                                     .font(.system(size: 12))
                                     .foregroundStyle(accent)
-                                TextField("tomorrow 3pm, next friday...", text: $naturalDateText)
+                                TextField(L10n.smartDatePlaceholder, text: $naturalDateText)
                                     .textFieldStyle(.plain)
                                     .font(.subheadline)
                                     .onSubmit { parseNaturalDate() }
@@ -98,7 +98,7 @@ struct TaskDetailView: View {
                     // Move to list
                     if Store.shared.lists.count > 1 {
                         HStack {
-                            Text("List").font(.body)
+                            Text(L10n.list).font(.body)
                             Spacer()
                             Menu {
                                 ForEach(Store.shared.lists) { list in
@@ -118,7 +118,7 @@ struct TaskDetailView: View {
 
                     // Meta
                     HStack {
-                        Text("Created").font(.caption).foregroundStyle(.tertiary)
+                        Text(L10n.created).font(.caption).foregroundStyle(.tertiary)
                         Spacer()
                         Text(item.createdAt.formatted(date: .abbreviated, time: .shortened))
                             .font(.caption).foregroundStyle(.tertiary)
@@ -129,7 +129,7 @@ struct TaskDetailView: View {
                         Store.shared.delete(item)
                         path.removeLast()
                     } label: {
-                        Text("Delete Task")
+                        Text(L10n.deleteTask)
                             .font(.subheadline.weight(.medium))
                             .foregroundStyle(.red.opacity(0.8))
                     }
@@ -162,7 +162,7 @@ struct TaskDetailView: View {
                     .background(Circle().fill(.quaternary.opacity(0.5)))
             }.buttonStyle(.plain)
             Spacer()
-            Text("Edit Task").font(.headline)
+            Text(L10n.editTask).font(.headline)
             Spacer()
             Button { confirmEdit() } label: { Image(systemName: "checkmark").font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).frame(width: 28, height: 28).background(Circle().fill(.quaternary.opacity(0.5))) }.buttonStyle(.plain)
         }

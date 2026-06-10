@@ -15,7 +15,7 @@ struct ReminderPickerView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Text("Remind me").font(.body.weight(.medium))
+            Text(L10n.remindMe).font(.body.weight(.medium))
             Spacer()
             Menu {
                 ForEach(ReminderOffset.allCases) { r in
