@@ -14,17 +14,25 @@ enum Frequency: Int, Codable, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .daily: "Daily"
-        case .weekly: "Weekly"
-        case .monthly: "Monthly"
+        case .daily: L10n.freqDaily
+        case .weekly: L10n.freqWeekly
+        case .monthly: L10n.freqMonthly
         }
     }
 
     var unit: String {
         switch self {
-        case .daily: "day"
-        case .weekly: "week"
-        case .monthly: "month"
+        case .daily: L10n.unitDay
+        case .weekly: L10n.unitWeek
+        case .monthly: L10n.unitMonth
+        }
+    }
+
+    var unitPlural: String {
+        switch self {
+        case .daily: L10n.unitDays
+        case .weekly: L10n.unitWeeks
+        case .monthly: L10n.unitMonths
         }
     }
 }

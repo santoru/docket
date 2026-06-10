@@ -37,7 +37,7 @@ struct QuadrantPickerView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Matrix").font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
+            Text(L10n.matrix).font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 6) {
                 ForEach(Quadrant.allCases) { q in
                     let c = color(for: q)

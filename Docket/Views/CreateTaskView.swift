@@ -35,7 +35,7 @@ struct CreateTaskView: View {
                 VStack(spacing: 20) {
                     // Title - prominent, large
                     VStack(alignment: .leading, spacing: 4) {
-                        TextField("What needs to be done?", text: $title)
+                        TextField(L10n.titlePlaceholder, text: $title)
                             .textFieldStyle(.plain)
                             .font(.title3.weight(.medium))
                             .focused($titleFocused)
@@ -46,7 +46,7 @@ struct CreateTaskView: View {
                     }
 
                     // Notes - subtle
-                    TextField("Add notes...", text: $notes, axis: .vertical)
+                    TextField(L10n.notesPlaceholder, text: $notes, axis: .vertical)
                         .textFieldStyle(.plain)
                         .font(.body)
                         .foregroundStyle(.secondary)
@@ -62,7 +62,7 @@ struct CreateTaskView: View {
 
                     // Due date section
                     VStack(alignment: .leading, spacing: 10) {
-                        ThemedToggle(label: "Due date", isOn: $hasDueDate, animated: true)
+                        ThemedToggle(label: L10n.dueDate, isOn: $hasDueDate, animated: true)
 
                         if hasDueDate {
                             // Smart date input
@@ -70,7 +70,7 @@ struct CreateTaskView: View {
                                 Image(systemName: "sparkles")
                                     .font(.system(size: 12))
                                     .foregroundStyle(accent)
-                                TextField("tomorrow 3pm, next friday...", text: $naturalDateText)
+                                TextField(L10n.smartDatePlaceholder, text: $naturalDateText)
                                     .textFieldStyle(.plain)
                                     .font(.subheadline)
                                     .onSubmit { parseNaturalDate() }
@@ -111,7 +111,7 @@ struct CreateTaskView: View {
 
     private var header: some View {
         ZStack {
-            Text("New Task").font(.headline)
+            Text(L10n.newTask).font(.headline)
             HStack {
                 Button { path.removeLast() } label: {
                     Image(systemName: "xmark")
@@ -130,7 +130,7 @@ struct CreateTaskView: View {
                     ))
                     path.removeLast()
                 } label: {
-                    Text("Add Task")
+                    Text(L10n.addTask)
                         .font(.subheadline.weight(.semibold))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)

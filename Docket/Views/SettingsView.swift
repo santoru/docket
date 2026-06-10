@@ -48,23 +48,23 @@ struct SettingsView: View {
             Divider()
             VScroll {
                 VStack(spacing: 12) {
-                    groupHeader("GENERAL", first: true)
+                    groupHeader(L10n.groupGeneral, first: true)
                     generalSection
                     hotkeySection
 
-                    groupHeader("APPEARANCE")
+                    groupHeader(L10n.groupAppearance)
                     themeSection
                     displaySection
                     matrixSection
 
-                    groupHeader("NOTIFICATIONS")
+                    groupHeader(L10n.groupNotifications)
                     reminderSection
 
-                    groupHeader("ORGANIZE")
+                    groupHeader(L10n.groupOrganize)
                     listsSection
                     labelsSection
 
-                    groupHeader("SYNC & DATA")
+                    groupHeader(L10n.groupSyncData)
                     remindersSection
                     dataSection
 
@@ -79,24 +79,24 @@ struct SettingsView: View {
                 .padding(20)
             }
         }
-        .alert("Delete List", isPresented: $showDeleteConfirm) {
-            Button("Delete", role: .destructive) {
+        .alert(L10n.deleteListTitle, isPresented: $showDeleteConfirm) {
+            Button(L10n.delete, role: .destructive) {
                 if let list = listToDelete { withAnimation { store.deleteList(list) } }
             }
-            Button("Cancel", role: .cancel) {}
+            Button(L10n.cancel, role: .cancel) {}
         } message: {
             if let list = listToDelete {
                 let count = store.items.filter { $0.listId == list.id }.count
-                Text("\"\(list.name)\" has \(count) task\(count == 1 ? "" : "s"). They will be moved to the default list.")
+                Text(L10n.deleteListMessage(list.name, count))
             }
         }
-        .alert("Clear Completed", isPresented: $showClearConfirm) {
-            Button("Clear \(store.completedTasks.count) tasks", role: .destructive) {
+        .alert(L10n.clearCompletedTitle, isPresented: $showClearConfirm) {
+            Button(L10n.clearNTasks(store.completedTasks.count), role: .destructive) {
                 withAnimation { store.clearCompleted() }
             }
-            Button("Cancel", role: .cancel) {}
+            Button(L10n.cancel, role: .cancel) {}
         } message: {
-            Text("This will permanently delete all completed tasks.")
+            Text(L10n.clearCompletedMessage)
         }
     }
 
@@ -106,7 +106,7 @@ struct SettingsView: View {
                 Image(systemName: "chevron.left").font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).frame(width: 28, height: 28).background(Circle().fill(.quaternary.opacity(0.5)))
             }.buttonStyle(.plain)
             Spacer()
-            Text("Settings").font(.headline)
+            Text(L10n.settings).font(.headline)
             Spacer()
             Button { path.removeLast() } label: { Image(systemName: "checkmark").font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary).frame(width: 28, height: 28).background(Circle().fill(.quaternary.opacity(0.5))) }.buttonStyle(.plain)
         }
@@ -122,7 +122,7 @@ struct SettingsView: View {
         card {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("Default reminder").font(.subheadline)
+                    Text(L10n.defaultReminder).font(.subheadline)
                     Spacer()
                     Menu {
                         ForEach(ReminderOffset.allCases) { r in
@@ -140,19 +140,19 @@ struct SettingsView: View {
                 }
                 Divider()
                 HStack {
-                    Text("Sound").font(.subheadline)
+                    Text(L10n.sound).font(.subheadline)
                     Spacer()
                     Menu {
-                        Button("Default") { setSound("default") }
+                        Button(L10n.soundDefault) { setSound("default") }
                         Button("Ping") { setSound("Ping") }
                         Button("Glass") { setSound("Glass") }
                         Button("Pop") { setSound("Pop") }
                         Button("Purr") { setSound("Purr") }
                         Button("Submarine") { setSound("Submarine") }
                         Button("Tink") { setSound("Tink") }
-                        Button("None") { setSound("none") }
+                        Button(L10n.soundNone) { setSound("none") }
                     } label: {
-                        Text(notifSound == "default" ? "Default" : notifSound == "none" ? "None" : notifSound)
+                        Text(notifSound == "default" ? L10n.soundDefault : notifSound == "none" ? L10n.soundNone : notifSound)
                             .font(.system(size: 12, weight: .semibold))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
@@ -163,13 +163,13 @@ struct SettingsView: View {
                 }
                 Divider()
                 HStack {
-                    Text("Badge counts").font(.subheadline)
+                    Text(L10n.badgeCounts).font(.subheadline)
                     Spacer()
                     Menu {
-                        Button("Current list") { badgeAllLists = false }
-                        Button("All lists") { badgeAllLists = true }
+                        Button(L10n.currentList) { badgeAllLists = false }
+                        Button(L10n.allLists) { badgeAllLists = true }
                     } label: {
-                        Text(badgeAllLists ? "All lists" : "Current list")
+                        Text(badgeAllLists ? L10n.allLists : L10n.currentList)
                             .font(.system(size: 12, weight: .semibold))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
@@ -196,13 +196,13 @@ struct SettingsView: View {
     private var generalSection: some View {
         card {
             VStack(alignment: .leading, spacing: 10) {
-                ThemedToggle(label: "Launch at login", isOn: $launchAtLogin)
+                ThemedToggle(label: L10n.launchAtLogin, isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, on in
                         if on { try? SMAppService.mainApp.register() }
                         else { SMAppService.mainApp.unregister { _ in } }
                     }
                 Divider()
-                ThemedToggle(label: "Multi-line tasks", isOn: $multiLineTask)
+                ThemedToggle(label: L10n.multiLineTasks, isOn: $multiLineTask)
             }
         }
     }
@@ -210,12 +210,12 @@ struct SettingsView: View {
     private var hotkeySection: some View {
         card {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Keyboard").font(.body.weight(.medium))
-                ThemedToggle(label: "Global shortcut", isOn: $hotkeyEnabled)
+                Text(L10n.keyboard).font(.body.weight(.medium))
+                ThemedToggle(label: L10n.globalShortcut, isOn: $hotkeyEnabled)
                     .onChange(of: hotkeyEnabled) { _, _ in AppDelegate.shared?.registerHotkey() }
                 if hotkeyEnabled {
                     HStack {
-                        Text("Shortcut").font(.subheadline)
+                        Text(L10n.shortcut).font(.subheadline)
                         Spacer()
                         Menu {
                             Button("⌘⇧D") { setHotkey(kVK_ANSI_D, Int(cmdKey | shiftKey)) }
@@ -248,18 +248,18 @@ struct SettingsView: View {
     private var remindersSection: some View {
         card {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Reminders Sync").font(.body.weight(.medium))
-                ThemedToggle(label: "Sync with Reminders", isOn: $remindersSyncEnabled)
+                Text(L10n.remindersSync).font(.body.weight(.medium))
+                ThemedToggle(label: L10n.syncWithReminders, isOn: $remindersSyncEnabled)
                     .onChange(of: remindersSyncEnabled) { _, on in
                         if on { enableSync() } else { disableSync() }
                     }
 
                 if remindersSyncEnabled {
                     if availableCalendars.isEmpty {
-                        Text("No access to Reminders").font(.caption).foregroundStyle(.secondary)
+                        Text(L10n.noRemindersAccess).font(.caption).foregroundStyle(.secondary)
                     } else {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("Lists to sync").font(.caption).foregroundStyle(.secondary)
+                            Text(L10n.listsToSync).font(.caption).foregroundStyle(.secondary)
                             ForEach(availableCalendars, id: \.calendarIdentifier) { cal in
                                 HStack(spacing: 8) {
                                     Image(systemName: syncedCalendarIds.contains(cal.calendarIdentifier) ? "checkmark.circle.fill" : "circle")
@@ -274,14 +274,17 @@ struct SettingsView: View {
                         }
 
                         if let lastSync = RemindersSync.shared.lastSyncDate {
-                            Text("Last sync: \(lastSync, style: .relative) ago")
-                                .font(.caption).foregroundStyle(.tertiary)
+                            HStack(spacing: 4) {
+                                Text(L10n.lastSync)
+                                Text(lastSync, style: .relative)
+                            }
+                            .font(.caption).foregroundStyle(.tertiary)
                         }
 
                         Button { RemindersSync.shared.syncAll() } label: {
                             HStack(spacing: 4) {
                                 Image(systemName: "arrow.triangle.2.circlepath").font(.caption)
-                                Text("Sync Now").font(.caption.weight(.medium))
+                                Text(L10n.syncNow).font(.caption.weight(.medium))
                             }.foregroundStyle(accent)
                         }.buttonStyle(.plain)
                     }
@@ -394,11 +397,11 @@ struct SettingsView: View {
         card {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("Lists").font(.body.weight(.medium))
+                    Text(L10n.lists).font(.body.weight(.medium))
                     Spacer()
                     Button {
-                        store.addList(name: "New List")
-                        editingName = "New List"
+                        store.addList(name: L10n.newList)
+                        editingName = L10n.newList
                         editingListId = store.lists.last?.id
                     } label: {
                         Image(systemName: "plus")
@@ -415,7 +418,7 @@ struct SettingsView: View {
                                 .frame(width: 8, height: 8)
 
                             if editingListId == list.id {
-                                TextField("Name", text: $editingName, onCommit: {
+                                TextField(L10n.namePlaceholder, text: $editingName, onCommit: {
                                     store.renameList(list, to: editingName)
                                     editingListId = nil
                                 })
@@ -426,7 +429,7 @@ struct SettingsView: View {
                                     store.renameList(list, to: editingName)
                                     editingListId = nil
                                 } label: {
-                                    Text("Done").font(.caption.weight(.semibold)).foregroundStyle(accent)
+                                    Text(L10n.done).font(.caption.weight(.semibold)).foregroundStyle(accent)
                                 }.buttonStyle(.plain)
                             } else {
                                 Text(list.name)
@@ -488,7 +491,7 @@ struct SettingsView: View {
         card {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("Labels").font(.body.weight(.medium))
+                    Text(L10n.labels).font(.body.weight(.medium))
                     Spacer()
                     Button { addNewLabel() } label: {
                         Image(systemName: "plus").font(.body.weight(.medium)).foregroundStyle(accent)
@@ -496,7 +499,7 @@ struct SettingsView: View {
                 }
 
                 if store.labelsForActiveList.isEmpty {
-                    Text("No labels yet").font(.caption).foregroundStyle(.tertiary)
+                    Text(L10n.noLabels).font(.caption).foregroundStyle(.tertiary)
                 } else {
                     VStack(spacing: 4) {
                         ForEach(store.labelsForActiveList) { label in
@@ -537,7 +540,7 @@ struct SettingsView: View {
 
     private func labelEditRow(label: TaskLabel) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            TextField("Name", text: $labelName)
+            TextField(L10n.namePlaceholder, text: $labelName)
                 .textFieldStyle(.plain).font(.caption)
                 .padding(5)
                 .background(RoundedRectangle(cornerRadius: 5).fill(.quaternary.opacity(0.5)))
@@ -572,7 +575,7 @@ struct SettingsView: View {
                     store.updateLabel(updated)
                     editingLabelId = nil
                 } label: {
-                    Text("Done").font(.caption.weight(.semibold)).foregroundStyle(accent)
+                    Text(L10n.done).font(.caption.weight(.semibold)).foregroundStyle(accent)
                 }.buttonStyle(.plain)
             }
         }
@@ -581,7 +584,7 @@ struct SettingsView: View {
     }
 
     private func addNewLabel() {
-        store.addLabel(name: "New Label", colorHex: TaskLabel.presetColors.randomElement()!.hex, icon: "tag")
+        store.addLabel(name: L10n.newLabel, colorHex: TaskLabel.presetColors.randomElement()!.hex, icon: "tag")
         let newLabel = store.labelsForActiveList.last!
         labelName = newLabel.name
         labelColor = newLabel.colorHex
@@ -594,9 +597,9 @@ struct SettingsView: View {
     private var dataSection: some View {
         card {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Data").font(.body.weight(.medium))
+                Text(L10n.data).font(.body.weight(.medium))
                 HStack(spacing: 8) {
-                    actionButton(label: "Export", icon: "arrow.up.doc", color: accent) {
+                    actionButton(label: L10n.exportButton, icon: "arrow.up.doc", color: accent) {
                         let panel = NSSavePanel()
                         panel.allowedContentTypes = [.json]
                         panel.nameFieldStringValue = "docket-export.json"
@@ -605,7 +608,7 @@ struct SettingsView: View {
                             try? JSONEncoder().encode(export).write(to: url, options: .atomic)
                         }
                     }
-                    actionButton(label: "Import", icon: "arrow.down.doc", color: accent) {
+                    actionButton(label: L10n.importButton, icon: "arrow.down.doc", color: accent) {
                         let panel = NSOpenPanel()
                         panel.allowedContentTypes = [.json]
                         panel.allowsMultipleSelection = false
@@ -649,7 +652,7 @@ struct SettingsView: View {
                 }
                 Divider()
                 actionButton(
-                    label: "Clear completed",
+                    label: L10n.clearCompleted,
                     icon: "trash",
                     color: .red,
                     badge: "\(store.completedTasks.count)"
@@ -700,7 +703,7 @@ struct SettingsView: View {
     private var matrixSection: some View {
         card {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Eisenhower Matrix").font(.body.weight(.medium))
+                Text(L10n.eisenhowerMatrix).font(.body.weight(.medium))
 
                 // Quadrant colors + labels
                 VStack(spacing: 8) {
@@ -714,9 +717,9 @@ struct SettingsView: View {
 
                 // Label length
                 HStack {
-                    Text("Label length").font(.subheadline)
+                    Text(L10n.labelLength).font(.subheadline)
                     Spacer()
-                    Text("\(matrixLabelLength) chars").font(.system(size: 11, weight: .medium)).foregroundStyle(accent)
+                    Text(L10n.charsCount(matrixLabelLength)).font(.system(size: 11, weight: .medium)).foregroundStyle(accent)
                 }
                 Slider(value: Binding(get: { Double(matrixLabelLength) }, set: { matrixLabelLength = Int($0) }), in: 6...20, step: 1)
                     .tint(accent)
@@ -724,13 +727,13 @@ struct SettingsView: View {
                 Divider()
 
                 // Toggles
-                ThemedToggle(label: "Show axis labels", isOn: $matrixShowAxes)
-                ThemedToggle(label: "Show count badges", isOn: $matrixShowBadges)
+                ThemedToggle(label: L10n.showAxisLabels, isOn: $matrixShowAxes)
+                ThemedToggle(label: L10n.showCountBadges, isOn: $matrixShowBadges)
 
                 Divider()
 
                 HStack {
-                    Text("Label lines").font(.subheadline)
+                    Text(L10n.labelLines).font(.subheadline)
                     Spacer()
                     Menu {
                         ForEach(1...5, id: \.self) { n in
@@ -783,14 +786,14 @@ struct SettingsView: View {
     private var displaySection: some View {
         card {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Display").font(.body.weight(.medium))
-                ThemedToggle(label: "Liquid Glass", isOn: $useGlass)
+                Text(L10n.display).font(.body.weight(.medium))
+                ThemedToggle(label: L10n.liquidGlass, isOn: $useGlass)
                 Divider()
-                ThemedToggle(label: "Completion confetti", isOn: $showConfetti)
+                ThemedToggle(label: L10n.completionConfetti, isOn: $showConfetti)
                 Divider()
-                Text("Show in toolbar").font(.caption).foregroundStyle(.secondary)
-                ThemedToggle(label: "Matrix button", isOn: $showMatrixButton)
-                ThemedToggle(label: "Completed button", isOn: $showCompletedButton)
+                Text(L10n.showInToolbar).font(.caption).foregroundStyle(.secondary)
+                ThemedToggle(label: L10n.matrixButton, isOn: $showMatrixButton)
+                ThemedToggle(label: L10n.completedButton, isOn: $showCompletedButton)
             }
         }
     }
@@ -798,7 +801,7 @@ struct SettingsView: View {
     private var themeSection: some View {
         card {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Theme").font(.body.weight(.medium))
+                Text(L10n.theme).font(.body.weight(.medium))
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5), spacing: 10) {
                     ForEach(AppTheme.allCases) { t in
                         Button {
@@ -842,7 +845,7 @@ struct SettingsView: View {
     private var customSliders: some View {
         VStack(spacing: 8) {
             HStack {
-                Text("Color").font(.caption).foregroundStyle(.secondary)
+                Text(L10n.color).font(.caption).foregroundStyle(.secondary)
                 Spacer()
                 Circle()
                     .fill(Color(hue: customHue, saturation: customSat, brightness: 0.95))
@@ -851,7 +854,7 @@ struct SettingsView: View {
             Slider(value: $customHue, in: 0...1)
                 .tint(Color(hue: customHue, saturation: 0.7, brightness: 0.9))
             HStack {
-                Text("Intensity").font(.caption).foregroundStyle(.secondary)
+                Text(L10n.intensity).font(.caption).foregroundStyle(.secondary)
                 Slider(value: $customSat, in: 0.05...0.6)
                     .tint(Color(hue: customHue, saturation: customSat, brightness: 0.9))
             }

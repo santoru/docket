@@ -16,10 +16,10 @@ struct RecurrencePickerView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ThemedToggle(label: "Repeat", isOn: $hasRecurrence, animated: true)
+            ThemedToggle(label: L10n.repeatLabel, isOn: $hasRecurrence, animated: true)
             if hasRecurrence {
                 HStack {
-                    Text("Every").font(.body)
+                    Text(L10n.every).font(.body)
                     Spacer()
                     Menu {
                         ForEach(1...10, id: \.self) { n in
@@ -40,7 +40,7 @@ struct RecurrencePickerView: View {
                             Button(f.displayName) { frequency = f }
                         }
                     } label: {
-                        Text(interval == 1 ? frequency.unit : "\(frequency.unit)s")
+                        Text(interval == 1 ? frequency.unit : frequency.unitPlural)
                             .font(.system(size: 12, weight: .semibold))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 5)

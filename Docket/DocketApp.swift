@@ -87,19 +87,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     private func showContextMenu() {
         let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "New Task", action: #selector(menuNewTask), keyEquivalent: "n"))
+        menu.addItem(NSMenuItem(title: L10n.newTask, action: #selector(menuNewTask), keyEquivalent: "n"))
         menu.addItem(NSMenuItem.separator())
 
         let overdueCount = Store.shared.items.filter { !$0.isCompleted && $0.isOverdue }.count
         if overdueCount > 0 {
-            menu.addItem(NSMenuItem(title: "⚠️ \(overdueCount) Overdue", action: nil, keyEquivalent: ""))
+            menu.addItem(NSMenuItem(title: L10n.menuOverdue(overdueCount), action: nil, keyEquivalent: ""))
         }
 
         let todayCount = Store.shared.badgeCount
-        menu.addItem(NSMenuItem(title: "\(todayCount) due today", action: nil, keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: L10n.menuDueToday(todayCount), action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "GitHub", action: #selector(menuGitHub), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "Quit Docket", action: #selector(menuQuit), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: L10n.menuQuit, action: #selector(menuQuit), keyEquivalent: "q"))
 
         statusItem.menu = menu
         statusItem.button?.performClick(nil)

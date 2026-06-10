@@ -114,7 +114,7 @@ struct TaskListView: View {
             }
             .overlay(alignment: .top) {
                 if showModeToast {
-                    Text("Switched to Custom order")
+                    Text(L10n.switchedToCustom)
                         .font(.caption.weight(.medium))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 7)
@@ -172,17 +172,17 @@ struct TaskListView: View {
             }
             Spacer()
             headerButton(icon: showSortBar ? "checkmark.circle" : "arrow.up.arrow.down",
-                         label: showSortBar ? "Hide sort options" : "Sort options",
+                         label: showSortBar ? L10n.a11yHideSortOptions : L10n.a11ySortOptions,
                          color: showSortBar ? .green : accent) {
                 withAnimation(.spring(duration: 0.25)) { showSortBar.toggle() }
             }
-            headerButton(icon: "magnifyingglass", label: "Search", color: accent) {
+            headerButton(icon: "magnifyingglass", label: L10n.a11ySearch, color: accent) {
                 withAnimation(.spring(duration: 0.25)) { showSearch.toggle(); if !showSearch { searchText = "" } }
             }
-            if showMatrixButton { headerButton(icon: "square.grid.2x2", label: "Eisenhower Matrix", color: accent) { path.append(.matrix) } }
-            if showCompletedButton { headerButton(icon: "tray.full", label: "Completed tasks", color: accent) { path.append(.completed) } }
-            headerButton(icon: "gear", label: "Settings", color: accent) { path.append(.settings) }
-            headerButton(icon: "plus", label: "New task", color: .green) { path.append(.create) }
+            if showMatrixButton { headerButton(icon: "square.grid.2x2", label: L10n.eisenhowerMatrix, color: accent) { path.append(.matrix) } }
+            if showCompletedButton { headerButton(icon: "tray.full", label: L10n.a11yCompletedTasks, color: accent) { path.append(.completed) } }
+            headerButton(icon: "gear", label: L10n.settings, color: accent) { path.append(.settings) }
+            headerButton(icon: "plus", label: L10n.a11yNewTask, color: .green) { path.append(.create) }
         }
         .padding(.horizontal, 16)
         .padding(.top, 16)
@@ -206,9 +206,9 @@ struct TaskListView: View {
     private var sortBar: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
-                sortPill("Custom", mode: .custom)
-                sortPill("By Due Date", mode: .byDueDate)
-                sortPill("By Priority", mode: .byPriority)
+                sortPill(L10n.sortCustom, mode: .custom)
+                sortPill(L10n.sortByDueDate, mode: .byDueDate)
+                sortPill(L10n.sortByPriority, mode: .byPriority)
                 Spacer()
             }
             if !store.labelsForActiveList.isEmpty {
@@ -267,7 +267,7 @@ struct TaskListView: View {
     private var searchBar: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary).font(.caption)
-            TextField("Search tasks...", text: $searchText).textFieldStyle(.plain).font(.body)
+            TextField(L10n.searchPlaceholder, text: $searchText).textFieldStyle(.plain).font(.body)
             if !searchText.isEmpty {
                 Button { searchText = "" } label: {
                     Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
@@ -300,9 +300,9 @@ struct TaskListView: View {
             Spacer()
             VStack(spacing: 10) {
                 Image(systemName: "checkmark.seal").font(.system(size: 36)).foregroundStyle(.tertiary)
-                Text("All clear!").font(.body).foregroundStyle(.secondary)
+                Text(L10n.allClear).font(.body).foregroundStyle(.secondary)
                 Button { path.append(.create) } label: {
-                    Text("Add your first task")
+                    Text(L10n.addFirstTask)
                         .font(.caption.weight(.medium))
                         .foregroundStyle(accent)
                 }.buttonStyle(.plain)
@@ -317,7 +317,7 @@ struct TaskListView: View {
             VStack(spacing: 10) {
                 Image(systemName: "magnifyingglass").font(.system(size: 36)).foregroundStyle(.tertiary)
                 Text(L10n.noResults).font(.body).foregroundStyle(.secondary)
-                Text("No tasks match \u{201C}\(searchText)\u{201D}")
+                Text(L10n.noResultsDetail(searchText))
                     .font(.caption).foregroundStyle(.tertiary)
                     .lineLimit(1).truncationMode(.middle)
             }
@@ -433,8 +433,8 @@ struct TaskListView: View {
         .opacity(lifted ? 0 : 1)
         .accessibilityActions {
             if reorderEnabled && sortMode == .custom {
-                Button("Move up") { moveByAccessibility(item, by: -1) }
-                Button("Move down") { moveByAccessibility(item, by: 1) }
+                Button(L10n.moveUp) { moveByAccessibility(item, by: -1) }
+                Button(L10n.moveDown) { moveByAccessibility(item, by: 1) }
             }
         }
     }

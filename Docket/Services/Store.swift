@@ -115,10 +115,10 @@ final class Store {
         let noDate = active.filter { $0.dueDate == nil }.sorted { $0.sortOrder < $1.sortOrder }
 
         var groups: [(title: String, color: String, tasks: [TodoItem])] = []
-        if !overdue.isEmpty { groups.append(("Overdue", "red", overdue)) }
-        if !today.isEmpty { groups.append(("Today", "orange", today)) }
-        if !upcoming.isEmpty { groups.append(("Upcoming", "blue", upcoming)) }
-        if !noDate.isEmpty { groups.append(("No date", "gray", noDate)) }
+        if !overdue.isEmpty { groups.append((L10n.overdue, "red", overdue)) }
+        if !today.isEmpty { groups.append((L10n.today, "orange", today)) }
+        if !upcoming.isEmpty { groups.append((L10n.upcoming, "blue", upcoming)) }
+        if !noDate.isEmpty { groups.append((L10n.noDate, "gray", noDate)) }
         return groups
     }
 
@@ -133,9 +133,9 @@ final class Store {
         }
         var groups: [(title: String, color: String, tasks: [TodoItem])] = []
         let high = bucket(.high), medium = bucket(.medium), low = bucket(.low)
-        if !high.isEmpty { groups.append(("High", "red", high)) }
-        if !medium.isEmpty { groups.append(("Medium", "orange", medium)) }
-        if !low.isEmpty { groups.append(("Low", "blue", low)) }
+        if !high.isEmpty { groups.append((L10n.priorityHigh, "red", high)) }
+        if !medium.isEmpty { groups.append((L10n.priorityMedium, "orange", medium)) }
+        if !low.isEmpty { groups.append((L10n.priorityLow, "blue", low)) }
         return groups
     }
 

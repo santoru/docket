@@ -75,7 +75,7 @@ struct MatrixView: View {
                         .background(Circle().fill(.quaternary.opacity(0.5)))
                 }.buttonStyle(.plain)
                 Spacer()
-                Text("Eisenhower Matrix").font(.headline)
+                Text(L10n.eisenhowerMatrix).font(.headline)
                 Spacer()
                 Color.clear.frame(width: 28, height: 28)
             }
@@ -120,8 +120,8 @@ struct MatrixView: View {
         HStack(spacing: 0) {
             Color.clear.frame(width: 16)
             HStack(spacing: 4) {
-                axisLabel("URGENT")
-                axisLabel("NOT URGENT")
+                axisLabel(L10n.axisUrgent)
+                axisLabel(L10n.axisNotUrgent)
             }
         }
         .padding(.horizontal, 10)
@@ -130,8 +130,8 @@ struct MatrixView: View {
 
     private var yAxisLabels: some View {
         VStack(spacing: 4) {
-            verticalAxisLabel("IMPORTANT").frame(height: 140)
-            verticalAxisLabel("NOT").frame(height: 140)
+            verticalAxisLabel(L10n.axisImportant).frame(height: 140)
+            verticalAxisLabel(L10n.axisNot).frame(height: 140)
         }
         .frame(width: 16)
     }
@@ -176,7 +176,7 @@ struct MatrixView: View {
 
                 // Empty-state hint — only shown when the quadrant has no pills.
                 if tasks.isEmpty {
-                    Text("Drop tasks here")
+                    Text(L10n.dropTasksHere)
                         .font(.system(size: 9.5, weight: .medium))
                         .foregroundStyle(color.opacity(0.45))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -264,7 +264,7 @@ struct MatrixView: View {
             if shouldShow {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
-                        Text("UNASSIGNED")
+                        Text(L10n.unassigned)
                             .font(.system(size: 9, weight: .semibold))
                             .tracking(1.2)
                             .foregroundStyle(.tertiary)
@@ -281,7 +281,7 @@ struct MatrixView: View {
                         // Empty hint — shown only while shouldShow, i.e. during drag.
                         HStack {
                             Spacer()
-                            Text("Drop here to remove from the matrix")
+                            Text(L10n.dropToRemove)
                                 .font(.system(size: 10, weight: .medium))
                                 .foregroundStyle(.tertiary)
                             Spacer()

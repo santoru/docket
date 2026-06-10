@@ -13,9 +13,9 @@ enum Priority: Int, Codable, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .low: "Low"
-        case .medium: "Medium"
-        case .high: "High"
+        case .low: L10n.priorityLow
+        case .medium: L10n.priorityMedium
+        case .high: L10n.priorityHigh
         }
     }
 

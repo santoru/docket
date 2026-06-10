@@ -19,12 +19,12 @@ struct OnboardingView: View {
     @State private var showButton = false
 
     private let tips: [(icon: String, title: String, desc: String)] = [
-        ("hand.draw", "Swipe", "Right to complete, left to delete"),
-        ("arrow.up.arrow.down", "Reorder", "Press and hold a task, then drag it"),
-        ("keyboard", "Shortcut", "⌘⇧D opens Docket from anywhere"),
-        ("calendar", "Smart Dates", "Type \"tomorrow 3pm\" for due dates"),
-        ("tag", "Labels", "Color-coded labels to organize tasks"),
-        ("list.bullet", "Lists", "Separate projects in Settings"),
+        ("hand.draw", L10n.tipSwipe, L10n.tipSwipeDesc),
+        ("arrow.up.arrow.down", L10n.tipReorder, L10n.tipReorderDesc),
+        ("keyboard", L10n.tipShortcut, L10n.tipShortcutDesc),
+        ("calendar", L10n.tipSmartDates, L10n.tipSmartDatesDesc),
+        ("tag", L10n.tipLabels, L10n.tipLabelsDesc),
+        ("list.bullet", L10n.tipLists, L10n.tipListsDesc),
     ]
 
     var body: some View {
@@ -39,9 +39,9 @@ struct OnboardingView: View {
 
             // Title
             VStack(spacing: 4) {
-                Text("Welcome to Docket")
+                Text(L10n.welcome)
                     .font(.title3.bold())
-                Text("Your tasks, one click away")
+                Text(L10n.subtitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -74,7 +74,7 @@ struct OnboardingView: View {
             Button {
                 withAnimation(.spring(duration: 0.3)) { isPresented = false }
             } label: {
-                Text("Get Started")
+                Text(L10n.getStarted)
                     .font(.body.weight(.semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 11)

@@ -69,6 +69,10 @@ cp "$SRC_DIR/icon.icns" "$APP_BUNDLE/Contents/Resources/"
 cp "$SRC_DIR/menubar-icon.png" "$APP_BUNDLE/Contents/Resources/"
 cp "$SRC_DIR/menubar-icon@2x.png" "$APP_BUNDLE/Contents/Resources/"
 
+# Copy localizations (en + it)
+cp -R "$SRC_DIR/en.lproj" "$APP_BUNDLE/Contents/Resources/"
+cp -R "$SRC_DIR/it.lproj" "$APP_BUNDLE/Contents/Resources/"
+
 # Generate Info.plist
 cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -97,6 +101,13 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
     <string>14.0</string>
     <key>NSRemindersUsageDescription</key>
     <string>Docket syncs your tasks with Apple Reminders for iCloud, Siri, and Apple Watch access.</string>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>en</string>
+        <string>it</string>
+    </array>
 </dict>
 </plist>
 PLIST

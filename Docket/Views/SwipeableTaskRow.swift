@@ -46,7 +46,7 @@ struct SwipeableTaskRow: View {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(.green)
                     .overlay(alignment: .leading) {
-                        Label("Done", systemImage: "checkmark.circle.fill")
+                        Label(L10n.swipeDone, systemImage: "checkmark.circle.fill")
                             .font(.caption.bold())
                             .foregroundStyle(.white)
                             .padding(.leading, 16)
@@ -55,7 +55,7 @@ struct SwipeableTaskRow: View {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(.red)
                     .overlay(alignment: .trailing) {
-                        Label("Delete", systemImage: "trash.fill")
+                        Label(L10n.swipeDelete, systemImage: "trash.fill")
                             .font(.caption.bold())
                             .foregroundStyle(.white)
                             .padding(.trailing, 16)
