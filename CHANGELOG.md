@@ -2,6 +2,13 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.11.1] — 2026-06-15
+
+### 🐛 Fixes
+- **The complete-circle button on a task card works again.** The drag-to-reorder work had attached a high-priority tap to the whole row, which swallowed taps before they reached the button. The row tap is now a normal gesture, so the button (and tap-to-open, swipe, and long-press reorder) all behave correctly.
+
+---
+
 ## [1.11.0] — 2026-06-10
 
 ### 🌍 Localization

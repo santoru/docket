@@ -66,14 +66,12 @@ struct SwipeableTaskRow: View {
                 .scaleEffect(pressed && !isLifted ? 1.03 : 1.0)
                 .offset(x: offset)
                 .contentShape(Rectangle())
+                .onTapGesture { onTap() }
                 .gesture(isLifted ? nil : swipeGesture)
         }
-        // A quick click opens the task — high priority so it wins over the
-        // long-press for fast clicks.
-        .highPriorityGesture(TapGesture().onEnded { onTap() })
-        // Simultaneous so it doesn't steal the event stream from the tap/swipe.
-        // The 0.5s long-press time-gate separates a reorder (held) from a quick
-        // tap or a fast horizontal swipe.
+        // Reorder runs simultaneously so it never steals the event stream from
+        // the row tap, the complete-circle button, or the swipe. The long-press
+        // time-gate is what separates a reorder (held) from a quick tap/swipe.
         .simultaneousGesture(reorderGesture, including: reorderEnabled ? .all : .subviews)
         .onChange(of: reorderActive) { _, active in
             if active {
