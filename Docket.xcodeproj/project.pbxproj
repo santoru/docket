@@ -464,7 +464,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 @santoru. All rights reserved.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 @santoru. All rights reserved.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "Docket syncs your tasks with Apple Reminders for iCloud, Siri, and Apple Watch support.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -500,7 +500,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 @santoru. All rights reserved.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 @santoru. All rights reserved.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "Docket syncs your tasks with Apple Reminders for iCloud, Siri, and Apple Watch support.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
