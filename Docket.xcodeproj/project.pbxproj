@@ -463,6 +463,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleIconFile = icon;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 @santoru. All rights reserved.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "Docket syncs your tasks with Apple Reminders for iCloud, Siri, and Apple Watch support.";
@@ -499,6 +500,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleIconFile = icon;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 @santoru. All rights reserved.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "Docket syncs your tasks with Apple Reminders for iCloud, Siri, and Apple Watch support.";
