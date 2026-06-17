@@ -4,7 +4,7 @@
 
 import SwiftUI
 import AppKit
-import Carbon.HIToolbox
+import Carbon.HIToolbox // For kVK_* virtual key codes only
 
 @main
 struct DocketApp: App {
@@ -23,8 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private var eventMonitor: Any?
-    private var hotkeyRef: EventHotKeyRef?
-    private var hotkeyHandlerInstalled = false
+    private var hotkeyMonitor: Any?
     private var badgeTimer: Timer?
     private var lastHotkeyTime: Date = .distantPast
 
@@ -162,35 +161,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let enabled = UserDefaults.standard.object(forKey: "hotkeyEnabled") as? Bool ?? true
         guard enabled else { return }
 
-        let keyCode = UInt32(UserDefaults.standard.integer(forKey: "hotkeyKeyCode"))
-        let modifiers = UInt32(UserDefaults.standard.integer(forKey: "hotkeyModifiers"))
-        let code = keyCode > 0 ? keyCode : UInt32(kVK_ANSI_D)
-        let mods = modifiers > 0 ? modifiers : UInt32(cmdKey | shiftKey)
+        let keyCode = UserDefaults.standard.integer(forKey: "hotkeyKeyCode")
+        let modifiers = UserDefaults.standard.integer(forKey: "hotkeyModifiers")
+        let code = keyCode > 0 ? UInt16(keyCode) : UInt16(kVK_ANSI_D)
+        let targetMods = Self.carbonToCocoaModifiers(UInt32(modifiers > 0 ? modifiers : Int(cmdKey | shiftKey)))
 
-        var hotKeyID = EventHotKeyID(signature: OSType(0x444B5420), id: 1) // var required by Carbon API
-        var ref: EventHotKeyRef?
-        let status = RegisterEventHotKey(code, mods, hotKeyID, GetApplicationEventTarget(), 0, &ref)
-        if status == noErr { hotkeyRef = ref }
-
-        // Install the dispatch handler exactly once. RegisterEventHotKey above
-        // can be called repeatedly (when the user changes the shortcut), but
-        // InstallEventHandler must NOT be — each call adds another handler that
-        // is never removed, causing handleHotkey() to fire multiple times per
-        // keypress.
-        guard !hotkeyHandlerInstalled else { return }
-        var eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
-        InstallEventHandler(GetApplicationEventTarget(), { _, _, _ -> OSStatus in
-            AppDelegate.shared?.handleHotkey()
-            return noErr
-        }, 1, &eventType, nil, nil)
-        hotkeyHandlerInstalled = true
+        hotkeyMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard event.keyCode == code,
+                  event.modifierFlags.intersection(.deviceIndependentFlagsMask) == targetMods else { return }
+            DispatchQueue.main.async { self?.handleHotkey() }
+        }
     }
 
     private func unregisterHotkey() {
-        if let ref = hotkeyRef {
-            UnregisterEventHotKey(ref)
-            hotkeyRef = nil
+        if let monitor = hotkeyMonitor {
+            NSEvent.removeMonitor(monitor)
+            hotkeyMonitor = nil
         }
+    }
+
+    /// Convert Carbon modifier mask (cmdKey, shiftKey, etc.) to NSEvent.ModifierFlags
+    private static func carbonToCocoaModifiers(_ carbonMods: UInt32) -> NSEvent.ModifierFlags {
+        var mods: NSEvent.ModifierFlags = []
+        if carbonMods & UInt32(cmdKey) != 0 { mods.insert(.command) }
+        if carbonMods & UInt32(shiftKey) != 0 { mods.insert(.shift) }
+        if carbonMods & UInt32(optionKey) != 0 { mods.insert(.option) }
+        if carbonMods & UInt32(controlKey) != 0 { mods.insert(.control) }
+        return mods
     }
 
     private func handleHotkey() {
