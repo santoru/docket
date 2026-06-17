@@ -7,6 +7,7 @@ import AppKit
 import EventKit
 import ServiceManagement
 import Carbon.HIToolbox
+internal import UniformTypeIdentifiers
 
 /// App preferences: reminders, hotkey, launch at login, theme.
 struct SettingsView: View {
