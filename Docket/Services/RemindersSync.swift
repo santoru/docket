@@ -32,7 +32,7 @@ final class RemindersSync {
 
     func checkAccess() {
         let status = EKEventStore.authorizationStatus(for: .reminder)
-        isAuthorized = status == .fullAccess || status == .authorized
+        isAuthorized = status == .fullAccess || status == .writeOnly
     }
 
     func requestAccess() async -> Bool {
