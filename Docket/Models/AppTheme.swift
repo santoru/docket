@@ -58,7 +58,7 @@ enum AppTheme: Int, CaseIterable, Identifiable {
 
     var cardBackground: Color {
         switch self {
-        case .midnight: Color(red: 0.14, green: 0.14, blue: 0.22)
+        case .midnight: return Color(red: 0.14, green: 0.14, blue: 0.22)
         default:
             if NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
                 return Color(red: 0.16, green: 0.16, blue: 0.18)
