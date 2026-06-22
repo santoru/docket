@@ -48,6 +48,7 @@ struct SettingsView: View {
             header
             Divider()
             VScroll {
+                ScrollViewReader { proxy in
                 VStack(spacing: 12) {
                     groupHeader(L10n.groupGeneral, first: true)
                     generalSection
@@ -71,6 +72,7 @@ struct SettingsView: View {
 
                     groupHeader("Support")
                     card { TipJarView() }
+                        .id("tipJar")
 
                     VStack(spacing: 4) {
                         Text("Docket v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0")")
@@ -81,8 +83,11 @@ struct SettingsView: View {
                     .padding(.top, 12)
                 }
                 .padding(20)
+                .onReceive(NotificationCenter.default.publisher(for: .scrollToTipJar)) { _ in
+                    withAnimation { proxy.scrollTo("tipJar", anchor: .bottom) }
+                }
+                } // ScrollViewReader
             }
-        }
         .alert(L10n.deleteListTitle, isPresented: $showDeleteConfirm) {
             Button(L10n.delete, role: .destructive) {
                 if let list = listToDelete { withAnimation { store.deleteList(list) } }

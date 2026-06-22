@@ -67,6 +67,9 @@ struct ContentView: View {
             }
             AppDelegate.shared?.onTipJar = {
                 path = [.settings]
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    NotificationCenter.default.post(name: .scrollToTipJar, object: nil)
+                }
             }
             // Register popover close callback — reset UI except task edit/create
             AppDelegate.shared?.onPopoverClose = {

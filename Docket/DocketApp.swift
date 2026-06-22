@@ -259,4 +259,5 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
 extension Notification.Name {
     static let popoverDidClose = Notification.Name("DocketPopoverDidClose")
+    static let scrollToTipJar = Notification.Name("DocketScrollToTipJar")
 }
