@@ -98,6 +98,7 @@ enum L10n {
     static let groupNotifications = s("settings.group.notifications", "NOTIFICATIONS")
     static let groupOrganize = s("settings.group.organize", "ORGANIZE")
     static let groupSyncData = s("settings.group.syncData", "SYNC & DATA")
+    static let groupSupport = s("settings.group.support", "SUPPORT")
 
     // MARK: - Settings (rows)
     static let settings = s("settings.title", "Settings")
@@ -256,6 +257,12 @@ enum L10n {
         String(format: s("menu.dueToday", "%d due today"), n)
     }
     static let menuQuit = s("menu.quit", "Quit Docket")
+
+    // MARK: - Tip Jar
+    static let tipJar = s("tipjar.title", "Tip Jar")
+    static let tipJarBlurb = s("tipjar.blurb", "Docket is a one-time purchase with no subscriptions. If you enjoy it, tips are appreciated! ☕")
+    static let tipJarThankYou = s("tipjar.thankYou", "Thank you for your support! 💚")
+    static let tipJarUnavailable = s("tipjar.unavailable", "Tips are unavailable right now.")
     static func notifDueNow(_ title: String) -> String {
         String(format: s("notif.dueNow", "%@ — due now"), title)
     }

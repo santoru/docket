@@ -32,7 +32,10 @@ final class RemindersSync {
 
     func checkAccess() {
         let status = EKEventStore.authorizationStatus(for: .reminder)
-        isAuthorized = status == .fullAccess || status == .writeOnly
+        // Two-way sync both reads and writes reminders, so only full access is
+        // sufficient. `.writeOnly` permits creating reminders but NOT reading
+        // them, which would silently break the pull half of the sync.
+        isAuthorized = status == .fullAccess
     }
 
     func requestAccess() async -> Bool {

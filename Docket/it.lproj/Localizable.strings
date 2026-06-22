@@ -81,6 +81,7 @@
 "settings.group.notifications" = "NOTIFICHE";
 "settings.group.organize" = "ORGANIZZA";
 "settings.group.syncData" = "SINC. E DATI";
+"settings.group.support" = "SUPPORTO";
 
 /* Settings — rows */
 "settings.title" = "Impostazioni";
@@ -218,6 +219,12 @@
 "menu.overdue" = "⚠️ %d in ritardo";
 "menu.dueToday" = "%d in scadenza oggi";
 "menu.quit" = "Esci da Docket";
+
+/* Tip Jar */
+"tipjar.title" = "Offri un caffè";
+"tipjar.blurb" = "Docket è un acquisto singolo, senza abbonamenti. Se ti piace, una mancia è molto apprezzata! ☕";
+"tipjar.thankYou" = "Grazie per il tuo supporto! 💚";
+"tipjar.unavailable" = "Le mance non sono disponibili al momento.";
 "notif.dueNow" = "%@ — scade ora";
 "notif.reminder" = "%@ — %@";
 

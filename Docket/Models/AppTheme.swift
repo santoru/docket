@@ -3,6 +3,7 @@
 // Created by @santoru
 
 import SwiftUI
+import AppKit
 
 // MARK: - AppTheme
 
@@ -59,18 +60,20 @@ enum AppTheme: Int, CaseIterable, Identifiable {
     var cardBackground: Color {
         switch self {
         case .midnight: return Color(red: 0.14, green: 0.14, blue: 0.22)
-        default:
-            if NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
-                return Color(red: 0.16, green: 0.16, blue: 0.18)
-            }
-            return .white.opacity(0.65)
+        default:        return AppTheme.systemIsDark ? Color(red: 0.16, green: 0.16, blue: 0.18) : .white.opacity(0.65)
         }
     }
 
     var isDark: Bool {
-        if self == .midnight { return true }
-        // Respect macOS system dark mode for non-midnight themes
-        return NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        // Midnight is always dark; every other theme follows the macOS system
+        // appearance so the UI stays readable when the user switches to Dark.
+        self == .midnight || AppTheme.systemIsDark
+    }
+
+    /// True when macOS is currently in Dark Mode. Centralizes the appearance
+    /// probe so the dark-mode rule lives in exactly one place.
+    static var systemIsDark: Bool {
+        NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
     }
 
     var accent: Color {
@@ -97,10 +100,9 @@ enum AppTheme: Int, CaseIterable, Identifiable {
 struct ThemeManager {
     static func resolvedBackground(themeRaw: Int, customHue: Double, customSat: Double) -> Color {
         let theme = AppTheme(rawValue: themeRaw) ?? .white
-        let systemDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        let systemDark = AppTheme.systemIsDark
         if theme == .custom {
-            let brightness: Double = systemDark ? 0.15 : 0.95
-            return Color(hue: customHue, saturation: customSat, brightness: brightness)
+            return Color(hue: customHue, saturation: customSat, brightness: systemDark ? 0.15 : 0.95)
         }
         if systemDark && theme != .midnight {
             return Color(red: 0.10, green: 0.10, blue: 0.12)
@@ -110,9 +112,8 @@ struct ThemeManager {
 
     static func resolvedCardBackground(themeRaw: Int) -> Color {
         let theme = AppTheme(rawValue: themeRaw) ?? .white
-        let systemDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
         if theme == .custom {
-            return systemDark ? Color(red: 0.16, green: 0.16, blue: 0.18) : .white.opacity(0.65)
+            return AppTheme.systemIsDark ? Color(red: 0.16, green: 0.16, blue: 0.18) : .white.opacity(0.65)
         }
         return theme.cardBackground
     }

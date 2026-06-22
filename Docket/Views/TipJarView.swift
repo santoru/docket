@@ -10,53 +10,63 @@ struct TipJarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Tip Jar").font(.body.weight(.medium))
-            Text("Docket is a one-time purchase with no subscriptions. If you enjoy it, tips are appreciated! ☕")
+            Text(L10n.tipJar).font(.body.weight(.medium))
+            Text(L10n.tipJarBlurb)
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            if tipJar.products.isEmpty {
+            switch tipJar.loadState {
+            case .loading:
                 ProgressView()
+                    .controlSize(.small)
                     .frame(maxWidth: .infinity)
-            } else {
+            case .failed:
+                Text(L10n.tipJarUnavailable)
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .frame(maxWidth: .infinity)
+            case .loaded:
                 HStack(spacing: 8) {
                     ForEach(tipJar.products, id: \.id) { product in
-                        Button {
-                            Task {
-                                if await tipJar.purchase(product) {
-                                    thankYou = true
-                                }
-                            }
-                        } label: {
-                            VStack(spacing: 4) {
-                                Text(emoji(for: product))
-                                Text(product.displayPrice)
-                                    .font(.caption.weight(.semibold))
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.05)))
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(tipJar.isPurchasing)
+                        tipButton(product)
                     }
                 }
             }
 
             if thankYou {
-                Text("Thank you for your support! 💚")
+                Text(L10n.tipJarThankYou)
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.green)
+                    .transition(.opacity)
             }
         }
         .task { await tipJar.loadProducts() }
     }
 
-    private func emoji(for product: Product) -> String {
-        switch product.id {
-        case _ where product.id.hasSuffix(".small"): return "☕"
-        case _ where product.id.hasSuffix(".medium"): return "🍕"
-        default: return "🎉"
+    private func tipButton(_ product: Product) -> some View {
+        Button {
+            Task {
+                if await tipJar.purchase(product) {
+                    withAnimation { thankYou = true }
+                }
+            }
+        } label: {
+            VStack(spacing: 4) {
+                Text(emoji(for: product))
+                Text(product.displayPrice)
+                    .font(.caption.weight(.semibold))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.05)))
         }
+        .buttonStyle(.plain)
+        .disabled(tipJar.isPurchasing)
+    }
+
+    private func emoji(for product: Product) -> String {
+        if product.id.hasSuffix(".small") { return "☕" }
+        if product.id.hasSuffix(".medium") { return "🍕" }
+        return "🎉"
     }
 }

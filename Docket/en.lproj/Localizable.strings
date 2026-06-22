@@ -81,6 +81,7 @@
 "settings.group.notifications" = "NOTIFICATIONS";
 "settings.group.organize" = "ORGANIZE";
 "settings.group.syncData" = "SYNC & DATA";
+"settings.group.support" = "SUPPORT";
 
 /* Settings — rows */
 "settings.title" = "Settings";
@@ -218,6 +219,12 @@
 "menu.overdue" = "⚠️ %d Overdue";
 "menu.dueToday" = "%d due today";
 "menu.quit" = "Quit Docket";
+
+/* Tip Jar */
+"tipjar.title" = "Tip Jar";
+"tipjar.blurb" = "Docket is a one-time purchase with no subscriptions. If you enjoy it, tips are appreciated! ☕";
+"tipjar.thankYou" = "Thank you for your support! 💚";
+"tipjar.unavailable" = "Tips are unavailable right now.";
 "notif.dueNow" = "%@ — due now";
 "notif.reminder" = "%@ — %@";
 

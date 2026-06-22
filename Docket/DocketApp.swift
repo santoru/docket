@@ -23,7 +23,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private var eventMonitor: Any?
-    private var hotkeyMonitor: Any?
+    private var hotkeyGlobalMonitor: Any?
+    private var hotkeyLocalMonitor: Any?
     private var badgeTimer: Timer?
     private var lastHotkeyTime: Date = .distantPast
 
@@ -98,7 +99,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let todayCount = Store.shared.badgeCount
         menu.addItem(NSMenuItem(title: L10n.menuDueToday(todayCount), action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "☕ Tip Jar", action: #selector(menuTipJar), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "☕ \(L10n.tipJar)", action: #selector(menuTipJar), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "GitHub", action: #selector(menuGitHub), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: L10n.menuQuit, action: #selector(menuQuit), keyEquivalent: "q"))
 
@@ -173,17 +174,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let code = keyCode > 0 ? UInt16(keyCode) : UInt16(kVK_ANSI_D)
         let targetMods = Self.carbonToCocoaModifiers(UInt32(modifiers > 0 ? modifiers : Int(cmdKey | shiftKey)))
 
-        hotkeyMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard event.keyCode == code,
-                  event.modifierFlags.intersection(.deviceIndependentFlagsMask) == targetMods else { return }
+        func matches(_ event: NSEvent) -> Bool {
+            event.keyCode == code &&
+            event.modifierFlags.intersection(.deviceIndependentFlagsMask) == targetMods
+        }
+
+        // Global monitor: fires only when another app is frontmost (Docket
+        // inactive) — this is the common "summon Docket" path.
+        hotkeyGlobalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard matches(event) else { return }
             DispatchQueue.main.async { self?.handleHotkey() }
+        }
+
+        // Local monitor: fires only when Docket itself is frontmost (e.g. the
+        // popover is open). Without this, the documented double-press quick-add
+        // would never trigger, because the global monitor is silent while the
+        // app is active. Returning nil consumes the event so it doesn't also
+        // reach a focused text field.
+        hotkeyLocalMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard matches(event) else { return event }
+            self?.handleHotkey()
+            return nil
         }
     }
 
     private func unregisterHotkey() {
-        if let monitor = hotkeyMonitor {
+        if let monitor = hotkeyGlobalMonitor {
             NSEvent.removeMonitor(monitor)
-            hotkeyMonitor = nil
+            hotkeyGlobalMonitor = nil
+        }
+        if let monitor = hotkeyLocalMonitor {
+            NSEvent.removeMonitor(monitor)
+            hotkeyLocalMonitor = nil
         }
     }
 

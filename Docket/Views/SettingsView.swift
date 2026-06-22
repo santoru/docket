@@ -70,7 +70,7 @@ struct SettingsView: View {
                     remindersSection
                     dataSection
 
-                    groupHeader("Support")
+                    groupHeader(L10n.groupSupport)
                     card { TipJarView() }
                         .id("tipJar")
 
