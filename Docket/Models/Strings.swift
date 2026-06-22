@@ -19,6 +19,8 @@ enum L10n {
     static let done = s("action.done", "Done")
     static let back = s("action.back", "Back")
     static let delete = s("action.delete", "Delete")
+    static let edit = s("action.edit", "Edit")
+    static let rename = s("action.rename", "Rename")
     static let deleteTask = s("action.deleteTask", "Delete Task")
     static let restore = s("action.restore", "Restore")
 
@@ -132,6 +134,15 @@ enum L10n {
         let fmt = count == 1
             ? s("alert.deleteList.messageOne", "“%@” has %d task. It will be moved to the default list.")
             : s("alert.deleteList.messageMany", "“%@” has %d tasks. They will be moved to the default list.")
+        return String(format: fmt, name, count)
+    }
+    static let deleteLabelTitle = s("alert.deleteLabel.title", "Delete Label")
+    static func deleteLabelMessage(_ name: String, _ count: Int) -> String {
+        let fmt = count == 1
+            ? s("alert.deleteLabel.messageOne", "“%@” is used by %d task. The label will be removed from it.")
+            : count == 0
+                ? s("alert.deleteLabel.messageZero", "Delete the label “%@”? This cannot be undone.")
+                : s("alert.deleteLabel.messageMany", "“%@” is used by %d tasks. The label will be removed from them.")
         return String(format: fmt, name, count)
     }
     static let clearCompletedTitle = s("alert.clearCompleted.title", "Clear Completed")

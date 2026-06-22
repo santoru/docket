@@ -99,6 +99,17 @@ struct SettingsView: View {
         } message: {
             Text(L10n.clearCompletedMessage)
         }
+        .alert(L10n.deleteLabelTitle, isPresented: $showLabelDeleteConfirm) {
+            Button(L10n.delete, role: .destructive) {
+                if let label = labelToDelete { withAnimation { store.deleteLabel(label) } }
+            }
+            Button(L10n.cancel, role: .cancel) {}
+        } message: {
+            if let label = labelToDelete {
+                let count = store.items.filter { $0.labelIds.contains(label.id) }.count
+                Text(L10n.deleteLabelMessage(label.name, count))
+            }
+        }
     }
 
     private var header: some View {
@@ -394,6 +405,7 @@ struct SettingsView: View {
     @State private var listToDelete: TaskList?
     @State private var showDeleteConfirm = false
     @State private var colorPickingListId: UUID?
+    @State private var hoveredListId: UUID?
 
     private var listsSection: some View {
         card {
@@ -436,32 +448,21 @@ struct SettingsView: View {
                                     .font(.body)
                                     .foregroundStyle(list.id == store.activeListId ? .primary : .secondary)
                                 Spacer()
-                                HStack(spacing: 12) {
-                                    Button {
-                                        editingName = list.name
-                                        editingListId = list.id
-                                    } label: {
-                                        Image(systemName: "pencil.line")
-                                            .font(.system(size: 13))
-                                            .foregroundStyle(.secondary)
-                                    }.buttonStyle(.plain)
-
+                                let showActions = hoveredListId == list.id
+                                HStack(spacing: 2) {
+                                    RowActionButton(systemImage: "pencil", label: L10n.rename) {
+                                        beginRenamingList(list)
+                                    }
                                     if !list.isDefault {
-                                        Button {
-                                            let taskCount = store.items.filter { $0.listId == list.id }.count
-                                            if taskCount > 0 {
-                                                listToDelete = list
-                                                showDeleteConfirm = true
-                                            } else {
-                                                withAnimation { store.deleteList(list) }
-                                            }
-                                        } label: {
-                                            Image(systemName: "xmark")
-                                                .font(.system(size: 11, weight: .semibold))
-                                                .foregroundStyle(.secondary)
-                                        }.buttonStyle(.plain)
+                                        RowActionButton(systemImage: "trash",
+                                                        label: L10n.delete,
+                                                        destructive: true) {
+                                            requestDeleteList(list)
+                                        }
                                     }
                                 }
+                                .opacity(showActions ? 1 : 0)
+                                .animation(.easeOut(duration: 0.12), value: showActions)
                             }
                         }
                         .padding(.vertical, 8)
@@ -473,6 +474,16 @@ struct SettingsView: View {
                         .contentShape(Rectangle())
                         .onTapGesture {
                             if editingListId == nil { store.switchList(list) }
+                        }
+                        .onHover { isIn in
+                            if isIn { hoveredListId = list.id }
+                            else if hoveredListId == list.id { hoveredListId = nil }
+                        }
+                        .contextMenu {
+                            Button(L10n.rename) { beginRenamingList(list) }
+                            if !list.isDefault {
+                                Button(L10n.delete, role: .destructive) { requestDeleteList(list) }
+                            }
                         }
                     }
                 }
@@ -545,12 +556,35 @@ struct SettingsView: View {
         )
     }
 
+    // MARK: - List actions
+
+    private func beginRenamingList(_ list: TaskList) {
+        editingName = list.name
+        editingListId = list.id
+    }
+
+    /// Routes a list-delete request through the confirmation alert when the
+    /// list contains tasks; deletes silently otherwise.
+    private func requestDeleteList(_ list: TaskList) {
+        guard !list.isDefault else { return }
+        let taskCount = store.items.filter { $0.listId == list.id }.count
+        if taskCount > 0 {
+            listToDelete = list
+            showDeleteConfirm = true
+        } else {
+            withAnimation { store.deleteList(list) }
+        }
+    }
+
     // MARK: - Labels Settings
 
     @State private var editingLabelId: UUID?
     @State private var labelName = ""
     @State private var labelColor = ColorPalette.defaultHex
     @State private var labelIcon = "tag"
+    @State private var hoveredLabelId: UUID?
+    @State private var labelToDelete: TaskLabel?
+    @State private var showLabelDeleteConfirm = false
 
     private var labelsSection: some View {
         card {
@@ -581,26 +615,52 @@ struct SettingsView: View {
     }
 
     private func labelDisplayRow(label: TaskLabel) -> some View {
-        HStack(spacing: 10) {
+        let showActions = hoveredLabelId == label.id
+        return HStack(spacing: 10) {
             Circle().fill(label.color).frame(width: 10, height: 10)
             Image(systemName: label.icon).font(.system(size: 11)).foregroundStyle(label.color)
             Text(label.name).font(.subheadline)
             Spacer()
-            Button {
-                labelName = label.name
-                labelColor = label.colorHex
-                labelIcon = label.icon
-                editingLabelId = label.id
-            } label: {
-                Image(systemName: "pencil.line").font(.system(size: 13)).foregroundStyle(.secondary)
-            }.buttonStyle(.plain)
-            Button { withAnimation { store.deleteLabel(label) } } label: {
-                Image(systemName: "xmark").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-            }.buttonStyle(.plain)
+            HStack(spacing: 2) {
+                RowActionButton(systemImage: "pencil", label: L10n.edit) {
+                    beginEditingLabel(label)
+                }
+                RowActionButton(systemImage: "trash",
+                                label: L10n.delete,
+                                destructive: true) {
+                    requestDeleteLabel(label)
+                }
+            }
+            .opacity(showActions ? 1 : 0)
+            .animation(.easeOut(duration: 0.12), value: showActions)
         }
         .padding(.vertical, 6)
         .padding(.horizontal, 8)
         .background(RoundedRectangle(cornerRadius: 8).fill(label.color.opacity(0.05)))
+        .contentShape(Rectangle())
+        .onTapGesture { beginEditingLabel(label) }
+        .onHover { isIn in
+            if isIn { hoveredLabelId = label.id }
+            else if hoveredLabelId == label.id { hoveredLabelId = nil }
+        }
+        .contextMenu {
+            Button(L10n.edit) { beginEditingLabel(label) }
+            Button(L10n.delete, role: .destructive) { requestDeleteLabel(label) }
+        }
+    }
+
+    // MARK: - Label actions
+
+    private func beginEditingLabel(_ label: TaskLabel) {
+        labelName = label.name
+        labelColor = label.colorHex
+        labelIcon = label.icon
+        editingLabelId = label.id
+    }
+
+    private func requestDeleteLabel(_ label: TaskLabel) {
+        labelToDelete = label
+        showLabelDeleteConfirm = true
     }
 
     private func labelEditRow(label: TaskLabel) -> some View {

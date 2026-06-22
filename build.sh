@@ -51,6 +51,7 @@ swiftc \
     "$SRC_DIR/Views/PriorityPickerView.swift" \
     "$SRC_DIR/Views/LabelPickerView.swift" \
     "$SRC_DIR/Views/ColorPickerGrid.swift" \
+    "$SRC_DIR/Views/RowActionButton.swift" \
     "$SRC_DIR/Views/QuadrantPickerView.swift" \
     "$SRC_DIR/Views/MatrixView.swift" \
     "$SRC_DIR/Views/ThemedToggle.swift" \
