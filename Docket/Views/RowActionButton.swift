@@ -4,34 +4,50 @@
 
 import SwiftUI
 
-/// Small icon-only button suited for inline row actions (edit / delete /
-/// duplicate / etc.) following macOS HIG conventions:
+/// Compact icon-only button used for inline row actions (edit / delete /
+/// duplicate / etc.). Visual style mirrors Apple's "tinted compact action
+/// button" pattern from Mail, Reminders, and Photos:
 ///
-/// * 24pt circular hit-target with a subtle hover background.
-/// * Press state darkens the background slightly.
-/// * `destructive` variant tints red on hover and press.
-/// * Always carries a `.help()` tooltip and a matching VoiceOver label —
+/// * Circular fill in the action's tint at low opacity, deepening on hover.
+/// * SF Symbol rendered semibold with hierarchical mode for subtle depth.
+/// * Hairline border at rest gives the button a crafted edge that fades on hover.
+/// * Hover scales up with a spring; press scales down, so the affordance
+///   feels responsive without competing with the row content.
+/// * `destructive` variant locks to system red regardless of the surrounding
+///   tint; non-destructive uses the environment `.tint` (or `.accentColor`).
+/// * Always carries a `.help()` tooltip and matching VoiceOver label —
 ///   icon-only buttons MUST be self-describing for accessibility.
 struct RowActionButton: View {
     let systemImage: String
     let label: String
+    /// Accent used when not destructive. Defaults to the system accent so the
+    /// button looks correct out of the box; the SettingsView passes the
+    /// resolved theme accent so edit buttons match the app's theme.
+    var tint: Color = .accentColor
     var destructive: Bool = false
     let action: () -> Void
 
     @State private var hovered = false
 
+    private let size: CGFloat = 26
+
     var body: some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(foreground)
-                .frame(width: 24, height: 24)
+                .font(.system(size: 12, weight: .semibold))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(iconStyle)
+                .frame(width: size, height: size)
                 .background(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(background)
+                    Circle().fill(backgroundStyle)
                 )
-                .contentShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                .animation(.easeOut(duration: 0.12), value: hovered)
+                .overlay(
+                    Circle()
+                        .strokeBorder(borderStyle, lineWidth: 0.5)
+                )
+                .scaleEffect(hovered ? 1.06 : 1.0)
+                .animation(.spring(response: 0.3, dampingFraction: 0.72), value: hovered)
+                .contentShape(Circle())
         }
         .buttonStyle(PressableScaleStyle())
         .onHover { hovered = $0 }
@@ -39,16 +55,21 @@ struct RowActionButton: View {
         .accessibilityLabel(Text(label))
     }
 
-    private var foreground: Color {
-        if destructive {
-            return hovered ? .red : .secondary
-        }
-        return hovered ? .primary : .secondary
+    // MARK: - Styling
+
+    /// Effective accent — destructive trumps the configured tint.
+    private var effectiveTint: Color { destructive ? .red : tint }
+
+    private var iconStyle: AnyShapeStyle {
+        AnyShapeStyle(effectiveTint.opacity(hovered ? 1.0 : 0.85))
     }
 
-    private var background: Color {
-        guard hovered else { return .clear }
-        return destructive ? Color.red.opacity(0.14) : Color.primary.opacity(0.08)
+    private var backgroundStyle: AnyShapeStyle {
+        AnyShapeStyle(effectiveTint.opacity(hovered ? 0.18 : 0.10))
+    }
+
+    private var borderStyle: AnyShapeStyle {
+        AnyShapeStyle(effectiveTint.opacity(hovered ? 0 : 0.18))
     }
 }
 
@@ -57,7 +78,7 @@ struct RowActionButton: View {
 private struct PressableScaleStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.92 : 1.0)
+            .scaleEffect(configuration.isPressed ? 0.90 : 1.0)
             .animation(.easeOut(duration: 0.08), value: configuration.isPressed)
     }
 }

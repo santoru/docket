@@ -449,12 +449,14 @@ struct SettingsView: View {
                                     .foregroundStyle(list.id == store.activeListId ? .primary : .secondary)
                                 Spacer()
                                 let showActions = hoveredListId == list.id
-                                HStack(spacing: 2) {
-                                    RowActionButton(systemImage: "pencil", label: L10n.rename) {
+                                HStack(spacing: 6) {
+                                    RowActionButton(systemImage: "pencil",
+                                                    label: L10n.rename,
+                                                    tint: accent) {
                                         beginRenamingList(list)
                                     }
                                     if !list.isDefault {
-                                        RowActionButton(systemImage: "trash",
+                                        RowActionButton(systemImage: "trash.fill",
                                                         label: L10n.delete,
                                                         destructive: true) {
                                             requestDeleteList(list)
@@ -621,11 +623,13 @@ struct SettingsView: View {
             Image(systemName: label.icon).font(.system(size: 11)).foregroundStyle(label.color)
             Text(label.name).font(.subheadline)
             Spacer()
-            HStack(spacing: 2) {
-                RowActionButton(systemImage: "pencil", label: L10n.edit) {
+            HStack(spacing: 6) {
+                RowActionButton(systemImage: "pencil",
+                                label: L10n.edit,
+                                tint: label.color) {
                     beginEditingLabel(label)
                 }
-                RowActionButton(systemImage: "trash",
+                RowActionButton(systemImage: "trash.fill",
                                 label: L10n.delete,
                                 destructive: true) {
                     requestDeleteLabel(label)
