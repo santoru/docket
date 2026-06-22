@@ -24,6 +24,7 @@ swiftc \
     -framework ServiceManagement \
     -framework Carbon \
     -framework EventKit \
+    -framework StoreKit \
     -parse-as-library \
     -suppress-warnings \
     "$SRC_DIR/Models/ReminderOffset.swift" \
@@ -43,6 +44,7 @@ swiftc \
     "$SRC_DIR/Services/DateParser.swift" \
     "$SRC_DIR/Services/DueDateFormatter.swift" \
     "$SRC_DIR/Services/RemindersSync.swift" \
+    "$SRC_DIR/Services/TipJar.swift" \
     "$SRC_DIR/Views/TaskRowView.swift" \
     "$SRC_DIR/Views/SwipeableTaskRow.swift" \
     "$SRC_DIR/Views/CalendarPickerView.swift" \
@@ -69,6 +71,7 @@ swiftc \
     "$SRC_DIR/Views/TaskDetailView.swift" \
     "$SRC_DIR/Views/CompletedTasksView.swift" \
     "$SRC_DIR/Views/SettingsView.swift" \
+    "$SRC_DIR/Views/TipJarView.swift" \
     "$SRC_DIR/Views/ContentView.swift" \
     "$SRC_DIR/DocketApp.swift"
 
