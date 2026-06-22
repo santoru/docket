@@ -2,6 +2,26 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.12.1] — 2026-06-22
+
+### ✨ New
+- **Tip Jar.** If you enjoy Docket, you can leave an optional tip (☕ / 🍕 / 🎉) from the bottom of Settings, or via the new "Tip Jar" item in the menu-bar right-click menu (which jumps straight to it). Built on StoreKit 2 with consumable in-app purchases — no subscriptions, no accounts.
+
+### 🌙 Dark Mode
+- **The whole UI now follows macOS system Dark Mode.** Previously only the explicit "Night" theme rendered dark, so on a Mac set to Dark the header, empty-state text, cards, and scrim could appear dark-on-dark. Every theme now adapts: backgrounds and cards darken, and label colors are lightened just enough to stay legible against a dark surface.
+
+### 🐛 Fixes
+- **Reminders sync authorization.** Use the modern `.fullAccess` EventKit status check (the old `.authorized` was deprecated on macOS 14). Two-way sync correctly requires full access, since it both reads and writes reminders.
+- **Global shortcut double-press.** The ⌘⇧D double-press quick-add works again when the popover is already open, by also listening locally while Docket is frontmost.
+- **App icon & metadata** for App Store distribution: full 1024px icon set, `LSApplicationCategoryType`, and sandbox-friendly entitlements.
+
+### 🧹 Code quality
+- Centralized the system-appearance check in one `AppTheme.systemIsDark` helper.
+- Tip Jar copy and the new "Support" section are fully localized (English + Italian).
+- Migrated the global hotkey off the legacy Carbon API to `NSEvent` monitors.
+
+---
+
 ## [1.12.0] — 2026-06-22
 
 ### 🎨 Colors & Icons
@@ -544,5 +564,6 @@ To preview a language without changing your system setting: `open Docket.app --a
 
 ---
 
+[1.12.1]: https://github.com/santoru/docket/releases/tag/v1.12.1
 [1.5.0]: https://github.com/santoru/docket/releases/tag/v1.5.0
 [1.0.0]: https://github.com/santoru/docket/releases/tag/v1.0.0

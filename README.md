@@ -133,7 +133,14 @@
 </td>
 <td>
 
-`✨ Delight`
+`☕ Tip Jar`
+- Leave an optional tip if you enjoy Docket
+- ☕ / 🍕 / 🎉 — one-time, no subscriptions
+- StoreKit 2 consumables; nothing tracked
+- Open from Settings or the right-click menu
+
+</td>
+</tr>
 </table>
 
 ---
@@ -243,6 +250,7 @@ Docket/
 │   ├── Store.swift                 # JSON persistence, CRUD, lists, labels, reorder
 │   ├── NotificationManager.swift   # UNUserNotifications scheduling
 │   ├── RemindersSync.swift         # Two-way Apple Reminders sync (EventKit)
+│   ├── TipJar.swift                # Optional tips via StoreKit 2 (consumables)
 │   ├── DateParser.swift            # Natural language → Date parsing
 │   └── DueDateFormatter.swift      # Relative date display formatting
 └── Views/
@@ -262,6 +270,7 @@ Docket/
     ├── TaskDetailView.swift        # Edit task + reminders + labels
     ├── CompletedTasksView.swift    # Done tasks with restore
     ├── SettingsView.swift          # Preferences + lists + labels + export
+    ├── TipJarView.swift            # Optional tips UI (StoreKit 2)
     └── OnboardingView.swift        # First-launch guide
 ```
 

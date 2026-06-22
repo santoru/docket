@@ -97,9 +97,9 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
     <key>CFBundleIdentifier</key>
     <string>blog.insecurity.docket</string>
     <key>CFBundleVersion</key>
-    <string>1.12.0</string>
+    <string>1.12.1</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.12.0</string>
+    <string>1.12.1</string>
     <key>CFBundleExecutable</key>
     <string>Docket</string>
     <key>CFBundleIconFile</key>
