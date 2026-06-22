@@ -549,7 +549,6 @@ struct SettingsView: View {
 
     @State private var editingLabelId: UUID?
     @State private var labelName = ""
-    @State private var labelColor = ColorPalette.defaultHex
     @State private var labelIcon = "tag"
     @State private var hoveredLabelId: UUID?
     @State private var labelToDelete: TaskLabel?
@@ -586,7 +585,10 @@ struct SettingsView: View {
     private func labelDisplayRow(label: TaskLabel) -> some View {
         let showActions = hoveredLabelId == label.id
         return HStack(spacing: 10) {
-            Circle().fill(label.color).frame(width: 10, height: 10)
+            ColorSwatchButton(
+                hex: labelColorBinding(for: label.id),
+                popoverTitle: label.name
+            )
             Image(systemName: label.icon).font(.system(size: 11)).foregroundStyle(label.color)
             Text(label.name).font(.subheadline)
             Spacer()
@@ -624,7 +626,6 @@ struct SettingsView: View {
 
     private func beginEditingLabel(_ label: TaskLabel) {
         labelName = label.name
-        labelColor = label.colorHex
         labelIcon = label.icon
         editingLabelId = label.id
     }
@@ -634,50 +635,63 @@ struct SettingsView: View {
         showLabelDeleteConfirm = true
     }
 
+    /// Binding that reads/writes the chosen label's `colorHex` directly
+    /// through the store. Mirrors `listColorBinding(for:)` so colour changes
+    /// from the row swatch persist immediately, independent of the
+    /// name + icon edit form.
+    private func labelColorBinding(for labelId: UUID) -> Binding<String> {
+        Binding(
+            get: {
+                store.labels.first(where: { $0.id == labelId })?.colorHex
+                    ?? ColorPalette.defaultHex
+            },
+            set: { newHex in
+                guard var label = store.labels.first(where: { $0.id == labelId })
+                else { return }
+                label.colorHex = newHex
+                store.updateLabel(label)
+            }
+        )
+    }
+
     private func labelEditRow(label: TaskLabel) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Live preview of the label as it will appear on a task.
-            HStack(spacing: 4) {
-                Image(systemName: labelIcon).font(.system(size: 11))
-                Text(labelName.isEmpty ? L10n.newLabel : labelName)
-                    .font(.subheadline.weight(.medium))
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(Capsule().fill(Color(hex: labelColor).opacity(0.15)))
-            .foregroundStyle(Color(hex: labelColor))
-
-            TextField(L10n.namePlaceholder, text: $labelName)
-                .textFieldStyle(.plain).font(.caption)
-                .padding(5)
-                .background(RoundedRectangle(cornerRadius: 5).fill(.quaternary.opacity(0.5)))
-
-            ColorPickerGrid(hex: $labelColor)
-
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 5), spacing: 6) {
-                ForEach(TaskLabel.presetIcons, id: \.self) { icon in
-                    Button { labelIcon = icon } label: {
-                        Image(systemName: icon)
-                            .font(.system(size: 14))
-                            .frame(width: 32, height: 32)
-                            .background(RoundedRectangle(cornerRadius: 6).fill(labelIcon == icon ? Color(hex: labelColor).opacity(0.2) : Color.clear))
-                            .overlay(RoundedRectangle(cornerRadius: 6).stroke(labelIcon == icon ? Color(hex: labelColor) : Color.clear, lineWidth: 1))
-                            .foregroundStyle(labelIcon == icon ? Color(hex: labelColor) : .secondary)
-                    }.buttonStyle(.plain)
+        // The label closure captures the latest snapshot from ForEach; reading
+        // `label.color` here always reflects whatever the swatch has just set.
+        HStack(alignment: .top, spacing: 10) {
+            ColorSwatchButton(
+                hex: labelColorBinding(for: label.id),
+                popoverTitle: labelName.isEmpty ? L10n.newLabel : labelName
+            )
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    TextField(L10n.namePlaceholder, text: $labelName)
+                        .textFieldStyle(.plain)
+                        .font(.subheadline)
+                    Spacer()
+                    Button {
+                        var updated = label
+                        updated.name = labelName
+                        updated.icon = labelIcon
+                        store.updateLabel(updated)
+                        editingLabelId = nil
+                    } label: {
+                        Text(L10n.done).font(.caption.weight(.semibold)).foregroundStyle(label.color)
+                    }
+                    .buttonStyle(.plain)
                 }
-            }
-            HStack {
-                Spacer()
-                Button {
-                    var updated = label
-                    updated.name = labelName
-                    updated.colorHex = labelColor
-                    updated.icon = labelIcon
-                    store.updateLabel(updated)
-                    editingLabelId = nil
-                } label: {
-                    Text(L10n.done).font(.caption.weight(.semibold)).foregroundStyle(accent)
-                }.buttonStyle(.plain)
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 5), spacing: 6) {
+                    ForEach(TaskLabel.presetIcons, id: \.self) { icon in
+                        Button { labelIcon = icon } label: {
+                            Image(systemName: icon)
+                                .font(.system(size: 14))
+                                .frame(width: 32, height: 32)
+                                .background(RoundedRectangle(cornerRadius: 6).fill(labelIcon == icon ? label.color.opacity(0.18) : Color.clear))
+                                .overlay(RoundedRectangle(cornerRadius: 6).stroke(labelIcon == icon ? label.color : Color.clear, lineWidth: 1))
+                                .foregroundStyle(labelIcon == icon ? label.color : .secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
         }
         .padding(8)
@@ -688,7 +702,6 @@ struct SettingsView: View {
         store.addLabel(name: L10n.newLabel, colorHex: ColorPalette.presets.randomElement()!.hex, icon: "tag")
         let newLabel = store.labelsForActiveList.last!
         labelName = newLabel.name
-        labelColor = newLabel.colorHex
         labelIcon = newLabel.icon
         editingLabelId = newLabel.id
     }
