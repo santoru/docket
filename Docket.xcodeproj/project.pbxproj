@@ -48,6 +48,8 @@
 		688FF0252FE2A27100147993 /* menubar-icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 688FEFFD2FE2A27100147993 /* menubar-icon@2x.png */; };
 		688FF0262FE2A27100147993 /* menubar-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 688FEFFC2FE2A27100147993 /* menubar-icon.png */; };
 		688FF0272FE2A27100147993 /* icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 688FEFF82FE2A27100147993 /* icon.icns */; };
+		688FF0292FE2A27100147993 /* TipJar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF02A2FE2A27100147993 /* TipJar.swift */; };
+		688FF02B2FE2A27100147993 /* TipJarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF02C2FE2A27100147993 /* TipJarView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -95,6 +97,8 @@
 		688FEFFC2FE2A27100147993 /* menubar-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menubar-icon.png"; sourceTree = "<group>"; };
 		688FEFFD2FE2A27100147993 /* menubar-icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menubar-icon@2x.png"; sourceTree = "<group>"; };
 		688FF0282FE2A27100147993 /* Docket.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Docket.entitlements; sourceTree = "<group>"; };
+		688FF02A2FE2A27100147993 /* TipJar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipJar.swift; sourceTree = "<group>"; };
+		688FF02C2FE2A27100147993 /* TipJarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipJarView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -149,6 +153,7 @@
 				688FEFDD2FE2A27100147993 /* NotificationManager.swift */,
 				688FEFDE2FE2A27100147993 /* RemindersSync.swift */,
 				688FEFDF2FE2A27100147993 /* Store.swift */,
+				688FF02A2FE2A27100147993 /* TipJar.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -175,6 +180,7 @@
 				688FEFF12FE2A27100147993 /* TaskRowView.swift */,
 				688FEFF22FE2A27100147993 /* ThemedToggle.swift */,
 				688FEFF32FE2A27100147993 /* TimePickerView.swift */,
+				688FF02C2FE2A27100147993 /* TipJarView.swift */,
 				688FEFF42FE2A27100147993 /* UndoToast.swift */,
 				688FEFF52FE2A27100147993 /* VScroll.swift */,
 			);
@@ -310,6 +316,8 @@
 				688FF0212FE2A27100147993 /* ReminderOffset.swift in Sources */,
 				688FF0222FE2A27100147993 /* ContentView.swift in Sources */,
 				688FF0232FE2A27100147993 /* Store.swift in Sources */,
+				688FF0292FE2A27100147993 /* TipJar.swift in Sources */,
+				688FF02B2FE2A27100147993 /* TipJarView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
