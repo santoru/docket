@@ -8,6 +8,7 @@ import SwiftUI
 struct LabelPickerView: View {
     @Binding var selectedIds: [UUID]
     var store = Store.shared
+    @AppStorage("appTheme") private var themeRaw: Int = AppTheme.white.rawValue
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -18,6 +19,7 @@ struct LabelPickerView: View {
                 FlowLayout(spacing: 6) {
                     ForEach(store.labelsForActiveList) { label in
                         let isSelected = selectedIds.contains(label.id)
+                        let adaptedColor = label.color.adaptedForCurrentScheme(themeRaw: themeRaw)
                         Button {
                             if isSelected { selectedIds.removeAll { $0 == label.id } }
                             else { selectedIds.append(label.id) }
@@ -30,9 +32,9 @@ struct LabelPickerView: View {
                             }
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
-                            .background(Capsule().fill(isSelected ? label.color.opacity(0.2) : Color.gray.opacity(0.1)))
-                            .overlay(Capsule().stroke(isSelected ? label.color : Color.gray.opacity(0.3), lineWidth: 1))
-                            .foregroundStyle(isSelected ? label.color : .secondary)
+                            .background(Capsule().fill(isSelected ? adaptedColor.opacity(0.2) : Color.gray.opacity(0.1)))
+                            .overlay(Capsule().stroke(isSelected ? adaptedColor : Color.gray.opacity(0.3), lineWidth: 1))
+                            .foregroundStyle(isSelected ? adaptedColor : .secondary)
                         }
                         .buttonStyle(.plain)
                     }

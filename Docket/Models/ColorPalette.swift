@@ -124,4 +124,25 @@ extension Color {
         let b = Int((max(0, min(1, Double(ns.blueComponent))) * 255).rounded())
         return String(format: "#%02X%02X%02X", r, g, b)
     }
+
+    /// Returns a lightened variant of this color when the current theme is dark,
+    /// ensuring label pills remain readable against dark backgrounds.
+    func adaptedForCurrentScheme(themeRaw: Int) -> Color {
+        let isDark = ThemeManager.resolvedIsDark(themeRaw: themeRaw)
+        guard isDark, let ns = NSColor(self).usingColorSpace(.sRGB) else { return self }
+        let r = Double(ns.redComponent)
+        let g = Double(ns.greenComponent)
+        let b = Double(ns.blueComponent)
+        // Perceived luminance (ITU-R BT.601)
+        let lum = 0.299 * r + 0.587 * g + 0.114 * b
+        // If already bright enough, keep as-is
+        if lum > 0.45 { return self }
+        // Lighten by mixing toward white
+        let factor = 0.55
+        return Color(
+            red: r + (1 - r) * factor,
+            green: g + (1 - g) * factor,
+            blue: b + (1 - b) * factor
+        )
+    }
 }

@@ -35,12 +35,13 @@ struct TaskRowView: View {
                     }
                     if !item.labelIds.isEmpty {
                         ForEach(Store.shared.labels.filter { item.labelIds.contains($0.id) }) { label in
+                            let adaptedColor = label.color.adaptedForCurrentScheme(themeRaw: themeRaw)
                             Text(label.name)
                                 .font(.system(size: 9, weight: .medium))
                                 .padding(.horizontal, 5)
                                 .padding(.vertical, 1)
-                                .background(Capsule().fill(label.color.opacity(0.15)))
-                                .foregroundStyle(label.color)
+                                .background(Capsule().fill(adaptedColor.opacity(0.15)))
+                                .foregroundStyle(adaptedColor)
                         }
                     }
                 }
