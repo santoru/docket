@@ -43,6 +43,7 @@
 "field.notes" = "Aggiungi note...";
 "field.priority" = "Priorità";
 "field.labels" = "Etichette";
+"field.icon" = "Icona";
 "field.noLabels" = "Nessuna etichetta";
 "field.matrix" = "Matrice";
 "field.dueDate" = "Scadenza";

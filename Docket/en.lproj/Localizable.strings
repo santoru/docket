@@ -43,6 +43,7 @@
 "field.notes" = "Add notes...";
 "field.priority" = "Priority";
 "field.labels" = "Labels";
+"field.icon" = "Icon";
 "field.noLabels" = "No labels yet";
 "field.matrix" = "Matrix";
 "field.dueDate" = "Due date";

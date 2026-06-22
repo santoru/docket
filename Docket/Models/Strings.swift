@@ -59,6 +59,7 @@ enum L10n {
     static let notesPlaceholder = s("field.notes", "Add notes...")
     static let priority = s("field.priority", "Priority")
     static let labels = s("field.labels", "Labels")
+    static let icon = s("field.icon", "Icon")
     static let noLabels = s("field.noLabels", "No labels yet")
     static let matrix = s("field.matrix", "Matrix")
     static let dueDate = s("field.dueDate", "Due date")

@@ -549,7 +549,6 @@ struct SettingsView: View {
 
     @State private var editingLabelId: UUID?
     @State private var labelName = ""
-    @State private var labelIcon = "tag"
     @State private var hoveredLabelId: UUID?
     @State private var labelToDelete: TaskLabel?
     @State private var showLabelDeleteConfirm = false
@@ -570,11 +569,7 @@ struct SettingsView: View {
                 } else {
                     VStack(spacing: 4) {
                         ForEach(store.labelsForActiveList) { label in
-                            if editingLabelId == label.id {
-                                labelEditRow(label: label)
-                            } else {
-                                labelDisplayRow(label: label)
-                            }
+                            labelRow(label: label)
                         }
                     }
                 }
@@ -582,36 +577,71 @@ struct SettingsView: View {
         }
     }
 
-    private func labelDisplayRow(label: TaskLabel) -> some View {
-        let showActions = hoveredLabelId == label.id
+    /// Single row template that renders the label in either display or edit
+    /// mode. The leading [color swatch | icon picker] cluster is identical
+    /// in both — color and icon are picked through their popovers and persist
+    /// immediately. The edit form therefore reduces to the name field, and
+    /// the trailing affordance flips between [pencil + trash] (display) and
+    /// a single [checkmark] (edit).
+    private func labelRow(label: TaskLabel) -> some View {
+        let isEditing = editingLabelId == label.id
+        let showHover = hoveredLabelId == label.id
+        let popoverTitle = isEditing
+            ? (labelName.isEmpty ? L10n.newLabel : labelName)
+            : label.name
+
         return HStack(spacing: 10) {
             ColorSwatchButton(
                 hex: labelColorBinding(for: label.id),
-                popoverTitle: label.name
+                popoverTitle: popoverTitle
             )
-            Image(systemName: label.icon).font(.system(size: 11)).foregroundStyle(label.color)
-            Text(label.name).font(.subheadline)
+            IconPickerButton(
+                icon: labelIconBinding(for: label.id),
+                tint: label.color,
+                popoverTitle: popoverTitle
+            )
+            if isEditing {
+                TextField(L10n.namePlaceholder, text: $labelName)
+                    .textFieldStyle(.plain)
+                    .font(.subheadline)
+                    .onSubmit { commitLabel(label) }
+            } else {
+                Text(label.name).font(.subheadline)
+            }
             Spacer()
             HStack(spacing: 6) {
-                RowActionButton(systemImage: "pencil",
-                                label: L10n.edit,
-                                tint: label.color) {
-                    beginEditingLabel(label)
-                }
-                RowActionButton(systemImage: "trash.fill",
-                                label: L10n.delete,
-                                destructive: true) {
-                    requestDeleteLabel(label)
+                if isEditing {
+                    RowActionButton(systemImage: "checkmark",
+                                    label: L10n.done,
+                                    tint: label.color) {
+                        commitLabel(label)
+                    }
+                } else {
+                    RowActionButton(systemImage: "pencil",
+                                    label: L10n.edit,
+                                    tint: label.color) {
+                        beginEditingLabel(label)
+                    }
+                    RowActionButton(systemImage: "trash.fill",
+                                    label: L10n.delete,
+                                    destructive: true) {
+                        requestDeleteLabel(label)
+                    }
                 }
             }
-            .opacity(showActions ? 1 : 0)
-            .animation(.easeOut(duration: 0.12), value: showActions)
+            .opacity(isEditing || showHover ? 1 : 0)
+            .animation(.easeOut(duration: 0.12), value: isEditing || showHover)
         }
         .padding(.vertical, 6)
         .padding(.horizontal, 8)
-        .background(RoundedRectangle(cornerRadius: 8).fill(label.color.opacity(0.05)))
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(label.color.opacity(isEditing ? 0.10 : 0.05))
+        )
         .contentShape(Rectangle())
-        .onTapGesture { beginEditingLabel(label) }
+        .onTapGesture {
+            if !isEditing { beginEditingLabel(label) }
+        }
         .onHover { isIn in
             if isIn { hoveredLabelId = label.id }
             else if hoveredLabelId == label.id { hoveredLabelId = nil }
@@ -626,8 +656,20 @@ struct SettingsView: View {
 
     private func beginEditingLabel(_ label: TaskLabel) {
         labelName = label.name
-        labelIcon = label.icon
         editingLabelId = label.id
+    }
+
+    /// Commits the in-progress label name to the store and exits edit mode.
+    /// Color and icon are persisted live via their bindings, so the only
+    /// field this commits is `name`.
+    private func commitLabel(_ label: TaskLabel) {
+        guard var fresh = store.labels.first(where: { $0.id == label.id }) else {
+            editingLabelId = nil
+            return
+        }
+        fresh.name = labelName
+        store.updateLabel(fresh)
+        editingLabelId = nil
     }
 
     private func requestDeleteLabel(_ label: TaskLabel) {
@@ -637,8 +679,8 @@ struct SettingsView: View {
 
     /// Binding that reads/writes the chosen label's `colorHex` directly
     /// through the store. Mirrors `listColorBinding(for:)` so colour changes
-    /// from the row swatch persist immediately, independent of the
-    /// name + icon edit form.
+    /// from the row swatch persist immediately, independent of the name
+    /// edit form.
     private func labelColorBinding(for labelId: UUID) -> Binding<String> {
         Binding(
             get: {
@@ -654,55 +696,26 @@ struct SettingsView: View {
         )
     }
 
-    private func labelEditRow(label: TaskLabel) -> some View {
-        // The label closure captures the latest snapshot from ForEach; reading
-        // `label.color` here always reflects whatever the swatch has just set.
-        HStack(alignment: .top, spacing: 10) {
-            ColorSwatchButton(
-                hex: labelColorBinding(for: label.id),
-                popoverTitle: labelName.isEmpty ? L10n.newLabel : labelName
-            )
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
-                    TextField(L10n.namePlaceholder, text: $labelName)
-                        .textFieldStyle(.plain)
-                        .font(.subheadline)
-                    Spacer()
-                    Button {
-                        var updated = label
-                        updated.name = labelName
-                        updated.icon = labelIcon
-                        store.updateLabel(updated)
-                        editingLabelId = nil
-                    } label: {
-                        Text(L10n.done).font(.caption.weight(.semibold)).foregroundStyle(label.color)
-                    }
-                    .buttonStyle(.plain)
-                }
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 5), spacing: 6) {
-                    ForEach(TaskLabel.presetIcons, id: \.self) { icon in
-                        Button { labelIcon = icon } label: {
-                            Image(systemName: icon)
-                                .font(.system(size: 14))
-                                .frame(width: 32, height: 32)
-                                .background(RoundedRectangle(cornerRadius: 6).fill(labelIcon == icon ? label.color.opacity(0.18) : Color.clear))
-                                .overlay(RoundedRectangle(cornerRadius: 6).stroke(labelIcon == icon ? label.color : Color.clear, lineWidth: 1))
-                                .foregroundStyle(labelIcon == icon ? label.color : .secondary)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
+    /// Binding that reads/writes the chosen label's `icon` directly
+    /// through the store. Same shape as `labelColorBinding`.
+    private func labelIconBinding(for labelId: UUID) -> Binding<String> {
+        Binding(
+            get: {
+                store.labels.first(where: { $0.id == labelId })?.icon ?? "tag"
+            },
+            set: { newIcon in
+                guard var label = store.labels.first(where: { $0.id == labelId })
+                else { return }
+                label.icon = newIcon
+                store.updateLabel(label)
             }
-        }
-        .padding(8)
-        .background(RoundedRectangle(cornerRadius: 8).fill(.quaternary.opacity(0.2)))
+        )
     }
 
     private func addNewLabel() {
         store.addLabel(name: L10n.newLabel, colorHex: ColorPalette.presets.randomElement()!.hex, icon: "tag")
         let newLabel = store.labelsForActiveList.last!
         labelName = newLabel.name
-        labelIcon = newLabel.icon
         editingLabelId = newLabel.id
     }
 

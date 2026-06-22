@@ -52,6 +52,8 @@ swiftc \
     "$SRC_DIR/Views/LabelPickerView.swift" \
     "$SRC_DIR/Views/ColorPickerGrid.swift" \
     "$SRC_DIR/Views/ColorSwatchButton.swift" \
+    "$SRC_DIR/Views/IconPickerGrid.swift" \
+    "$SRC_DIR/Views/IconPickerButton.swift" \
     "$SRC_DIR/Views/RowActionButton.swift" \
     "$SRC_DIR/Views/QuadrantPickerView.swift" \
     "$SRC_DIR/Views/MatrixView.swift" \
