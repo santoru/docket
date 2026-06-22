@@ -404,7 +404,6 @@ struct SettingsView: View {
     @State private var editingName = ""
     @State private var listToDelete: TaskList?
     @State private var showDeleteConfirm = false
-    @State private var colorPickingListId: UUID?
     @State private var hoveredListId: UUID?
 
     private var listsSection: some View {
@@ -496,49 +495,17 @@ struct SettingsView: View {
     // MARK: - List color swatch
 
     /// Tappable colored square shown at the leading edge of each list row in
-    /// the Lists section. Opens a popover with the shared color picker.
+    /// the Lists section. Wraps the shared `ColorSwatchButton` so the popover,
+    /// palette, and persistence path are identical to every other color
+    /// affordance in Settings.
     @ViewBuilder
     private func listColorSwatch(for list: TaskList) -> some View {
         let isActive = list.id == store.activeListId
-        Button {
-            colorPickingListId = list.id
-        } label: {
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(list.color)
-                .frame(width: 14, height: 14)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4, style: .continuous)
-                        .stroke(accent, lineWidth: isActive ? 1.5 : 0)
-                        .padding(-2)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4, style: .continuous)
-                        .stroke(.black.opacity(0.08), lineWidth: 0.5)
-                )
-        }
-        .buttonStyle(.plain)
-        .help(L10n.color)
-        .popover(isPresented: Binding(
-            get: { colorPickingListId == list.id },
-            set: { if !$0 { colorPickingListId = nil } }
-        ), arrowEdge: .leading) {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 8) {
-                    RoundedRectangle(cornerRadius: 4, style: .continuous)
-                        .fill(list.color)
-                        .frame(width: 14, height: 14)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                                .stroke(.black.opacity(0.08), lineWidth: 0.5)
-                        )
-                    Text(list.name)
-                        .font(.subheadline.weight(.semibold))
-                }
-                ColorPickerGrid(hex: listColorBinding(for: list.id))
-            }
-            .padding(12)
-            .frame(width: 240)
-        }
+        ColorSwatchButton(
+            hex: listColorBinding(for: list.id),
+            popoverTitle: list.name,
+            ringColor: isActive ? accent : nil
+        )
     }
 
     /// Binding that reads/writes the chosen list's `colorHex` directly on the
@@ -823,7 +790,7 @@ struct SettingsView: View {
     @AppStorage("matrixDoFirstColor") private var doFirstColor = "#EF4444"
     @AppStorage("matrixScheduleColor") private var scheduleColor = "#3B82F6"
     @AppStorage("matrixDelegateColor") private var delegateColor = "#F59E0B"
-    @AppStorage("matrixEliminateColor") private var eliminateColor = "#9CA3AF"
+    @AppStorage("matrixEliminateColor") private var eliminateColor = "#64748B"
     @AppStorage("matrixDoFirstLabel") private var doFirstLabel = "Do First"
     @AppStorage("matrixScheduleLabel") private var scheduleLabel = "Schedule"
     @AppStorage("matrixDelegateLabel") private var delegateLabel = "Delegate"
@@ -831,8 +798,6 @@ struct SettingsView: View {
     @AppStorage("matrixLabelLength") private var matrixLabelLength = 14
     @AppStorage("matrixShowAxes") private var matrixShowAxes = true
     @AppStorage("matrixShowBadges") private var matrixShowBadges = true
-
-    private let matrixColorPresets = ["#EF4444", "#F59E0B", "#10B981", "#3B82F6", "#8B5CF6", "#EC4899", "#6B7280", "#14B8A6"]
 
     private var matrixSection: some View {
         card {
@@ -888,25 +853,11 @@ struct SettingsView: View {
     }
 
     private func matrixQuadrantRow(label: Binding<String>, color: Binding<String>, defaultLabel: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 8) {
-                // Editable label
-                TextField(defaultLabel, text: label)
-                    .textFieldStyle(.plain)
-                    .font(.subheadline)
-                Spacer()
-            }
-            HStack(spacing: 5) {
-                ForEach(matrixColorPresets, id: \.self) { hex in
-                    Button { color.wrappedValue = hex } label: {
-                        Circle()
-                            .fill(Color(hex: hex))
-                            .frame(width: 16, height: 16)
-                            .overlay(Circle().stroke(.white, lineWidth: color.wrappedValue == hex ? 2 : 0))
-                            .overlay(Circle().stroke(Color(hex: hex).opacity(0.5), lineWidth: color.wrappedValue == hex ? 1 : 0).scaleEffect(1.3))
-                    }.buttonStyle(.plain)
-                }
-            }
+        HStack(spacing: 10) {
+            ColorSwatchButton(hex: color, popoverTitle: defaultLabel)
+            TextField(defaultLabel, text: label)
+                .textFieldStyle(.plain)
+                .font(.subheadline)
         }
         .padding(.vertical, 4)
     }
