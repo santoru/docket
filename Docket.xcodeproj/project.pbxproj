@@ -50,6 +50,10 @@
 		688FF0272FE2A27100147993 /* icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 688FEFF82FE2A27100147993 /* icon.icns */; };
 		688FF0292FE2A27100147993 /* TipJar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF02A2FE2A27100147993 /* TipJar.swift */; };
 		688FF02B2FE2A27100147993 /* TipJarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF02C2FE2A27100147993 /* TipJarView.swift */; };
+		688FF02D2FE2A27100147993 /* ColorPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF02E2FE2A27100147993 /* ColorPalette.swift */; };
+		688FF02F2FE2A27100147993 /* IconPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF0302FE2A27100147993 /* IconPalette.swift */; };
+		688FF0312FE2A27100147993 /* ColorPickerGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF0322FE2A27100147993 /* ColorPickerGrid.swift */; };
+		688FF0332FE2A27100147993 /* IconPickerGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF0342FE2A27100147993 /* IconPickerGrid.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -99,6 +103,10 @@
 		688FF0282FE2A27100147993 /* Docket.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Docket.entitlements; sourceTree = "<group>"; };
 		688FF02A2FE2A27100147993 /* TipJar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipJar.swift; sourceTree = "<group>"; };
 		688FF02C2FE2A27100147993 /* TipJarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipJarView.swift; sourceTree = "<group>"; };
+		688FF02E2FE2A27100147993 /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
+		688FF0302FE2A27100147993 /* IconPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPalette.swift; sourceTree = "<group>"; };
+		688FF0322FE2A27100147993 /* ColorPickerGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPickerGrid.swift; sourceTree = "<group>"; };
+		688FF0342FE2A27100147993 /* IconPickerGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPickerGrid.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +140,8 @@
 			isa = PBXGroup;
 			children = (
 				688FEFD02FE2A27100147993 /* AppTheme.swift */,
+				688FF02E2FE2A27100147993 /* ColorPalette.swift */,
+				688FF0302FE2A27100147993 /* IconPalette.swift */,
 				688FEFD12FE2A27100147993 /* MatrixLayout.swift */,
 				688FEFD22FE2A27100147993 /* Quadrant.swift */,
 				688FEFD32FE2A27100147993 /* Recurrence.swift */,
@@ -162,10 +172,12 @@
 			isa = PBXGroup;
 			children = (
 				688FEFE12FE2A27100147993 /* CalendarPickerView.swift */,
+				688FF0322FE2A27100147993 /* ColorPickerGrid.swift */,
 				688FEFE22FE2A27100147993 /* CompletedTasksView.swift */,
 				688FEFE32FE2A27100147993 /* ConfettiView.swift */,
 				688FEFE42FE2A27100147993 /* ContentView.swift */,
 				688FEFE52FE2A27100147993 /* CreateTaskView.swift */,
+				688FF0342FE2A27100147993 /* IconPickerGrid.swift */,
 				688FEFE62FE2A27100147993 /* LabelPickerView.swift */,
 				688FEFE72FE2A27100147993 /* MatrixView.swift */,
 				688FEFE82FE2A27100147993 /* OnboardingView.swift */,
@@ -318,6 +330,10 @@
 				688FF0232FE2A27100147993 /* Store.swift in Sources */,
 				688FF0292FE2A27100147993 /* TipJar.swift in Sources */,
 				688FF02B2FE2A27100147993 /* TipJarView.swift in Sources */,
+				688FF02D2FE2A27100147993 /* ColorPalette.swift in Sources */,
+				688FF02F2FE2A27100147993 /* IconPalette.swift in Sources */,
+				688FF0312FE2A27100147993 /* ColorPickerGrid.swift in Sources */,
+				688FF0332FE2A27100147993 /* IconPickerGrid.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
