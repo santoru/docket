@@ -221,7 +221,7 @@ struct TaskListView: View {
                     HStack(spacing: 6) {
                         labelFilterPill(name: "All", color: accent, id: nil)
                         ForEach(store.labelsForActiveList) { label in
-                            labelFilterPill(name: label.name, color: label.color, id: label.id)
+                            labelFilterPill(name: label.name, color: label.color.adaptedForCurrentScheme(themeRaw: themeRaw), id: label.id)
                         }
                     }
                     .padding(.vertical, 2)

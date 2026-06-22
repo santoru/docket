@@ -1078,7 +1078,7 @@ struct SettingsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(useGlass ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(Color.white.opacity(0.65)))
+                    .fill(useGlass ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(ThemeManager.resolvedCardBackground(themeRaw: themeRaw)))
             )
             .overlay(useGlass ? nil : RoundedRectangle(cornerRadius: 10).stroke(.quaternary, lineWidth: 0.5))
     }
