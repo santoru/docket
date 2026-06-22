@@ -2,7 +2,7 @@
 
 All notable changes to Docket will be documented in this file.
 
-## [Unreleased]
+## [1.12.0] — 2026-06-22
 
 ### 🎨 Colors & Icons
 - **Expanded color palette to 20 curated colors** (was 8). Hand-tuned mid-tones organized by hue family (warms → greens → blues/purples → pinks/neutrals) so labels and lists read clearly on every theme.
