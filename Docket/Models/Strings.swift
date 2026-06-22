@@ -88,6 +88,7 @@ enum L10n {
     static let shortcut = s("settings.shortcut", "Shortcut")
     static let theme = s("settings.theme", "Theme")
     static let color = s("settings.color", "Color")
+    static let colorCustom = s("settings.color.custom", "Custom…")
     static let intensity = s("settings.intensity", "Intensity")
     static let display = s("settings.display", "Display")
     static let liquidGlass = s("settings.liquidGlass", "Liquid Glass")

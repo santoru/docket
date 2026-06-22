@@ -12,7 +12,7 @@ struct TaskLabel: Identifiable, Codable, Hashable {
     var icon: String
     var listId: UUID
 
-    init(name: String, colorHex: String = "#6B7BFF", icon: String = "tag", listId: UUID) {
+    init(name: String, colorHex: String = ColorPalette.defaultHex, icon: String = "tag", listId: UUID) {
         self.id = UUID()
         self.name = name
         self.colorHex = colorHex
@@ -25,16 +25,9 @@ struct TaskLabel: Identifiable, Codable, Hashable {
     }
 
     /// Preset colors for the label color picker.
-    static let presetColors: [(name: String, hex: String)] = [
-        ("Red", "#FF6B6B"),
-        ("Orange", "#FFA94D"),
-        ("Yellow", "#FFD43B"),
-        ("Green", "#51CF66"),
-        ("Teal", "#38D9A9"),
-        ("Blue", "#6B7BFF"),
-        ("Purple", "#B197FC"),
-        ("Pink", "#F06595"),
-    ]
+    /// Sourced from the shared `ColorPalette` so Labels and Lists use the same
+    /// curated set.
+    static var presetColors: [(name: String, hex: String)] { ColorPalette.presets }
 
     /// Preset icons for the label icon picker.
     static let presetIcons = [

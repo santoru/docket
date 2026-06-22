@@ -73,6 +73,7 @@
 "settings.shortcut" = "Scorciatoia";
 "settings.theme" = "Tema";
 "settings.color" = "Colore";
+"settings.color.custom" = "Personalizzato…";
 "settings.intensity" = "Intensità";
 "settings.display" = "Visualizzazione";
 "settings.liquidGlass" = "Liquid Glass";

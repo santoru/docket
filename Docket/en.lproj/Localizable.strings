@@ -73,6 +73,7 @@
 "settings.shortcut" = "Shortcut";
 "settings.theme" = "Theme";
 "settings.color" = "Color";
+"settings.color.custom" = "Custom…";
 "settings.intensity" = "Intensity";
 "settings.display" = "Display";
 "settings.liquidGlass" = "Liquid Glass";

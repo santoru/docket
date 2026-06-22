@@ -393,6 +393,7 @@ struct SettingsView: View {
     @State private var editingName = ""
     @State private var listToDelete: TaskList?
     @State private var showDeleteConfirm = false
+    @State private var colorPickingListId: UUID?
 
     private var listsSection: some View {
         card {
@@ -414,9 +415,7 @@ struct SettingsView: View {
                 VStack(spacing: 4) {
                     ForEach(store.lists) { list in
                         HStack(spacing: 10) {
-                            Circle()
-                                .fill(list.id == store.activeListId ? accent : Color.gray.opacity(0.3))
-                                .frame(width: 8, height: 8)
+                            listColorSwatch(for: list)
 
                             if editingListId == list.id {
                                 TextField(L10n.namePlaceholder, text: $editingName, onCommit: {
@@ -481,11 +480,76 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - List color swatch
+
+    /// Tappable colored square shown at the leading edge of each list row in
+    /// the Lists section. Opens a popover with the shared color picker.
+    @ViewBuilder
+    private func listColorSwatch(for list: TaskList) -> some View {
+        let isActive = list.id == store.activeListId
+        Button {
+            colorPickingListId = list.id
+        } label: {
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(list.color)
+                .frame(width: 14, height: 14)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .stroke(accent, lineWidth: isActive ? 1.5 : 0)
+                        .padding(-2)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .stroke(.black.opacity(0.08), lineWidth: 0.5)
+                )
+        }
+        .buttonStyle(.plain)
+        .help(L10n.color)
+        .popover(isPresented: Binding(
+            get: { colorPickingListId == list.id },
+            set: { if !$0 { colorPickingListId = nil } }
+        ), arrowEdge: .leading) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .fill(list.color)
+                        .frame(width: 14, height: 14)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                .stroke(.black.opacity(0.08), lineWidth: 0.5)
+                        )
+                    Text(list.name)
+                        .font(.subheadline.weight(.semibold))
+                }
+                ColorPickerGrid(hex: listColorBinding(for: list.id))
+            }
+            .padding(12)
+            .frame(width: 240)
+        }
+    }
+
+    /// Binding that reads/writes the chosen list's `colorHex` directly on the
+    /// store (and persists). Reading from the live store rather than a captured
+    /// snapshot ensures the picker always reflects the current state.
+    private func listColorBinding(for listId: UUID) -> Binding<String> {
+        Binding(
+            get: {
+                store.lists.first(where: { $0.id == listId })?.resolvedHex
+                    ?? ColorPalette.defaultHex
+            },
+            set: { newHex in
+                guard let i = store.lists.firstIndex(where: { $0.id == listId }) else { return }
+                store.lists[i].colorHex = newHex
+                store.persist()
+            }
+        )
+    }
+
     // MARK: - Labels Settings
 
     @State private var editingLabelId: UUID?
     @State private var labelName = ""
-    @State private var labelColor = TaskLabel.presetColors[5].hex
+    @State private var labelColor = ColorPalette.defaultHex
     @State private var labelIcon = "tag"
 
     private var labelsSection: some View {
@@ -540,20 +604,25 @@ struct SettingsView: View {
     }
 
     private func labelEditRow(label: TaskLabel) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
+            // Live preview of the label as it will appear on a task.
+            HStack(spacing: 4) {
+                Image(systemName: labelIcon).font(.system(size: 11))
+                Text(labelName.isEmpty ? L10n.newLabel : labelName)
+                    .font(.subheadline.weight(.medium))
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(Capsule().fill(Color(hex: labelColor).opacity(0.15)))
+            .foregroundStyle(Color(hex: labelColor))
+
             TextField(L10n.namePlaceholder, text: $labelName)
                 .textFieldStyle(.plain).font(.caption)
                 .padding(5)
                 .background(RoundedRectangle(cornerRadius: 5).fill(.quaternary.opacity(0.5)))
-            HStack(spacing: 4) {
-                ForEach(TaskLabel.presetColors, id: \.hex) { preset in
-                    Button { labelColor = preset.hex } label: {
-                        Circle().fill(Color(hex: preset.hex))
-                            .frame(width: 16, height: 16)
-                            .overlay(Circle().stroke(.white, lineWidth: labelColor == preset.hex ? 2 : 0))
-                    }.buttonStyle(.plain)
-                }
-            }
+
+            ColorPickerGrid(hex: $labelColor)
+
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 5), spacing: 6) {
                 ForEach(TaskLabel.presetIcons, id: \.self) { icon in
                     Button { labelIcon = icon } label: {
@@ -580,12 +649,12 @@ struct SettingsView: View {
                 }.buttonStyle(.plain)
             }
         }
-        .padding(6)
-        .background(RoundedRectangle(cornerRadius: 6).fill(.quaternary.opacity(0.2)))
+        .padding(8)
+        .background(RoundedRectangle(cornerRadius: 8).fill(.quaternary.opacity(0.2)))
     }
 
     private func addNewLabel() {
-        store.addLabel(name: L10n.newLabel, colorHex: TaskLabel.presetColors.randomElement()!.hex, icon: "tag")
+        store.addLabel(name: L10n.newLabel, colorHex: ColorPalette.presets.randomElement()!.hex, icon: "tag")
         let newLabel = store.labelsForActiveList.last!
         labelName = newLabel.name
         labelColor = newLabel.colorHex
