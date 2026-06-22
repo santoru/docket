@@ -65,6 +65,9 @@ struct ContentView: View {
                     path = [.create]
                 }
             }
+            AppDelegate.shared?.onTipJar = {
+                path = [.settings]
+            }
             // Register popover close callback — reset UI except task edit/create
             AppDelegate.shared?.onPopoverClose = {
                 if let last = path.last {

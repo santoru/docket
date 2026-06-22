@@ -28,6 +28,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var lastHotkeyTime: Date = .distantPast
 
     var onQuickAdd: (() -> Void)?
+    var onTipJar: (() -> Void)?
     var onPopoverClose: (() -> Void)?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -97,6 +98,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let todayCount = Store.shared.badgeCount
         menu.addItem(NSMenuItem(title: L10n.menuDueToday(todayCount), action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "☕ Tip Jar", action: #selector(menuTipJar), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "GitHub", action: #selector(menuGitHub), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: L10n.menuQuit, action: #selector(menuQuit), keyEquivalent: "q"))
 
@@ -108,6 +110,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     @objc private func menuNewTask() {
         if !popover.isShown { togglePopover() }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in self?.onQuickAdd?() }
+    }
+
+    @objc private func menuTipJar() {
+        if !popover.isShown { togglePopover() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in self?.onTipJar?() }
     }
 
     @objc private func menuGitHub() {
