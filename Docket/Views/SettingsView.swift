@@ -435,7 +435,16 @@ struct SettingsView: View {
                                     .font(.body)
                                     .focused($listNameFocused)
                                     .onSubmit { commitListRename(list) }
-                                    .onAppear { listNameFocused = true }
+                                    .onAppear {
+                                        // Flicker false → true so every TextField gets a fresh
+                                        // focus event, even if the previous row's edit left
+                                        // `listNameFocused` set. NSTextField only runs its
+                                        // select-all-on-first-responder hook on a clean focus
+                                        // assignment, so without the flicker the second row's
+                                        // text wouldn't be selected on auto-commit-then-switch.
+                                        listNameFocused = false
+                                        DispatchQueue.main.async { listNameFocused = true }
+                                    }
                                 Spacer()
                                 Button {
                                     commitListRename(list)
@@ -643,7 +652,13 @@ struct SettingsView: View {
                     .font(.subheadline)
                     .focused($labelNameFocused)
                     .onSubmit { commitLabel(label) }
-                    .onAppear { labelNameFocused = true }
+                    .onAppear {
+                        // Flicker false → true so every TextField gets a fresh focus
+                        // event. See the matching block in the list rename TextField
+                        // for the rationale.
+                        labelNameFocused = false
+                        DispatchQueue.main.async { labelNameFocused = true }
+                    }
             } else {
                 Text(label.name).font(.subheadline)
             }
