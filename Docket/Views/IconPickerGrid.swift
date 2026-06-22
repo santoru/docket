@@ -48,7 +48,7 @@ struct IconPickerGrid: View {
                 .animation(.spring(response: 0.25, dampingFraction: 0.75), value: isSelected)
         }
         .buttonStyle(.plain)
-        .help(name)
-        .accessibilityLabel(Text(name))
+        .help(IconPalette.displayName(name))
+        .accessibilityLabel(Text(IconPalette.displayName(name)))
     }
 }

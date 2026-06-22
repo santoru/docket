@@ -72,13 +72,3 @@ struct RowActionButton: View {
         AnyShapeStyle(effectiveTint.opacity(hovered ? 0 : 0.18))
     }
 }
-
-/// Adds a small press-down scale to a button without changing its layout.
-/// Pairs cleanly with custom `.background(...)` decorations.
-private struct PressableScaleStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.90 : 1.0)
-            .animation(.easeOut(duration: 0.08), value: configuration.isPressed)
-    }
-}

@@ -263,6 +263,27 @@ func testTaskListColor() {
     expectEqual(round.name, "Travel", "TaskList.name survives encode/decode")
 }
 
+// MARK: - IconPalette
+
+func testIconPalette() {
+    expectEqual(IconPalette.presets.count, 15, "icon palette has exactly 15 icons")
+    let unique = Set(IconPalette.presets)
+    expectEqual(unique.count, IconPalette.presets.count, "all icons are distinct")
+    expect(IconPalette.presets.contains(IconPalette.defaultIcon),
+           "defaultIcon is in the preset list")
+
+    // Every preset has a non-empty localized display name.
+    for icon in IconPalette.presets {
+        let name = IconPalette.displayName(icon)
+        expect(!name.isEmpty, "displayName for '\(icon)' is non-empty")
+    }
+
+    // Unknown icon falls back to its raw symbol name.
+    let unknown = "this.is.not.a.preset"
+    expectEqual(IconPalette.displayName(unknown), unknown,
+                "displayName falls back to the raw symbol for unknown icons")
+}
+
 // MARK: - Run
 
 testDateParser()
@@ -271,6 +292,7 @@ testDueDateFormatter()
 testColorHex()
 testColorPalette()
 testTaskListColor()
+testIconPalette()
 testMatrixLayout()
 testTodoItemCodable()
 testDocketExport()

@@ -68,9 +68,53 @@ enum ColorPalette {
     }
 }
 
-// MARK: - Color → hex
+// MARK: - Color ↔ hex
 
 extension Color {
+    /// Initialize from a hex string. Accepts `#RGB`, `#RGBA`, `#RRGGBB`, and
+    /// `#RRGGBBAA` (the leading `#` is optional). On malformed input it falls
+    /// back to a neutral gray rather than silently producing black.
+    init(hex: String) {
+        let cleaned = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+            .uppercased()
+
+        // Reject anything that isn't valid hex of a supported length.
+        let isHex = cleaned.allSatisfy { $0.isHexDigit }
+        guard isHex, [3, 4, 6, 8].contains(cleaned.count) else {
+            self = Color(red: 0.6, green: 0.6, blue: 0.6) // fallback gray
+            return
+        }
+
+        // Expand shorthand (#RGB / #RGBA) to full form.
+        let full: String
+        if cleaned.count == 3 || cleaned.count == 4 {
+            full = cleaned.map { "\($0)\($0)" }.joined()
+        } else {
+            full = cleaned
+        }
+
+        var value: UInt64 = 0
+        guard Scanner(string: full).scanHexInt64(&value) else {
+            self = Color(red: 0.6, green: 0.6, blue: 0.6)
+            return
+        }
+
+        let r, g, b, a: Double
+        if full.count == 8 {
+            r = Double((value >> 24) & 0xFF) / 255
+            g = Double((value >> 16) & 0xFF) / 255
+            b = Double((value >> 8) & 0xFF) / 255
+            a = Double(value & 0xFF) / 255
+        } else {
+            r = Double((value >> 16) & 0xFF) / 255
+            g = Double((value >> 8) & 0xFF) / 255
+            b = Double(value & 0xFF) / 255
+            a = 1.0
+        }
+        self.init(.sRGB, red: r, green: g, blue: b, opacity: a)
+    }
+
     /// "#RRGGBB" sRGB representation. Returns nil if conversion fails (e.g.
     /// when the underlying NSColor cannot be expressed in sRGB).
     func toHex() -> String? {

@@ -434,15 +434,11 @@ struct SettingsView: View {
                                     .textFieldStyle(.plain)
                                     .font(.body)
                                     .focused($listNameFocused)
-                                    .onSubmit {
-                                        store.renameList(list, to: editingName)
-                                        editingListId = nil
-                                    }
+                                    .onSubmit { commitListRename(list) }
                                     .onAppear { listNameFocused = true }
                                 Spacer()
                                 Button {
-                                    store.renameList(list, to: editingName)
-                                    editingListId = nil
+                                    commitListRename(list)
                                 } label: {
                                     Text(L10n.done).font(.caption.weight(.semibold)).foregroundStyle(accent)
                                 }.buttonStyle(.plain)
@@ -508,7 +504,10 @@ struct SettingsView: View {
         ColorSwatchButton(
             hex: listColorBinding(for: list.id),
             popoverTitle: list.name,
-            ringColor: isActive ? accent : nil
+            ringColor: isActive ? accent : nil,
+            onPopoverChange: { isOpen in
+                refocusListNameIfEditing(closingPopover: !isOpen, list: list)
+            }
         )
     }
 
@@ -532,8 +531,35 @@ struct SettingsView: View {
     // MARK: - List actions
 
     private func beginRenamingList(_ list: TaskList) {
+        // Auto-commit any pending rename on a different list before switching.
+        if let inFlightId = editingListId, inFlightId != list.id,
+           let inFlight = store.lists.first(where: { $0.id == inFlightId }) {
+            commitListRename(inFlight)
+        }
         editingName = list.name
         editingListId = list.id
+    }
+
+    /// Trims whitespace from `editingName` and persists it as the list's new
+    /// name. If the trimmed result is empty, falls back to the list's current
+    /// name so a stray Enter or empty Done doesn't blank the row.
+    private func commitListRename(_ list: TaskList) {
+        let trimmed = editingName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let newName = trimmed.isEmpty ? list.name : trimmed
+        if newName != list.name {
+            store.renameList(list, to: newName)
+        }
+        editingListId = nil
+    }
+
+    /// Re-grabs focus on the list rename TextField after a popover (color
+    /// picker) dismisses, but only if the user is still editing this row.
+    /// `@FocusState` is sticky after focus is yanked away, so we briefly
+    /// flicker it false → true to force a re-focus.
+    private func refocusListNameIfEditing(closingPopover: Bool, list: TaskList) {
+        guard closingPopover, editingListId == list.id else { return }
+        listNameFocused = false
+        DispatchQueue.main.async { listNameFocused = true }
     }
 
     /// Routes a list-delete request through the confirmation alert when the
@@ -598,12 +624,18 @@ struct SettingsView: View {
         return HStack(spacing: 10) {
             ColorSwatchButton(
                 hex: labelColorBinding(for: label.id),
-                popoverTitle: popoverTitle
+                popoverTitle: popoverTitle,
+                onPopoverChange: { isOpen in
+                    refocusLabelNameIfEditing(closingPopover: !isOpen, label: label)
+                }
             )
             IconPickerButton(
                 icon: labelIconBinding(for: label.id),
                 tint: label.color,
-                popoverTitle: popoverTitle
+                popoverTitle: popoverTitle,
+                onPopoverChange: { isOpen in
+                    refocusLabelNameIfEditing(closingPopover: !isOpen, label: label)
+                }
             )
             if isEditing {
                 TextField(L10n.namePlaceholder, text: $labelName)
@@ -662,21 +694,41 @@ struct SettingsView: View {
     // MARK: - Label actions
 
     private func beginEditingLabel(_ label: TaskLabel) {
+        // Auto-commit any pending rename on a different label before switching.
+        if let inFlightId = editingLabelId, inFlightId != label.id,
+           let inFlight = store.labels.first(where: { $0.id == inFlightId }) {
+            commitLabel(inFlight)
+        }
         labelName = label.name
         editingLabelId = label.id
     }
 
     /// Commits the in-progress label name to the store and exits edit mode.
     /// Color and icon are persisted live via their bindings, so the only
-    /// field this commits is `name`.
+    /// field this commits is `name`. Trims whitespace; if the result is
+    /// empty, falls back to the label's current name (so a stray Enter or
+    /// empty checkmark doesn't blank the label).
     private func commitLabel(_ label: TaskLabel) {
         guard var fresh = store.labels.first(where: { $0.id == label.id }) else {
             editingLabelId = nil
             return
         }
-        fresh.name = labelName
-        store.updateLabel(fresh)
+        let trimmed = labelName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let newName = trimmed.isEmpty ? fresh.name : trimmed
+        if newName != fresh.name {
+            fresh.name = newName
+            store.updateLabel(fresh)
+        }
         editingLabelId = nil
+    }
+
+    /// Re-grabs focus on the label rename TextField after a popover (color
+    /// or icon picker) dismisses, but only if the user is still editing
+    /// this row.
+    private func refocusLabelNameIfEditing(closingPopover: Bool, label: TaskLabel) {
+        guard closingPopover, editingLabelId == label.id else { return }
+        labelNameFocused = false
+        DispatchQueue.main.async { labelNameFocused = true }
     }
 
     private func requestDeleteLabel(_ label: TaskLabel) {
@@ -708,7 +760,7 @@ struct SettingsView: View {
     private func labelIconBinding(for labelId: UUID) -> Binding<String> {
         Binding(
             get: {
-                store.labels.first(where: { $0.id == labelId })?.icon ?? "tag"
+                store.labels.first(where: { $0.id == labelId })?.icon ?? IconPalette.defaultIcon
             },
             set: { newIcon in
                 guard var label = store.labels.first(where: { $0.id == labelId })
@@ -720,7 +772,7 @@ struct SettingsView: View {
     }
 
     private func addNewLabel() {
-        store.addLabel(name: L10n.newLabel, colorHex: ColorPalette.presets.randomElement()!.hex, icon: "tag")
+        store.addLabel(name: L10n.newLabel, colorHex: ColorPalette.presets.randomElement()!.hex, icon: IconPalette.defaultIcon)
         let newLabel = store.labelsForActiveList.last!
         labelName = newLabel.name
         editingLabelId = newLabel.id

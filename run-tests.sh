@@ -23,6 +23,7 @@ swiftc \
     "$SRC/Models/SortMode.swift" \
     "$SRC/Models/AppTheme.swift" \
     "$SRC/Models/ColorPalette.swift" \
+    "$SRC/Models/IconPalette.swift" \
     "$SRC/Models/TaskLabel.swift" \
     "$SRC/Models/TaskList.swift" \
     "$SRC/Models/TodoItem.swift" \

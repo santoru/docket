@@ -23,7 +23,13 @@ struct IconPickerButton: View {
     /// Visual size of the button itself.
     var size: CGFloat = 22
 
+    /// Optional callback fired when the popover toggles open/closed. Used
+    /// by callers that need to refocus the underlying TextField when the
+    /// picker dismisses.
+    var onPopoverChange: ((Bool) -> Void)? = nil
+
     @State private var showPicker = false
+    @State private var hovered = false
 
     var body: some View {
         Button { showPicker.toggle() } label: {
@@ -34,15 +40,18 @@ struct IconPickerButton: View {
                 .frame(width: size, height: size)
                 .background(
                     RoundedRectangle(cornerRadius: 5, style: .continuous)
-                        .fill(tint.opacity(0.10))
+                        .fill(tint.opacity(hovered ? 0.18 : 0.10))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 5, style: .continuous)
-                        .stroke(tint.opacity(0.18), lineWidth: 0.5)
+                        .stroke(tint.opacity(hovered ? 0.30 : 0.18), lineWidth: 0.5)
                 )
                 .contentShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                .scaleEffect(hovered ? 1.06 : 1.0)
+                .animation(.spring(response: 0.28, dampingFraction: 0.72), value: hovered)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableScaleStyle())
+        .onHover { hovered = $0 }
         .help(L10n.icon)
         .accessibilityLabel(Text(L10n.icon))
         .popover(isPresented: $showPicker, arrowEdge: popoverEdge) {
@@ -61,6 +70,9 @@ struct IconPickerButton: View {
             }
             .padding(12)
             .frame(width: 240)
+        }
+        .onChange(of: showPicker) { _, newValue in
+            onPopoverChange?(newValue)
         }
     }
 }

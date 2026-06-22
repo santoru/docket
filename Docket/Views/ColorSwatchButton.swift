@@ -28,20 +28,27 @@ struct ColorSwatchButton: View {
     /// sites place the swatch on the left of a row.
     var popoverEdge: Edge = .leading
 
+    /// Optional callback fired when the popover toggles open/closed. Used
+    /// by callers that need to refocus the underlying TextField (or other
+    /// state) when the picker dismisses.
+    var onPopoverChange: ((Bool) -> Void)? = nil
+
     @State private var showPicker = false
+    @State private var hovered = false
 
     var body: some View {
         Button { showPicker.toggle() } label: {
-            swatch(size: size, ringColor: ringColor)
+            swatch(size: size, ringColor: ringColor, hovered: hovered)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableScaleStyle())
+        .onHover { hovered = $0 }
         .help(L10n.color)
         .accessibilityLabel(Text(L10n.color))
         .popover(isPresented: $showPicker, arrowEdge: popoverEdge) {
             VStack(alignment: .leading, spacing: 10) {
                 if let popoverTitle, !popoverTitle.isEmpty {
                     HStack(spacing: 8) {
-                        swatch(size: 14, ringColor: nil)
+                        swatch(size: 14, ringColor: nil, hovered: false)
                         Text(popoverTitle).font(.subheadline.weight(.semibold))
                     }
                 }
@@ -50,10 +57,13 @@ struct ColorSwatchButton: View {
             .padding(12)
             .frame(width: 240)
         }
+        .onChange(of: showPicker) { _, newValue in
+            onPopoverChange?(newValue)
+        }
     }
 
     @ViewBuilder
-    private func swatch(size: CGFloat, ringColor: Color?) -> some View {
+    private func swatch(size: CGFloat, ringColor: Color?, hovered: Bool) -> some View {
         let shape = RoundedRectangle(cornerRadius: 4, style: .continuous)
         shape
             .fill(Color(hex: hex))
@@ -63,7 +73,9 @@ struct ColorSwatchButton: View {
                     .padding(-2)
             )
             .overlay(
-                shape.stroke(.black.opacity(0.08), lineWidth: 0.5)
+                shape.stroke(.black.opacity(hovered ? 0.18 : 0.08), lineWidth: 0.5)
             )
+            .scaleEffect(hovered ? 1.08 : 1.0)
+            .animation(.spring(response: 0.28, dampingFraction: 0.72), value: hovered)
     }
 }
