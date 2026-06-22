@@ -405,6 +405,7 @@ struct SettingsView: View {
     @State private var listToDelete: TaskList?
     @State private var showDeleteConfirm = false
     @State private var hoveredListId: UUID?
+    @FocusState private var listNameFocused: Bool
 
     private var listsSection: some View {
         card {
@@ -429,12 +430,15 @@ struct SettingsView: View {
                             listColorSwatch(for: list)
 
                             if editingListId == list.id {
-                                TextField(L10n.namePlaceholder, text: $editingName, onCommit: {
-                                    store.renameList(list, to: editingName)
-                                    editingListId = nil
-                                })
-                                .textFieldStyle(.plain)
-                                .font(.body)
+                                TextField(L10n.namePlaceholder, text: $editingName)
+                                    .textFieldStyle(.plain)
+                                    .font(.body)
+                                    .focused($listNameFocused)
+                                    .onSubmit {
+                                        store.renameList(list, to: editingName)
+                                        editingListId = nil
+                                    }
+                                    .onAppear { listNameFocused = true }
                                 Spacer()
                                 Button {
                                     store.renameList(list, to: editingName)
@@ -552,6 +556,7 @@ struct SettingsView: View {
     @State private var hoveredLabelId: UUID?
     @State private var labelToDelete: TaskLabel?
     @State private var showLabelDeleteConfirm = false
+    @FocusState private var labelNameFocused: Bool
 
     private var labelsSection: some View {
         card {
@@ -604,7 +609,9 @@ struct SettingsView: View {
                 TextField(L10n.namePlaceholder, text: $labelName)
                     .textFieldStyle(.plain)
                     .font(.subheadline)
+                    .focused($labelNameFocused)
                     .onSubmit { commitLabel(label) }
+                    .onAppear { labelNameFocused = true }
             } else {
                 Text(label.name).font(.subheadline)
             }
