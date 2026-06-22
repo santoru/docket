@@ -58,6 +58,7 @@
 		688FF0372FE2A27100147993 /* ColorSwatchButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF0382FE2A27100147993 /* ColorSwatchButton.swift */; };
 		688FF0392FE2A27100147993 /* PressableScaleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF03A2FE2A27100147993 /* PressableScaleStyle.swift */; };
 		688FF03B2FE2A27100147993 /* IconPickerButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF03C2FE2A27100147993 /* IconPickerButton.swift */; };
+		68E978132FE9DCDF002CA246 /* Docket.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 68E978122FE9DCDF002CA246 /* Docket.storekit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -115,6 +116,7 @@
 		688FF0382FE2A27100147993 /* ColorSwatchButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorSwatchButton.swift; sourceTree = "<group>"; };
 		688FF03A2FE2A27100147993 /* PressableScaleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressableScaleStyle.swift; sourceTree = "<group>"; };
 		688FF03C2FE2A27100147993 /* IconPickerButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPickerButton.swift; sourceTree = "<group>"; };
+		68E978122FE9DCDF002CA246 /* Docket.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Docket.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,6 +133,7 @@
 		688FEFB92FE2A24200147993 = {
 			isa = PBXGroup;
 			children = (
+				68E978122FE9DCDF002CA246 /* Docket.storekit */,
 				688FEFFE2FE2A27100147993 /* Docket */,
 				688FEFC32FE2A24200147993 /* Products */,
 			);
@@ -292,6 +295,7 @@
 				688FF0242FE2A27100147993 /* Localizable.strings in Resources */,
 				688FF0252FE2A27100147993 /* menubar-icon@2x.png in Resources */,
 				688FF0262FE2A27100147993 /* menubar-icon.png in Resources */,
+				68E978132FE9DCDF002CA246 /* Docket.storekit in Resources */,
 				688FF0272FE2A27100147993 /* icon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -491,6 +495,7 @@
 		688FEFCE2FE2A24400147993 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Docket/Docket.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -505,7 +510,6 @@
 				INFOPLIST_FILE = Docket/Info.plist;
 				INFOPLIST_KEY_CFBundleIconFile = icon;
 				INFOPLIST_KEY_CFBundleIconName = "";
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 @santoru. All rights reserved.";
@@ -531,6 +535,7 @@
 		688FEFCF2FE2A24400147993 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Docket/Docket.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -545,7 +550,6 @@
 				INFOPLIST_FILE = Docket/Info.plist;
 				INFOPLIST_KEY_CFBundleIconFile = icon;
 				INFOPLIST_KEY_CFBundleIconName = "";
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 @santoru. All rights reserved.";
