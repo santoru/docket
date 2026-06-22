@@ -8,6 +8,8 @@
 "action.back" = "Indietro";
 "action.delete" = "Elimina";
 "action.deleteTask" = "Elimina attività";
+"action.edit" = "Modifica";
+"action.rename" = "Rinomina";
 "action.restore" = "Ripristina";
 
 /* Task List */
@@ -41,6 +43,22 @@
 "field.notes" = "Aggiungi note...";
 "field.priority" = "Priorità";
 "field.labels" = "Etichette";
+"field.icon" = "Icona";
+"icon.tag" = "Etichetta";
+"icon.briefcase" = "Lavoro";
+"icon.person" = "Persona";
+"icon.bolt" = "Urgente";
+"icon.star" = "Stella";
+"icon.heart" = "Cuore";
+"icon.house" = "Casa";
+"icon.book" = "Libro";
+"icon.cart" = "Spesa";
+"icon.gamecontroller" = "Gioco";
+"icon.airplane" = "Viaggio";
+"icon.leaf" = "Natura";
+"icon.musicNote" = "Musica";
+"icon.camera" = "Foto";
+"icon.gift" = "Regalo";
 "field.noLabels" = "Nessuna etichetta";
 "field.matrix" = "Matrice";
 "field.dueDate" = "Scadenza";
@@ -73,6 +91,7 @@
 "settings.shortcut" = "Scorciatoia";
 "settings.theme" = "Tema";
 "settings.color" = "Colore";
+"settings.color.custom" = "Personalizzato…";
 "settings.intensity" = "Intensità";
 "settings.display" = "Visualizzazione";
 "settings.liquidGlass" = "Liquid Glass";
@@ -111,6 +130,10 @@
 "alert.deleteList.title" = "Elimina lista";
 "alert.deleteList.messageOne" = "“%@” contiene %d attività. Verrà spostata nella lista predefinita.";
 "alert.deleteList.messageMany" = "“%@” contiene %d attività. Verranno spostate nella lista predefinita.";
+"alert.deleteLabel.title" = "Elimina etichetta";
+"alert.deleteLabel.messageZero" = "Eliminare l'etichetta “%@”? Questa azione non può essere annullata.";
+"alert.deleteLabel.messageOne" = "“%@” è usata da %d attività. L'etichetta verrà rimossa.";
+"alert.deleteLabel.messageMany" = "“%@” è usata da %d attività. L'etichetta verrà rimossa da tutte.";
 "alert.clearCompleted.title" = "Cancella completate";
 "alert.clearCompleted.message" = "Questa azione eliminerà definitivamente tutte le attività completate.";
 "alert.clearN" = "Cancella %d attività";

@@ -2,6 +2,33 @@
 
 All notable changes to Docket will be documented in this file.
 
+## [1.12.0] — 2026-06-22
+
+### 🎨 Colors & Icons
+- **Expanded color palette to 20 curated colors** (was 8). Hand-tuned mid-tones organized by hue family (warms → greens → blues/purples → pinks/neutrals) so labels and lists read clearly on every theme.
+- **Lists now have their own color identity.** Click the swatch on the left of a list row to pick a color from the palette; the chosen color shows up in the list switcher dropdown next to each list name and persists across launches. Lists without a stored color get a stable color derived from their identity, so nothing ever looks "uncolored".
+- **Custom hex colors via the system color panel.** A "Custom…" row in every color picker opens the native macOS color picker for users who want a brand-exact tint outside the palette.
+- **Unified color picker across Settings.** Lists, labels, and the four Eisenhower-Matrix quadrants (Do First / Schedule / Delegate / Eliminate) all share the same picker UI and palette — no more inconsistent strips of circles.
+- **Icon picker matches the color picker.** Each label row gets a small icon button next to its color swatch; click it to open a 5×3 grid of curated SF Symbols. Selected cell highlights in the label color; tooltips and VoiceOver labels are localized in English and Italian.
+
+### ✨ List & Label management
+- **Inline edit / delete buttons follow macOS HIG.** Replaced the bare `pencil.line` and `xmark` icons with proper compact tinted-circle action buttons (Mail/Reminders/Photos pattern): 26pt hit-target, hover and press feedback, system red for destructive, `.help()` tooltips and matching VoiceOver labels.
+- **Edit / delete reveal on row-hover.** Rows stay clean at rest; pencil and trash fade in when you hover the row, mirroring how Reminders and Notes treat secondary actions. Right-click on the row gives the same actions in a contextual menu.
+- **Edit form simplified.** With color and icon now editable from the row swatches (and persisted live), the edit form is just the name field. The trailing pencil flips to a single ✓ checkmark while editing; pencil + trash reappear on commit.
+- **Auto-focus the rename TextField.** Clicking the pencil drops the cursor straight into the name field. Press Return (or click ✓) to commit, click outside the field to keep editing.
+- **Auto-commit pending edits when switching rows.** Starting to edit a different list or label first commits whatever's in-flight on the previous row, so a half-typed name is never silently dropped.
+- **Empty-name protection.** Trims whitespace and falls back to the previous name if the field is left empty, instead of saving an empty string.
+- **Confirmation dialog before deleting a label.** Used to delete silently — and labels are referenced by tasks, so the confirmation now explains how many tasks will lose the label.
+- **Focus returns to the TextField after dismissing a popover.** Pick a color or icon while renaming, and the cursor jumps back to the name field automatically.
+
+### 🧹 Code quality
+- New `ColorPalette` and `IconPalette` enums — single source of truth for the palette, the default values, and (for icons) localized display names.
+- Color hex round-tripping (`Color(hex:)` and `Color.toHex()`) consolidated next to the palette they serve.
+- New reusable view primitives: `RowActionButton`, `ColorSwatchButton`, `IconPickerButton`, `IconPickerGrid`, `PressableScaleStyle`. Three Settings sections (lists, labels, matrix) now share one color-editing pattern.
+- 22 new logic tests (palette round-trip, deterministic fallback stability, `TaskList` legacy-JSON decoder, icon palette invariants).
+
+---
+
 ## [1.11.1] — 2026-06-15
 
 ### 🐛 Fixes

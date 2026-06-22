@@ -19,6 +19,8 @@ enum L10n {
     static let done = s("action.done", "Done")
     static let back = s("action.back", "Back")
     static let delete = s("action.delete", "Delete")
+    static let edit = s("action.edit", "Edit")
+    static let rename = s("action.rename", "Rename")
     static let deleteTask = s("action.deleteTask", "Delete Task")
     static let restore = s("action.restore", "Restore")
 
@@ -57,6 +59,24 @@ enum L10n {
     static let notesPlaceholder = s("field.notes", "Add notes...")
     static let priority = s("field.priority", "Priority")
     static let labels = s("field.labels", "Labels")
+    static let icon = s("field.icon", "Icon")
+
+    // MARK: - Icon names (used by the icon picker tooltips/popover headers)
+    static let iconTag             = s("icon.tag",             "Tag")
+    static let iconBriefcase       = s("icon.briefcase",       "Work")
+    static let iconPerson          = s("icon.person",          "Person")
+    static let iconBolt            = s("icon.bolt",            "Urgent")
+    static let iconStar            = s("icon.star",            "Star")
+    static let iconHeart           = s("icon.heart",           "Heart")
+    static let iconHouse           = s("icon.house",           "Home")
+    static let iconBook            = s("icon.book",            "Book")
+    static let iconCart            = s("icon.cart",            "Shopping")
+    static let iconGameController  = s("icon.gamecontroller",  "Gaming")
+    static let iconAirplane        = s("icon.airplane",        "Travel")
+    static let iconLeaf            = s("icon.leaf",            "Nature")
+    static let iconMusicNote       = s("icon.musicNote",       "Music")
+    static let iconCamera          = s("icon.camera",          "Photo")
+    static let iconGift            = s("icon.gift",            "Gift")
     static let noLabels = s("field.noLabels", "No labels yet")
     static let matrix = s("field.matrix", "Matrix")
     static let dueDate = s("field.dueDate", "Due date")
@@ -88,6 +108,7 @@ enum L10n {
     static let shortcut = s("settings.shortcut", "Shortcut")
     static let theme = s("settings.theme", "Theme")
     static let color = s("settings.color", "Color")
+    static let colorCustom = s("settings.color.custom", "Custom…")
     static let intensity = s("settings.intensity", "Intensity")
     static let display = s("settings.display", "Display")
     static let liquidGlass = s("settings.liquidGlass", "Liquid Glass")
@@ -131,6 +152,15 @@ enum L10n {
         let fmt = count == 1
             ? s("alert.deleteList.messageOne", "“%@” has %d task. It will be moved to the default list.")
             : s("alert.deleteList.messageMany", "“%@” has %d tasks. They will be moved to the default list.")
+        return String(format: fmt, name, count)
+    }
+    static let deleteLabelTitle = s("alert.deleteLabel.title", "Delete Label")
+    static func deleteLabelMessage(_ name: String, _ count: Int) -> String {
+        let fmt = count == 1
+            ? s("alert.deleteLabel.messageOne", "“%@” is used by %d task. The label will be removed from it.")
+            : count == 0
+                ? s("alert.deleteLabel.messageZero", "Delete the label “%@”? This cannot be undone.")
+                : s("alert.deleteLabel.messageMany", "“%@” is used by %d tasks. The label will be removed from them.")
         return String(format: fmt, name, count)
     }
     static let clearCompletedTitle = s("alert.clearCompleted.title", "Clear Completed")

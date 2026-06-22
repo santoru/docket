@@ -30,6 +30,8 @@ swiftc \
     "$SRC_DIR/Models/TodoItem.swift" \
     "$SRC_DIR/Models/TaskList.swift" \
     "$SRC_DIR/Models/TaskLabel.swift" \
+    "$SRC_DIR/Models/ColorPalette.swift" \
+    "$SRC_DIR/Models/IconPalette.swift" \
     "$SRC_DIR/Models/Recurrence.swift" \
     "$SRC_DIR/Models/Quadrant.swift" \
     "$SRC_DIR/Models/MatrixLayout.swift" \
@@ -49,6 +51,12 @@ swiftc \
     "$SRC_DIR/Views/RecurrencePickerView.swift" \
     "$SRC_DIR/Views/PriorityPickerView.swift" \
     "$SRC_DIR/Views/LabelPickerView.swift" \
+    "$SRC_DIR/Views/ColorPickerGrid.swift" \
+    "$SRC_DIR/Views/ColorSwatchButton.swift" \
+    "$SRC_DIR/Views/IconPickerGrid.swift" \
+    "$SRC_DIR/Views/IconPickerButton.swift" \
+    "$SRC_DIR/Views/PressableScaleStyle.swift" \
+    "$SRC_DIR/Views/RowActionButton.swift" \
     "$SRC_DIR/Views/QuadrantPickerView.swift" \
     "$SRC_DIR/Views/MatrixView.swift" \
     "$SRC_DIR/Views/ThemedToggle.swift" \
@@ -86,9 +94,9 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
     <key>CFBundleIdentifier</key>
     <string>blog.insecurity.docket</string>
     <key>CFBundleVersion</key>
-    <string>1.11.1</string>
+    <string>1.12.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.11.1</string>
+    <string>1.12.0</string>
     <key>CFBundleExecutable</key>
     <string>Docket</string>
     <key>CFBundleIconFile</key>

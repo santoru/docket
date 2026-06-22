@@ -194,12 +194,105 @@ func testDocketExport() {
     expect(b.schemaVersion == nil, "schemaVersion absent → nil (backward compatible)")
 }
 
+// MARK: - ColorPalette + Color.toHex round-trip
+
+func testColorPalette() {
+    // Every preset is a valid hex string and round-trips through Color(hex:) → toHex().
+    for preset in ColorPalette.presets {
+        let c = Color(hex: preset.hex)
+        if let back = c.toHex() {
+            expectEqual(back.uppercased(), preset.hex.uppercased(),
+                        "palette '\(preset.name)' (\(preset.hex)) round-trips through Color↔hex")
+        } else {
+            expect(false, "palette '\(preset.name)' (\(preset.hex)) failed toHex()")
+        }
+    }
+
+    expectEqual(ColorPalette.presets.count, 20, "palette has exactly 20 colors")
+
+    // Deterministic fallback is stable across calls and stays inside the palette.
+    let key = UUID().uuidString
+    let a = ColorPalette.deterministic(for: key)
+    let b = ColorPalette.deterministic(for: key)
+    expectEqual(a, b, "deterministic() is stable for the same key")
+    expect(ColorPalette.presets.contains(where: { $0.hex == a }),
+           "deterministic() returns a palette member")
+
+    // Different keys mostly map to different colors (sanity — not a strict guarantee).
+    let distinct = Set((0..<50).map { ColorPalette.deterministic(for: "key-\($0)") })
+    expect(distinct.count >= 10, "deterministic() spreads across the palette (got \(distinct.count) distinct)")
+}
+
+// MARK: - TaskList color resolution + Codable backwards compatibility
+
+func testTaskListColor() {
+    // 1. A list without a stored colorHex still has a (deterministic) color.
+    let listA = TaskList(name: "Inbox")
+    let resolvedA = listA.resolvedHex
+    expect(ColorPalette.presets.contains(where: { $0.hex == resolvedA }),
+           "list without colorHex resolves to a palette color")
+    expectEqual(listA.resolvedHex, resolvedA, "resolvedHex is stable for the same list instance")
+
+    // 2. A list with a stored colorHex returns it verbatim.
+    var listB = TaskList(name: "Work", colorHex: "#FF00AA")
+    expectEqual(listB.resolvedHex, "#FF00AA", "stored colorHex wins over fallback")
+    listB.colorHex = nil
+    expect(ColorPalette.presets.contains(where: { $0.hex == listB.resolvedHex }),
+           "clearing colorHex falls back to a palette color")
+
+    // 3. Legacy lists.json (without the colorHex field) decodes cleanly.
+    let id = UUID().uuidString
+    let createdAt = Date().timeIntervalSinceReferenceDate
+    let legacyJSON = """
+    {"id":"\(id)","name":"Legacy","createdAt":\(createdAt),"isDefault":false}
+    """.data(using: .utf8)!
+    do {
+        let decoded = try JSONDecoder().decode(TaskList.self, from: legacyJSON)
+        expect(decoded.colorHex == nil, "legacy lists.json decodes with nil colorHex")
+        expect(ColorPalette.presets.contains(where: { $0.hex == decoded.resolvedHex }),
+               "legacy list still resolves to a palette color")
+    } catch {
+        expect(false, "legacy lists.json should decode: \(error)")
+    }
+
+    // 4. Codable round-trip preserves a stored colorHex.
+    let original = TaskList(name: "Travel", colorHex: "#0EA5E9")
+    let data = try! JSONEncoder().encode(original)
+    let round = try! JSONDecoder().decode(TaskList.self, from: data)
+    expectEqual(round.colorHex, "#0EA5E9", "TaskList.colorHex survives encode/decode")
+    expectEqual(round.name, "Travel", "TaskList.name survives encode/decode")
+}
+
+// MARK: - IconPalette
+
+func testIconPalette() {
+    expectEqual(IconPalette.presets.count, 15, "icon palette has exactly 15 icons")
+    let unique = Set(IconPalette.presets)
+    expectEqual(unique.count, IconPalette.presets.count, "all icons are distinct")
+    expect(IconPalette.presets.contains(IconPalette.defaultIcon),
+           "defaultIcon is in the preset list")
+
+    // Every preset has a non-empty localized display name.
+    for icon in IconPalette.presets {
+        let name = IconPalette.displayName(icon)
+        expect(!name.isEmpty, "displayName for '\(icon)' is non-empty")
+    }
+
+    // Unknown icon falls back to its raw symbol name.
+    let unknown = "this.is.not.a.preset"
+    expectEqual(IconPalette.displayName(unknown), unknown,
+                "displayName falls back to the raw symbol for unknown icons")
+}
+
 // MARK: - Run
 
 testDateParser()
 testRecurrence()
 testDueDateFormatter()
 testColorHex()
+testColorPalette()
+testTaskListColor()
+testIconPalette()
 testMatrixLayout()
 testTodoItemCodable()
 testDocketExport()

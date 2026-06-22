@@ -149,6 +149,8 @@ struct TaskListView: View {
                                 store.switchList(list)
                             } label: {
                                 HStack {
+                                    Image(systemName: "circle.fill")
+                                        .foregroundStyle(list.color)
                                     Text(list.name)
                                     if list.id == store.activeListId {
                                         Image(systemName: "checkmark")
@@ -157,7 +159,10 @@ struct TaskListView: View {
                             }
                         }
                     } label: {
-                        HStack(spacing: 4) {
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(store.activeList.color)
+                                .frame(width: 8, height: 8)
                             Text(store.activeList.name).font(.title2.bold())
                             Image(systemName: "chevron.down").font(.caption.bold()).foregroundStyle(.secondary)
                         }

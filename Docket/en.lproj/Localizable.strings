@@ -8,6 +8,8 @@
 "action.back" = "Back";
 "action.delete" = "Delete";
 "action.deleteTask" = "Delete Task";
+"action.edit" = "Edit";
+"action.rename" = "Rename";
 "action.restore" = "Restore";
 
 /* Task List */
@@ -41,6 +43,22 @@
 "field.notes" = "Add notes...";
 "field.priority" = "Priority";
 "field.labels" = "Labels";
+"field.icon" = "Icon";
+"icon.tag" = "Tag";
+"icon.briefcase" = "Work";
+"icon.person" = "Person";
+"icon.bolt" = "Urgent";
+"icon.star" = "Star";
+"icon.heart" = "Heart";
+"icon.house" = "Home";
+"icon.book" = "Book";
+"icon.cart" = "Shopping";
+"icon.gamecontroller" = "Gaming";
+"icon.airplane" = "Travel";
+"icon.leaf" = "Nature";
+"icon.musicNote" = "Music";
+"icon.camera" = "Photo";
+"icon.gift" = "Gift";
 "field.noLabels" = "No labels yet";
 "field.matrix" = "Matrix";
 "field.dueDate" = "Due date";
@@ -73,6 +91,7 @@
 "settings.shortcut" = "Shortcut";
 "settings.theme" = "Theme";
 "settings.color" = "Color";
+"settings.color.custom" = "Custom…";
 "settings.intensity" = "Intensity";
 "settings.display" = "Display";
 "settings.liquidGlass" = "Liquid Glass";
@@ -111,6 +130,10 @@
 "alert.deleteList.title" = "Delete List";
 "alert.deleteList.messageOne" = "“%@” has %d task. It will be moved to the default list.";
 "alert.deleteList.messageMany" = "“%@” has %d tasks. They will be moved to the default list.";
+"alert.deleteLabel.title" = "Delete Label";
+"alert.deleteLabel.messageZero" = "Delete the label “%@”? This cannot be undone.";
+"alert.deleteLabel.messageOne" = "“%@” is used by %d task. The label will be removed from it.";
+"alert.deleteLabel.messageMany" = "“%@” is used by %d tasks. The label will be removed from them.";
 "alert.clearCompleted.title" = "Clear Completed";
 "alert.clearCompleted.message" = "This will permanently delete all completed tasks.";
 "alert.clearN" = "Clear %d tasks";

@@ -99,6 +99,17 @@ struct SettingsView: View {
         } message: {
             Text(L10n.clearCompletedMessage)
         }
+        .alert(L10n.deleteLabelTitle, isPresented: $showLabelDeleteConfirm) {
+            Button(L10n.delete, role: .destructive) {
+                if let label = labelToDelete { withAnimation { store.deleteLabel(label) } }
+            }
+            Button(L10n.cancel, role: .cancel) {}
+        } message: {
+            if let label = labelToDelete {
+                let count = store.items.filter { $0.labelIds.contains(label.id) }.count
+                Text(L10n.deleteLabelMessage(label.name, count))
+            }
+        }
     }
 
     private var header: some View {
@@ -393,6 +404,8 @@ struct SettingsView: View {
     @State private var editingName = ""
     @State private var listToDelete: TaskList?
     @State private var showDeleteConfirm = false
+    @State private var hoveredListId: UUID?
+    @FocusState private var listNameFocused: Bool
 
     private var listsSection: some View {
         card {
@@ -414,21 +427,27 @@ struct SettingsView: View {
                 VStack(spacing: 4) {
                     ForEach(store.lists) { list in
                         HStack(spacing: 10) {
-                            Circle()
-                                .fill(list.id == store.activeListId ? accent : Color.gray.opacity(0.3))
-                                .frame(width: 8, height: 8)
+                            listColorSwatch(for: list)
 
                             if editingListId == list.id {
-                                TextField(L10n.namePlaceholder, text: $editingName, onCommit: {
-                                    store.renameList(list, to: editingName)
-                                    editingListId = nil
-                                })
-                                .textFieldStyle(.plain)
-                                .font(.body)
+                                TextField(L10n.namePlaceholder, text: $editingName)
+                                    .textFieldStyle(.plain)
+                                    .font(.body)
+                                    .focused($listNameFocused)
+                                    .onSubmit { commitListRename(list) }
+                                    .onAppear {
+                                        // Flicker false → true so every TextField gets a fresh
+                                        // focus event, even if the previous row's edit left
+                                        // `listNameFocused` set. NSTextField only runs its
+                                        // select-all-on-first-responder hook on a clean focus
+                                        // assignment, so without the flicker the second row's
+                                        // text wouldn't be selected on auto-commit-then-switch.
+                                        listNameFocused = false
+                                        DispatchQueue.main.async { listNameFocused = true }
+                                    }
                                 Spacer()
                                 Button {
-                                    store.renameList(list, to: editingName)
-                                    editingListId = nil
+                                    commitListRename(list)
                                 } label: {
                                     Text(L10n.done).font(.caption.weight(.semibold)).foregroundStyle(accent)
                                 }.buttonStyle(.plain)
@@ -437,32 +456,23 @@ struct SettingsView: View {
                                     .font(.body)
                                     .foregroundStyle(list.id == store.activeListId ? .primary : .secondary)
                                 Spacer()
-                                HStack(spacing: 12) {
-                                    Button {
-                                        editingName = list.name
-                                        editingListId = list.id
-                                    } label: {
-                                        Image(systemName: "pencil.line")
-                                            .font(.system(size: 13))
-                                            .foregroundStyle(.secondary)
-                                    }.buttonStyle(.plain)
-
+                                let showActions = hoveredListId == list.id
+                                HStack(spacing: 6) {
+                                    RowActionButton(systemImage: "pencil",
+                                                    label: L10n.rename,
+                                                    tint: accent) {
+                                        beginRenamingList(list)
+                                    }
                                     if !list.isDefault {
-                                        Button {
-                                            let taskCount = store.items.filter { $0.listId == list.id }.count
-                                            if taskCount > 0 {
-                                                listToDelete = list
-                                                showDeleteConfirm = true
-                                            } else {
-                                                withAnimation { store.deleteList(list) }
-                                            }
-                                        } label: {
-                                            Image(systemName: "xmark")
-                                                .font(.system(size: 11, weight: .semibold))
-                                                .foregroundStyle(.secondary)
-                                        }.buttonStyle(.plain)
+                                        RowActionButton(systemImage: "trash.fill",
+                                                        label: L10n.delete,
+                                                        destructive: true) {
+                                            requestDeleteList(list)
+                                        }
                                     }
                                 }
+                                .opacity(showActions ? 1 : 0)
+                                .animation(.easeOut(duration: 0.12), value: showActions)
                             }
                         }
                         .padding(.vertical, 8)
@@ -475,9 +485,102 @@ struct SettingsView: View {
                         .onTapGesture {
                             if editingListId == nil { store.switchList(list) }
                         }
+                        .onHover { isIn in
+                            if isIn { hoveredListId = list.id }
+                            else if hoveredListId == list.id { hoveredListId = nil }
+                        }
+                        .contextMenu {
+                            Button(L10n.rename) { beginRenamingList(list) }
+                            if !list.isDefault {
+                                Button(L10n.delete, role: .destructive) { requestDeleteList(list) }
+                            }
+                        }
                     }
                 }
             }
+        }
+    }
+
+    // MARK: - List color swatch
+
+    /// Tappable colored square shown at the leading edge of each list row in
+    /// the Lists section. Wraps the shared `ColorSwatchButton` so the popover,
+    /// palette, and persistence path are identical to every other color
+    /// affordance in Settings.
+    @ViewBuilder
+    private func listColorSwatch(for list: TaskList) -> some View {
+        let isActive = list.id == store.activeListId
+        ColorSwatchButton(
+            hex: listColorBinding(for: list.id),
+            popoverTitle: list.name,
+            ringColor: isActive ? accent : nil,
+            onPopoverChange: { isOpen in
+                refocusListNameIfEditing(closingPopover: !isOpen, list: list)
+            }
+        )
+    }
+
+    /// Binding that reads/writes the chosen list's `colorHex` directly on the
+    /// store (and persists). Reading from the live store rather than a captured
+    /// snapshot ensures the picker always reflects the current state.
+    private func listColorBinding(for listId: UUID) -> Binding<String> {
+        Binding(
+            get: {
+                store.lists.first(where: { $0.id == listId })?.resolvedHex
+                    ?? ColorPalette.defaultHex
+            },
+            set: { newHex in
+                guard let i = store.lists.firstIndex(where: { $0.id == listId }) else { return }
+                store.lists[i].colorHex = newHex
+                store.persist()
+            }
+        )
+    }
+
+    // MARK: - List actions
+
+    private func beginRenamingList(_ list: TaskList) {
+        // Auto-commit any pending rename on a different list before switching.
+        if let inFlightId = editingListId, inFlightId != list.id,
+           let inFlight = store.lists.first(where: { $0.id == inFlightId }) {
+            commitListRename(inFlight)
+        }
+        editingName = list.name
+        editingListId = list.id
+    }
+
+    /// Trims whitespace from `editingName` and persists it as the list's new
+    /// name. If the trimmed result is empty, falls back to the list's current
+    /// name so a stray Enter or empty Done doesn't blank the row.
+    private func commitListRename(_ list: TaskList) {
+        let trimmed = editingName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let newName = trimmed.isEmpty ? list.name : trimmed
+        if newName != list.name {
+            store.renameList(list, to: newName)
+        }
+        editingListId = nil
+    }
+
+    /// Re-grabs focus on the list rename TextField after a popover (color
+    /// picker) dismisses, but only if the user is still editing this row.
+    /// `@FocusState` is sticky after focus is yanked away, so we briefly
+    /// flicker it false → true to force a re-focus.
+    private func refocusListNameIfEditing(closingPopover: Bool, list: TaskList) {
+        guard closingPopover, editingListId == list.id else { return }
+        listNameFocused = false
+        DispatchQueue.main.async { listNameFocused = true }
+    }
+
+    /// Routes a list-delete request through the confirmation alert when the
+    /// list contains tasks; deletes silently otherwise.
+    private func requestDeleteList(_ list: TaskList) {
+        guard !list.isDefault else { return }
+        let taskCount = store.items.filter { $0.listId == list.id }.count
+        if taskCount > 0 {
+            listToDelete = list
+            showDeleteConfirm = true
+        } else {
+            withAnimation { store.deleteList(list) }
         }
     }
 
@@ -485,8 +588,10 @@ struct SettingsView: View {
 
     @State private var editingLabelId: UUID?
     @State private var labelName = ""
-    @State private var labelColor = TaskLabel.presetColors[5].hex
-    @State private var labelIcon = "tag"
+    @State private var hoveredLabelId: UUID?
+    @State private var labelToDelete: TaskLabel?
+    @State private var showLabelDeleteConfirm = false
+    @FocusState private var labelNameFocused: Bool
 
     private var labelsSection: some View {
         card {
@@ -504,11 +609,7 @@ struct SettingsView: View {
                 } else {
                     VStack(spacing: 4) {
                         ForEach(store.labelsForActiveList) { label in
-                            if editingLabelId == label.id {
-                                labelEditRow(label: label)
-                            } else {
-                                labelDisplayRow(label: label)
-                            }
+                            labelRow(label: label)
                         }
                     }
                 }
@@ -516,80 +617,179 @@ struct SettingsView: View {
         }
     }
 
-    private func labelDisplayRow(label: TaskLabel) -> some View {
-        HStack(spacing: 10) {
-            Circle().fill(label.color).frame(width: 10, height: 10)
-            Image(systemName: label.icon).font(.system(size: 11)).foregroundStyle(label.color)
-            Text(label.name).font(.subheadline)
+    /// Single row template that renders the label in either display or edit
+    /// mode. The leading [color swatch | icon picker] cluster is identical
+    /// in both — color and icon are picked through their popovers and persist
+    /// immediately. The edit form therefore reduces to the name field, and
+    /// the trailing affordance flips between [pencil + trash] (display) and
+    /// a single [checkmark] (edit).
+    private func labelRow(label: TaskLabel) -> some View {
+        let isEditing = editingLabelId == label.id
+        let showHover = hoveredLabelId == label.id
+        let popoverTitle = isEditing
+            ? (labelName.isEmpty ? L10n.newLabel : labelName)
+            : label.name
+
+        return HStack(spacing: 10) {
+            ColorSwatchButton(
+                hex: labelColorBinding(for: label.id),
+                popoverTitle: popoverTitle,
+                onPopoverChange: { isOpen in
+                    refocusLabelNameIfEditing(closingPopover: !isOpen, label: label)
+                }
+            )
+            IconPickerButton(
+                icon: labelIconBinding(for: label.id),
+                tint: label.color,
+                popoverTitle: popoverTitle,
+                onPopoverChange: { isOpen in
+                    refocusLabelNameIfEditing(closingPopover: !isOpen, label: label)
+                }
+            )
+            if isEditing {
+                TextField(L10n.namePlaceholder, text: $labelName)
+                    .textFieldStyle(.plain)
+                    .font(.subheadline)
+                    .focused($labelNameFocused)
+                    .onSubmit { commitLabel(label) }
+                    .onAppear {
+                        // Flicker false → true so every TextField gets a fresh focus
+                        // event. See the matching block in the list rename TextField
+                        // for the rationale.
+                        labelNameFocused = false
+                        DispatchQueue.main.async { labelNameFocused = true }
+                    }
+            } else {
+                Text(label.name).font(.subheadline)
+            }
             Spacer()
-            Button {
-                labelName = label.name
-                labelColor = label.colorHex
-                labelIcon = label.icon
-                editingLabelId = label.id
-            } label: {
-                Image(systemName: "pencil.line").font(.system(size: 13)).foregroundStyle(.secondary)
-            }.buttonStyle(.plain)
-            Button { withAnimation { store.deleteLabel(label) } } label: {
-                Image(systemName: "xmark").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-            }.buttonStyle(.plain)
+            HStack(spacing: 6) {
+                if isEditing {
+                    RowActionButton(systemImage: "checkmark",
+                                    label: L10n.done,
+                                    tint: label.color) {
+                        commitLabel(label)
+                    }
+                } else {
+                    RowActionButton(systemImage: "pencil",
+                                    label: L10n.edit,
+                                    tint: label.color) {
+                        beginEditingLabel(label)
+                    }
+                    RowActionButton(systemImage: "trash.fill",
+                                    label: L10n.delete,
+                                    destructive: true) {
+                        requestDeleteLabel(label)
+                    }
+                }
+            }
+            .opacity(isEditing || showHover ? 1 : 0)
+            .animation(.easeOut(duration: 0.12), value: isEditing || showHover)
         }
         .padding(.vertical, 6)
         .padding(.horizontal, 8)
-        .background(RoundedRectangle(cornerRadius: 8).fill(label.color.opacity(0.05)))
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(label.color.opacity(isEditing ? 0.10 : 0.05))
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if !isEditing { beginEditingLabel(label) }
+        }
+        .onHover { isIn in
+            if isIn { hoveredLabelId = label.id }
+            else if hoveredLabelId == label.id { hoveredLabelId = nil }
+        }
+        .contextMenu {
+            Button(L10n.edit) { beginEditingLabel(label) }
+            Button(L10n.delete, role: .destructive) { requestDeleteLabel(label) }
+        }
     }
 
-    private func labelEditRow(label: TaskLabel) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            TextField(L10n.namePlaceholder, text: $labelName)
-                .textFieldStyle(.plain).font(.caption)
-                .padding(5)
-                .background(RoundedRectangle(cornerRadius: 5).fill(.quaternary.opacity(0.5)))
-            HStack(spacing: 4) {
-                ForEach(TaskLabel.presetColors, id: \.hex) { preset in
-                    Button { labelColor = preset.hex } label: {
-                        Circle().fill(Color(hex: preset.hex))
-                            .frame(width: 16, height: 16)
-                            .overlay(Circle().stroke(.white, lineWidth: labelColor == preset.hex ? 2 : 0))
-                    }.buttonStyle(.plain)
-                }
-            }
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 5), spacing: 6) {
-                ForEach(TaskLabel.presetIcons, id: \.self) { icon in
-                    Button { labelIcon = icon } label: {
-                        Image(systemName: icon)
-                            .font(.system(size: 14))
-                            .frame(width: 32, height: 32)
-                            .background(RoundedRectangle(cornerRadius: 6).fill(labelIcon == icon ? Color(hex: labelColor).opacity(0.2) : Color.clear))
-                            .overlay(RoundedRectangle(cornerRadius: 6).stroke(labelIcon == icon ? Color(hex: labelColor) : Color.clear, lineWidth: 1))
-                            .foregroundStyle(labelIcon == icon ? Color(hex: labelColor) : .secondary)
-                    }.buttonStyle(.plain)
-                }
-            }
-            HStack {
-                Spacer()
-                Button {
-                    var updated = label
-                    updated.name = labelName
-                    updated.colorHex = labelColor
-                    updated.icon = labelIcon
-                    store.updateLabel(updated)
-                    editingLabelId = nil
-                } label: {
-                    Text(L10n.done).font(.caption.weight(.semibold)).foregroundStyle(accent)
-                }.buttonStyle(.plain)
-            }
+    // MARK: - Label actions
+
+    private func beginEditingLabel(_ label: TaskLabel) {
+        // Auto-commit any pending rename on a different label before switching.
+        if let inFlightId = editingLabelId, inFlightId != label.id,
+           let inFlight = store.labels.first(where: { $0.id == inFlightId }) {
+            commitLabel(inFlight)
         }
-        .padding(6)
-        .background(RoundedRectangle(cornerRadius: 6).fill(.quaternary.opacity(0.2)))
+        labelName = label.name
+        editingLabelId = label.id
+    }
+
+    /// Commits the in-progress label name to the store and exits edit mode.
+    /// Color and icon are persisted live via their bindings, so the only
+    /// field this commits is `name`. Trims whitespace; if the result is
+    /// empty, falls back to the label's current name (so a stray Enter or
+    /// empty checkmark doesn't blank the label).
+    private func commitLabel(_ label: TaskLabel) {
+        guard var fresh = store.labels.first(where: { $0.id == label.id }) else {
+            editingLabelId = nil
+            return
+        }
+        let trimmed = labelName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let newName = trimmed.isEmpty ? fresh.name : trimmed
+        if newName != fresh.name {
+            fresh.name = newName
+            store.updateLabel(fresh)
+        }
+        editingLabelId = nil
+    }
+
+    /// Re-grabs focus on the label rename TextField after a popover (color
+    /// or icon picker) dismisses, but only if the user is still editing
+    /// this row.
+    private func refocusLabelNameIfEditing(closingPopover: Bool, label: TaskLabel) {
+        guard closingPopover, editingLabelId == label.id else { return }
+        labelNameFocused = false
+        DispatchQueue.main.async { labelNameFocused = true }
+    }
+
+    private func requestDeleteLabel(_ label: TaskLabel) {
+        labelToDelete = label
+        showLabelDeleteConfirm = true
+    }
+
+    /// Binding that reads/writes the chosen label's `colorHex` directly
+    /// through the store. Mirrors `listColorBinding(for:)` so colour changes
+    /// from the row swatch persist immediately, independent of the name
+    /// edit form.
+    private func labelColorBinding(for labelId: UUID) -> Binding<String> {
+        Binding(
+            get: {
+                store.labels.first(where: { $0.id == labelId })?.colorHex
+                    ?? ColorPalette.defaultHex
+            },
+            set: { newHex in
+                guard var label = store.labels.first(where: { $0.id == labelId })
+                else { return }
+                label.colorHex = newHex
+                store.updateLabel(label)
+            }
+        )
+    }
+
+    /// Binding that reads/writes the chosen label's `icon` directly
+    /// through the store. Same shape as `labelColorBinding`.
+    private func labelIconBinding(for labelId: UUID) -> Binding<String> {
+        Binding(
+            get: {
+                store.labels.first(where: { $0.id == labelId })?.icon ?? IconPalette.defaultIcon
+            },
+            set: { newIcon in
+                guard var label = store.labels.first(where: { $0.id == labelId })
+                else { return }
+                label.icon = newIcon
+                store.updateLabel(label)
+            }
+        )
     }
 
     private func addNewLabel() {
-        store.addLabel(name: L10n.newLabel, colorHex: TaskLabel.presetColors.randomElement()!.hex, icon: "tag")
+        store.addLabel(name: L10n.newLabel, colorHex: ColorPalette.presets.randomElement()!.hex, icon: IconPalette.defaultIcon)
         let newLabel = store.labelsForActiveList.last!
         labelName = newLabel.name
-        labelColor = newLabel.colorHex
-        labelIcon = newLabel.icon
         editingLabelId = newLabel.id
     }
 
@@ -690,7 +890,7 @@ struct SettingsView: View {
     @AppStorage("matrixDoFirstColor") private var doFirstColor = "#EF4444"
     @AppStorage("matrixScheduleColor") private var scheduleColor = "#3B82F6"
     @AppStorage("matrixDelegateColor") private var delegateColor = "#F59E0B"
-    @AppStorage("matrixEliminateColor") private var eliminateColor = "#9CA3AF"
+    @AppStorage("matrixEliminateColor") private var eliminateColor = "#64748B"
     @AppStorage("matrixDoFirstLabel") private var doFirstLabel = "Do First"
     @AppStorage("matrixScheduleLabel") private var scheduleLabel = "Schedule"
     @AppStorage("matrixDelegateLabel") private var delegateLabel = "Delegate"
@@ -698,8 +898,6 @@ struct SettingsView: View {
     @AppStorage("matrixLabelLength") private var matrixLabelLength = 14
     @AppStorage("matrixShowAxes") private var matrixShowAxes = true
     @AppStorage("matrixShowBadges") private var matrixShowBadges = true
-
-    private let matrixColorPresets = ["#EF4444", "#F59E0B", "#10B981", "#3B82F6", "#8B5CF6", "#EC4899", "#6B7280", "#14B8A6"]
 
     private var matrixSection: some View {
         card {
@@ -755,25 +953,11 @@ struct SettingsView: View {
     }
 
     private func matrixQuadrantRow(label: Binding<String>, color: Binding<String>, defaultLabel: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 8) {
-                // Editable label
-                TextField(defaultLabel, text: label)
-                    .textFieldStyle(.plain)
-                    .font(.subheadline)
-                Spacer()
-            }
-            HStack(spacing: 5) {
-                ForEach(matrixColorPresets, id: \.self) { hex in
-                    Button { color.wrappedValue = hex } label: {
-                        Circle()
-                            .fill(Color(hex: hex))
-                            .frame(width: 16, height: 16)
-                            .overlay(Circle().stroke(.white, lineWidth: color.wrappedValue == hex ? 2 : 0))
-                            .overlay(Circle().stroke(Color(hex: hex).opacity(0.5), lineWidth: color.wrappedValue == hex ? 1 : 0).scaleEffect(1.3))
-                    }.buttonStyle(.plain)
-                }
-            }
+        HStack(spacing: 10) {
+            ColorSwatchButton(hex: color, popoverTitle: defaultLabel)
+            TextField(defaultLabel, text: label)
+                .textFieldStyle(.plain)
+                .font(.subheadline)
         }
         .padding(.vertical, 4)
     }

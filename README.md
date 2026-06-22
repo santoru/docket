@@ -77,8 +77,10 @@
 <td>
 
 `📋 Organization`
-- Multiple lists (create/rename/delete)
+- Multiple lists with their own color
 - Labels with color + icon (per list)
+- 20-color palette + custom hex via system color panel
+- Unified picker across lists, labels, and matrix
 - Sort: custom order, by due date, or by priority
 - Filter by label in sort bar
 - Grouped: Overdue / Today / Upcoming
