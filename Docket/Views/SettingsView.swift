@@ -88,6 +88,7 @@ struct SettingsView: View {
                 }
                 } // ScrollViewReader
             }
+        }
         .alert(L10n.deleteListTitle, isPresented: $showDeleteConfirm) {
             Button(L10n.delete, role: .destructive) {
                 if let list = listToDelete { withAnimation { store.deleteList(list) } }
