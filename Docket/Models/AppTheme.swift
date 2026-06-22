@@ -59,11 +59,19 @@ enum AppTheme: Int, CaseIterable, Identifiable {
     var cardBackground: Color {
         switch self {
         case .midnight: Color(red: 0.14, green: 0.14, blue: 0.22)
-        default:        .white.opacity(0.65)
+        default:
+            if NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
+                return Color(red: 0.16, green: 0.16, blue: 0.18)
+            }
+            return .white.opacity(0.65)
         }
     }
 
-    var isDark: Bool { self == .midnight }
+    var isDark: Bool {
+        if self == .midnight { return true }
+        // Respect macOS system dark mode for non-midnight themes
+        return NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+    }
 
     var accent: Color {
         switch self {
@@ -89,15 +97,23 @@ enum AppTheme: Int, CaseIterable, Identifiable {
 struct ThemeManager {
     static func resolvedBackground(themeRaw: Int, customHue: Double, customSat: Double) -> Color {
         let theme = AppTheme(rawValue: themeRaw) ?? .white
+        let systemDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
         if theme == .custom {
-            return Color(hue: customHue, saturation: customSat, brightness: 0.95)
+            let brightness: Double = systemDark ? 0.15 : 0.95
+            return Color(hue: customHue, saturation: customSat, brightness: brightness)
+        }
+        if systemDark && theme != .midnight {
+            return Color(red: 0.10, green: 0.10, blue: 0.12)
         }
         return theme.background
     }
 
     static func resolvedCardBackground(themeRaw: Int) -> Color {
         let theme = AppTheme(rawValue: themeRaw) ?? .white
-        if theme == .custom { return .white.opacity(0.65) }
+        let systemDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        if theme == .custom {
+            return systemDark ? Color(red: 0.16, green: 0.16, blue: 0.18) : .white.opacity(0.65)
+        }
         return theme.cardBackground
     }
 
