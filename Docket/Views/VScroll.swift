@@ -18,8 +18,6 @@ private struct OverlayScrollerSetter: NSViewRepresentable {
         DispatchQueue.main.async {
             guard let sv = view.enclosingScrollView else { return }
             sv.scrollerStyle = .overlay
-            sv.hasVerticalScroller = true
-            sv.verticalScroller?.alphaValue = 0
         }
     }
 }
@@ -27,7 +25,7 @@ private struct OverlayScrollerSetter: NSViewRepresentable {
 struct VScroll<Content: View>: View {
     @ViewBuilder var content: () -> Content
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
+        ScrollView(.vertical) {
             content().background(OverlayScrollerSetter())
         }
     }
