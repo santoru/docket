@@ -54,6 +54,10 @@
 		688FF02F2FE2A27100147993 /* IconPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF0302FE2A27100147993 /* IconPalette.swift */; };
 		688FF0312FE2A27100147993 /* ColorPickerGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF0322FE2A27100147993 /* ColorPickerGrid.swift */; };
 		688FF0332FE2A27100147993 /* IconPickerGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF0342FE2A27100147993 /* IconPickerGrid.swift */; };
+		688FF0352FE2A27100147993 /* RowActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF0362FE2A27100147993 /* RowActionButton.swift */; };
+		688FF0372FE2A27100147993 /* ColorSwatchButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF0382FE2A27100147993 /* ColorSwatchButton.swift */; };
+		688FF0392FE2A27100147993 /* PressableScaleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF03A2FE2A27100147993 /* PressableScaleStyle.swift */; };
+		688FF03B2FE2A27100147993 /* IconPickerButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF03C2FE2A27100147993 /* IconPickerButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -107,6 +111,10 @@
 		688FF0302FE2A27100147993 /* IconPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPalette.swift; sourceTree = "<group>"; };
 		688FF0322FE2A27100147993 /* ColorPickerGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPickerGrid.swift; sourceTree = "<group>"; };
 		688FF0342FE2A27100147993 /* IconPickerGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPickerGrid.swift; sourceTree = "<group>"; };
+		688FF0362FE2A27100147993 /* RowActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RowActionButton.swift; sourceTree = "<group>"; };
+		688FF0382FE2A27100147993 /* ColorSwatchButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorSwatchButton.swift; sourceTree = "<group>"; };
+		688FF03A2FE2A27100147993 /* PressableScaleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressableScaleStyle.swift; sourceTree = "<group>"; };
+		688FF03C2FE2A27100147993 /* IconPickerButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPickerButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -173,18 +181,22 @@
 			children = (
 				688FEFE12FE2A27100147993 /* CalendarPickerView.swift */,
 				688FF0322FE2A27100147993 /* ColorPickerGrid.swift */,
+				688FF0382FE2A27100147993 /* ColorSwatchButton.swift */,
 				688FEFE22FE2A27100147993 /* CompletedTasksView.swift */,
 				688FEFE32FE2A27100147993 /* ConfettiView.swift */,
 				688FEFE42FE2A27100147993 /* ContentView.swift */,
 				688FEFE52FE2A27100147993 /* CreateTaskView.swift */,
 				688FF0342FE2A27100147993 /* IconPickerGrid.swift */,
+				688FF03C2FE2A27100147993 /* IconPickerButton.swift */,
 				688FEFE62FE2A27100147993 /* LabelPickerView.swift */,
 				688FEFE72FE2A27100147993 /* MatrixView.swift */,
 				688FEFE82FE2A27100147993 /* OnboardingView.swift */,
 				688FEFE92FE2A27100147993 /* PriorityPickerView.swift */,
+				688FF03A2FE2A27100147993 /* PressableScaleStyle.swift */,
 				688FEFEA2FE2A27100147993 /* QuadrantPickerView.swift */,
 				688FEFEB2FE2A27100147993 /* RecurrencePickerView.swift */,
 				688FEFEC2FE2A27100147993 /* ReminderPickerView.swift */,
+				688FF0362FE2A27100147993 /* RowActionButton.swift */,
 				688FEFED2FE2A27100147993 /* SettingsView.swift */,
 				688FEFEE2FE2A27100147993 /* SwipeableTaskRow.swift */,
 				688FEFEF2FE2A27100147993 /* TaskDetailView.swift */,
@@ -334,6 +346,10 @@
 				688FF02F2FE2A27100147993 /* IconPalette.swift in Sources */,
 				688FF0312FE2A27100147993 /* ColorPickerGrid.swift in Sources */,
 				688FF0332FE2A27100147993 /* IconPickerGrid.swift in Sources */,
+				688FF0352FE2A27100147993 /* RowActionButton.swift in Sources */,
+				688FF0372FE2A27100147993 /* ColorSwatchButton.swift in Sources */,
+				688FF0392FE2A27100147993 /* PressableScaleStyle.swift in Sources */,
+				688FF03B2FE2A27100147993 /* IconPickerButton.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
