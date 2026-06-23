@@ -58,6 +58,7 @@
 		688FF0372FE2A27100147993 /* ColorSwatchButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF0382FE2A27100147993 /* ColorSwatchButton.swift */; };
 		688FF0392FE2A27100147993 /* PressableScaleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF03A2FE2A27100147993 /* PressableScaleStyle.swift */; };
 		688FF03B2FE2A27100147993 /* IconPickerButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF03C2FE2A27100147993 /* IconPickerButton.swift */; };
+		688FF03D2FE2A27100147993 /* HotkeyMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688FF03E2FE2A27100147993 /* HotkeyMapping.swift */; };
 		68E978132FE9DCDF002CA246 /* Docket.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 68E978122FE9DCDF002CA246 /* Docket.storekit */; };
 /* End PBXBuildFile section */
 
@@ -116,6 +117,7 @@
 		688FF0382FE2A27100147993 /* ColorSwatchButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorSwatchButton.swift; sourceTree = "<group>"; };
 		688FF03A2FE2A27100147993 /* PressableScaleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressableScaleStyle.swift; sourceTree = "<group>"; };
 		688FF03C2FE2A27100147993 /* IconPickerButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPickerButton.swift; sourceTree = "<group>"; };
+		688FF03E2FE2A27100147993 /* HotkeyMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyMapping.swift; sourceTree = "<group>"; };
 		68E978122FE9DCDF002CA246 /* Docket.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Docket.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -151,6 +153,7 @@
 			isa = PBXGroup;
 			children = (
 				688FEFD02FE2A27100147993 /* AppTheme.swift */,
+				688FF03E2FE2A27100147993 /* HotkeyMapping.swift */,
 				688FF02E2FE2A27100147993 /* ColorPalette.swift */,
 				688FF0302FE2A27100147993 /* IconPalette.swift */,
 				688FEFD12FE2A27100147993 /* MatrixLayout.swift */,
@@ -354,6 +357,7 @@
 				688FF0372FE2A27100147993 /* ColorSwatchButton.swift in Sources */,
 				688FF0392FE2A27100147993 /* PressableScaleStyle.swift in Sources */,
 				688FF03B2FE2A27100147993 /* IconPickerButton.swift in Sources */,
+				688FF03D2FE2A27100147993 /* HotkeyMapping.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

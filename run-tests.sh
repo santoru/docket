@@ -16,12 +16,14 @@ swiftc \
     -o "$BIN" \
     -framework AppKit \
     -framework SwiftUI \
+    -framework Carbon \
     -suppress-warnings \
     "$SRC/Models/ReminderOffset.swift" \
     "$SRC/Models/Recurrence.swift" \
     "$SRC/Models/Quadrant.swift" \
     "$SRC/Models/SortMode.swift" \
     "$SRC/Models/AppTheme.swift" \
+    "$SRC/Models/HotkeyMapping.swift" \
     "$SRC/Models/ColorPalette.swift" \
     "$SRC/Models/IconPalette.swift" \
     "$SRC/Models/TaskLabel.swift" \

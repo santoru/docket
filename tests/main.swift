@@ -5,6 +5,7 @@
 import Foundation
 import AppKit
 import SwiftUI
+import Carbon.HIToolbox
 
 // MARK: - Tiny harness
 
@@ -116,6 +117,56 @@ func testColorHex() {
 
     let invalid = rgba(Color(hex: "nothex"))
     expect(abs(invalid.r - 0.6) < 0.02 && abs(invalid.g - 0.6) < 0.02, "invalid hex falls back to gray")
+}
+
+// MARK: - Hotkey modifier mapping
+
+func testHotkeyMapping() {
+    // ⌘⇧ → command + shift
+    let cmdShift = HotkeyMapping.cocoaModifiers(fromCarbon: UInt32(cmdKey | shiftKey))
+    expect(cmdShift.contains(.command), "cmdKey maps to .command")
+    expect(cmdShift.contains(.shift), "shiftKey maps to .shift")
+    expect(!cmdShift.contains(.option), "option absent when not set")
+    expect(!cmdShift.contains(.control), "control absent when not set")
+
+    // ⌃⌥ → control + option
+    let ctrlOpt = HotkeyMapping.cocoaModifiers(fromCarbon: UInt32(controlKey | optionKey))
+    expect(ctrlOpt.contains(.control), "controlKey maps to .control")
+    expect(ctrlOpt.contains(.option), "optionKey maps to .option")
+    expect(!ctrlOpt.contains(.command), "command absent when not set")
+
+    // empty mask → no flags
+    expect(HotkeyMapping.cocoaModifiers(fromCarbon: 0).isEmpty, "zero mask maps to empty flags")
+
+    // all four set
+    let all = HotkeyMapping.cocoaModifiers(fromCarbon: UInt32(cmdKey | shiftKey | optionKey | controlKey))
+    expect(all.contains(.command) && all.contains(.shift) && all.contains(.option) && all.contains(.control),
+           "all four Carbon modifiers map to all four Cocoa flags")
+}
+
+// MARK: - Dark-mode label color adaptation
+
+func testColorAdaptation() {
+    // The Midnight theme is always dark regardless of system appearance, so we
+    // can exercise the dark-mode branch deterministically (no NSApp dependency).
+    let midnight = AppTheme.midnight.rawValue
+
+    func luminance(_ t: (r: Double, g: Double, b: Double, a: Double)) -> Double {
+        0.299 * t.r + 0.587 * t.g + 0.114 * t.b
+    }
+
+    // A dark label (Graphite) must be lightened so it stays legible on a dark surface.
+    let graphite = Color(hex: "#374151")
+    let lifted = graphite.adaptedForCurrentScheme(themeRaw: midnight)
+    expect(luminance(rgba(lifted)) > luminance(rgba(graphite)) + 0.05,
+           "dark label is lightened in dark mode")
+
+    // A bright label (Yellow) is already legible and must be returned unchanged.
+    let yellow = Color(hex: "#EAB308")
+    let y0 = rgba(yellow)
+    let y1 = rgba(yellow.adaptedForCurrentScheme(themeRaw: midnight))
+    expect(abs(y1.r - y0.r) < 0.01 && abs(y1.g - y0.g) < 0.01 && abs(y1.b - y0.b) < 0.01,
+           "bright label is unchanged in dark mode")
 }
 
 // MARK: - MatrixLayout
@@ -290,6 +341,8 @@ testDateParser()
 testRecurrence()
 testDueDateFormatter()
 testColorHex()
+testHotkeyMapping()
+testColorAdaptation()
 testColorPalette()
 testTaskListColor()
 testIconPalette()

@@ -37,6 +37,7 @@ swiftc \
     "$SRC_DIR/Models/Quadrant.swift" \
     "$SRC_DIR/Models/MatrixLayout.swift" \
     "$SRC_DIR/Models/AppTheme.swift" \
+    "$SRC_DIR/Models/HotkeyMapping.swift" \
     "$SRC_DIR/Models/SortMode.swift" \
     "$SRC_DIR/Models/Strings.swift" \
     "$SRC_DIR/Services/NotificationManager.swift" \

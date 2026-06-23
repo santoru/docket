@@ -23,6 +23,12 @@
   &nbsp;
 </p>
 
+<p align="center">
+  <a href="https://apps.apple.com/us/app/docket-task-manager/id6781217818">
+    <img src="https://img.shields.io/badge/Download_on_the-Mac_App_Store-0A84FF?style=for-the-badge&logo=apple&logoColor=white" alt="Download on the Mac App Store" />
+  </a>
+</p>
+
 ---
 
 ## ✨ Features
