@@ -1,3 +1,14 @@
+// Assemble obfuscated email links at runtime so the address never appears in
+// the static HTML (defeats regex/mailto/base64 scrapers). The token is the
+// base64 of the address, reversed; we flip it back and decode on the client.
+document.querySelectorAll('.js-email').forEach(el => {
+    try {
+        const decoded = atob(el.dataset.email.split('').reverse().join(''));
+        el.setAttribute('href', 'mailto:' + decoded);
+        if (el.hasAttribute('data-show')) el.textContent = decoded;
+    } catch (e) { /* leave the no-JS fallback href in place */ }
+});
+
 // Smooth scroll for nav links
 document.querySelectorAll('a[href^="#"]').forEach(link => {
     link.addEventListener('click', e => {
