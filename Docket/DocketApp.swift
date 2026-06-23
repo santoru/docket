@@ -99,7 +99,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let todayCount = Store.shared.badgeCount
         menu.addItem(NSMenuItem(title: L10n.menuDueToday(todayCount), action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
+        #if !DOCKET_SELFBUILD
         menu.addItem(NSMenuItem(title: "☕ \(L10n.tipJar)", action: #selector(menuTipJar), keyEquivalent: ""))
+        #endif
         menu.addItem(NSMenuItem(title: "GitHub", action: #selector(menuGitHub), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: L10n.menuQuit, action: #selector(menuQuit), keyEquivalent: "q"))
 

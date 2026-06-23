@@ -2,6 +2,10 @@
 # build.sh — Compile Docket into a macOS .app bundle
 # Usage: ./build.sh
 # Requires: Xcode Command Line Tools (swiftc)
+#
+# Note: this self-build defines DOCKET_SELFBUILD and omits the Tip Jar
+# (StoreKit in-app purchases only work in a Mac App Store-distributed build).
+# The Tip Jar ships in the App Store build produced by the Xcode project.
 set -e
 
 APP_NAME="Docket"
@@ -24,9 +28,9 @@ swiftc \
     -framework ServiceManagement \
     -framework Carbon \
     -framework EventKit \
-    -framework StoreKit \
     -parse-as-library \
     -suppress-warnings \
+    -D DOCKET_SELFBUILD \
     "$SRC_DIR/Models/ReminderOffset.swift" \
     "$SRC_DIR/Models/TodoItem.swift" \
     "$SRC_DIR/Models/TaskList.swift" \
@@ -45,7 +49,6 @@ swiftc \
     "$SRC_DIR/Services/DateParser.swift" \
     "$SRC_DIR/Services/DueDateFormatter.swift" \
     "$SRC_DIR/Services/RemindersSync.swift" \
-    "$SRC_DIR/Services/TipJar.swift" \
     "$SRC_DIR/Views/TaskRowView.swift" \
     "$SRC_DIR/Views/SwipeableTaskRow.swift" \
     "$SRC_DIR/Views/CalendarPickerView.swift" \
@@ -72,7 +75,6 @@ swiftc \
     "$SRC_DIR/Views/TaskDetailView.swift" \
     "$SRC_DIR/Views/CompletedTasksView.swift" \
     "$SRC_DIR/Views/SettingsView.swift" \
-    "$SRC_DIR/Views/TipJarView.swift" \
     "$SRC_DIR/Views/ContentView.swift" \
     "$SRC_DIR/DocketApp.swift"
 

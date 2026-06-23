@@ -70,9 +70,11 @@ struct SettingsView: View {
                     remindersSection
                     dataSection
 
+                    #if !DOCKET_SELFBUILD
                     groupHeader(L10n.groupSupport)
                     card { TipJarView() }
                         .id("tipJar")
+                    #endif
 
                     VStack(spacing: 4) {
                         Text("Docket v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0")")
