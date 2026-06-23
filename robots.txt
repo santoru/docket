@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://docket.insecurity.blog/sitemap.xml
