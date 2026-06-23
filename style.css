@@ -252,6 +252,31 @@ body {
 
 .final-cta .btn { font-size: 0.95rem; padding: 14px 28px; }
 
+/* Support */
+.support {
+    text-align: center;
+    padding: 80px 24px;
+    border-top: 1px solid var(--border);
+}
+
+.support h2 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.support p {
+    color: var(--muted);
+    margin-bottom: 24px;
+}
+
+.support-links {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
 /* Footer */
 footer {
     text-align: center;
